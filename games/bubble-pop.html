@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Bubble Pop! 🫧</title>
+    <style>
+        :root {
+            --bg-color: #e0f7fa;
+            --primary-pink: #ff80ab;
+            --primary-blue: #81d4fa;
+            --primary-purple: #ce93d8;
+            --text-color: #006064;
+            --accent-gold: #ffd700;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            color: var(--text-color);
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-shadow: 2px 2px white;
+        }
+        canvas {
+            display: block;
+            background: linear-gradient(to top, #b2ebf2, #e0f7fa);
+            cursor: crosshair;
+        }
+        #overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 30px;
+            border: 5px solid var(--primary-pink);
+            text-align: center;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background-color: var(--primary-pink);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn:hover { 
+            transform: scale(1.1); 
+            background-color: #f06292;
+        }
+        h1 { color: var(--primary-pink); }
+    </style>
+</head>
+<body>
+    <div id="game-ui">
+        <div>Popp: <span id="score">0</span> 🫧</div>
+        <div>Tid: <span id="timer">30</span>s ⏰</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+    
+    <div id="overlay">
+        <h1 id="status-text">Tid er ute! 🌸</h1>
+        <p id="final-score">Du poppet 0 bobler!</p>
+        <button class="btn" onclick="resetGame()">Spill igjen! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        const highscoreEl = document.getElementById('highscore');
+        const overlay = document.getElementById('overlay');
+        const statusText = document.getElementById('status-text');
+        const finalScoreEl = document.getElementById('final-score');
+
+        let score = 0;
+        let timeLeft = 30;
+        let highscore = localStorage.getItem('bubblePopHighscore') || 0;
+        let gameActive = true;
+        let canvasWidth, canvasHeight;
+        let gameInterval, timerInterval;
+
+        highscoreEl.innerText = highscore;
+
+        const colors = ['#ff80ab', '#81d4fa', '#ce93d8', '#b39ddb', '#fff59d', '#a5d6a7'];
+
+        function resize() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        let bubbles = [];
+        let particles = [];
+
+        class Bubble {
+            constructor() {
+                this.radius = Math.random() * 30 + 20;
+                this.x = Math.random() * (canvasWidth - this.radius * 2) + this.radius;
+                this.y = canvasHeight + this.radius;
+                this.speed = Math.random() * 2 + 1;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.vx = (Math.random() - 0.5) * 1;
+                
+                // Special types
+                this.type = 'normal';
+                const rand = Math.random();
+                if (rand > 0.92) {
+                    this.type = 'gold';
+                    this.color = '#ffd700';
+                } else if (rand < 0.08) {
+                    this.type = 'stinky';
+                    this.color = '#9e9e9e';
+                }
+            }
+
+            update() {
+                this.y -= this.speed;
+                this.x += this.vx;
+                
+                // Bounce off walls
+                if (this.x - this.radius < 0 || this.x + this.radius > canvasWidth) {
+                    this.vx *= -1;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                
+                // Bubble gradient for "shine"
+                let grad = ctx.createRadialGradient(
+                    this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.1,
+                    this.x, this.y, this.radius
+                );
+                grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                grad.addColorStop(0.3, this.color);
+                grad.addColorStop(1, this.color);
+                
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = 0.7;
+                ctx.fill();
+                
+                // Outline
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+                ctx.closePath();
+
+                // Emoji for special bubbles
+                if (this.type === 'gold') {
+                    ctx.font = `${this.radius}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('✨', this.x, this.y + this.radius/3);
+                } else if (this.type === 'stinky') {
+                    ctx.font = `${this.radius}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('💨', this.x, this.y + this.radius/3);
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.radius = Math.random() * 3 + 1;
+                this.life = 1.0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.03;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+                ctx.closePath();
+            }
+        }
+
+        function spawnBubble() {
+            if (!gameActive) return;
+            bubbles.push(new Bubble());
+            setTimeout(spawnBubble, Math.max(200, 600 - (score * 2)));
+        }
+
+        function handlePop(e) {
+            if (!gameActive) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX || e.touches[0].clientX) - rect.left;
+            const mouseY = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const b = bubbles[i];
+                const dist = Math.hypot(mouseX - b.x, mouseY - b.y);
+                
+                if (dist < b.radius) {
+                    // Popped!
+                    createPopEffect(b.x, b.y, b.color);
+                    
+                    if (b.type === 'gold') {
+                        score += 5;
+                        timeLeft += 2;
+                        statusText.innerText = "BONUS TID! ✨";
+                        statusText.style.display = 'block';
+                        setTimeout(() => { if(gameActive) statusText.style.display = 'none'; }, 1000);
+                    } else if (b.type === 'stinky') {
+                        score = Math.max(0, score - 3);
+                    } else {
+                        // Smaller bubbles = more points
+                        const points = Math.ceil(60 / b.radius * 2);
+                        score += points;
+                    }
+                    
+                    scoreEl.innerText = score;
+                    bubbles.splice(i, 1);
+                    break; // Only pop one bubble per click
+                }
+            }
+        }
+
+        function createPopEffect(x, y, color) {
+            for (let i = 0; i < 12; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                bubbles[i].update();
+                bubbles[i].draw();
+                if (bubbles[i].y < -bubbles[i].radius) {
+                    bubbles.splice(i, 1);
+                }
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    gameOver();
+                }
+            }, 1000);
+        }
+
+        function gameOver() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('bubblePopHighscore', highscore);
+                highscoreEl.innerText = highscore;
+                statusText.innerText = "NY REKORD! 🎉";
+            } else {
+                statusText.innerText = "Tid er ute! 🌸";
+            }
+            
+            finalScoreEl.innerText = `Du poppet ${score} bobler!`;
+            overlay.style.display = 'block';
+        }
+
+        function resetGame() {
+            score = 0;
+            timeLeft = 30;
+            scoreEl.innerText = '0';
+            timerEl.innerText = '30';
+            bubbles = [];
+            particles = [];
+            gameActive = true;
+            overlay.style.display = 'none';
+            
+            clearInterval(timerInterval);
+            startTimer();
+            // spawnBubble is called outside this but the timer check handled it. 
+            // Actually, I should restart spawnBubble too.
+        }
+
+        window.addEventListener('mousedown', handlePop);
+        window.addEventListener('touchstart', (e) => {
+            handlePop(e);
+            e.preventDefault();
+        }, { passive: false });
+
+        // Initialize
+        spawnBubble();
+        startTimer();
+        update();
+
+    </script>
+</body>
+</html>
