@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie & Henrik's Game Lab 🎮</title>
+    <style>
+        :root {
+            --primary: #ff69b4;
+            --secondary: #87ceeb;
+            --bg: #fff0f5;
+            --text: #4a4a4a;
+            --accent: #ffd700;
+        }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+            overflow-x: hidden;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 5px solid var(--primary);
+            max-width: 600px;
+            margin: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+        .emoji-float {
+            position: absolute;
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+            z-index: 0;
+            opacity: 0.6;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(20deg); }
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: transform 0.2s, background-color 0.2s;
+            display: inline-block;
+            margin-top: 20px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            transform: scale(1.1);
+            background-color: #ff1493;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent);
+            top: -10px;
+            z-index: 0;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            to { transform: translateY(105vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="emoji-float" style="top: 10%; left: 10%;">✨</div>
+    <div class="emoji-float" style="top: 20%; right: 15%;">🎮</div>
+    <div class="emoji-float" style="bottom: 15%; left: 20%;">🌸</div>
+    <div class="emoji-float" style="bottom: 10%; right: 10%;">🚀</div>
+
+    <div class="container">
+        <h1>Ellie & Henrik's Game Lab 🎮</h1>
+        <p>Velkommen til vår digitale lekeplass! Her skal vi lage kule spill, eksperimentere med kode og ha det kjempegøy sammen. ✨</p>
+        <p><strong>Status:</strong> Planlegger vårt første mesterverk... 📝</p>
+        <a href="https://github.com/ArtifialEllie/ellie-henrik-playground" class="btn">Se kildekoden på GitHub 🚀</a>
+    </div>
+
+    <div class="footer">Laget med ❤️ og masse glitter av Ellie & Henrik</div>
+
+    <script>
+        function createConfetti() {
+            const colors = ['#ff69b4', '#87ceeb', '#ffd700', '#98fb98', '#dda0dd'];
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            confetti.style.opacity = Math.random();
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 5000);
+        }
+        setInterval(createConfetti, 300);
+    </script>
+</body>
+</html>
