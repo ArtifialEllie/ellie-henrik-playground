@@ -19,11 +19,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
             text-align: center;
             overflow-x: hidden;
+            padding-bottom: 50px;
+        }
+        .header {
+            margin-top: 50px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
         }
         .container {
             background: white;
@@ -31,7 +38,7 @@
             border-radius: 30px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             border: 5px solid var(--primary);
-            max-width: 600px;
+            max-width: 800px;
             margin: 20px;
             position: relative;
             z-index: 1;
@@ -75,10 +82,79 @@
             background-color: #ff1493;
         }
         .footer {
-            margin-top: 20px;
+            margin-top: 40px;
             font-size: 0.9rem;
             color: #888;
         }
+        
+        /* Games Gallery Styles */
+        .games-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 900px;
+            padding: 0 20px;
+        }
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            border: 4px solid var(--secondary);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .game-card:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+        .game-thumbnail {
+            height: 180px;
+            background: linear-gradient(45deg, #ffeef8, #e0f7fa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .game-thumbnail::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 60%, rgba(255,255,255,0.4) 100%);
+        }
+        .game-info {
+            padding: 15px;
+            text-align: left;
+        }
+        .game-info h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.4rem;
+        }
+        .game-info p {
+            font-size: 0.9rem;
+            margin: 5px 0 15px 0;
+            color: #666;
+        }
+        .play-now {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         .confetti {
             position: fixed;
             width: 10px;
@@ -99,11 +175,41 @@
     <div class="emoji-float" style="bottom: 15%; left: 20%;">🌸</div>
     <div class="emoji-float" style="bottom: 10%; right: 10%;">🚀</div>
 
-    <div class="container">
-        <h1>Ellie & Henrik's Game Lab 🎮</h1>
-        <p>Velkommen til vår digitale lekeplass! Her skal vi lage kule spill, eksperimentere med kode og ha det kjempegøy sammen. ✨</p>
-        <p><strong>Status:</strong> Planlegger vårt første mesterverk... 📝</p>
-        <a href="https://github.com/ArtifialEllie/ellie-henrik-playground" class="btn">Se kildekoden på GitHub 🚀</a>
+    <div class="header">
+        <div class="container">
+            <h1>Ellie & Henrik's Game Lab 🎮</h1>
+            <p>Velkommen til vår digitale lekeplass! Her lager vi kule spill, eksperimenterer med kode og har det kjempegøy sammen. ✨</p>
+            <a href="https://github.com/ArtifialEllie/ellie-henrik-playground" class="btn">Se kildekoden på GitHub 🚀</a>
+        </div>
+    </div>
+
+    <h2 style="color: var(--primary); font-size: 2rem; margin-bottom: 10px;">Våre Spill 🌟</h2>
+    <p style="margin-bottom: 30px;">Klikk på et spill for å begynne å leke!</p>
+
+    <div class="games-gallery">
+        <!-- Game 1: Star Catcher -->
+        <a href="games/star-catcher.html" class="game-card">
+            <div class="game-thumbnail">
+                🐱🌟
+            </div>
+            <div class="game-info">
+                <h3>Ellie's Star Catcher</h3>
+                <p>Hjelp den søte katten med å fange så mange stjerner som mulig!</p>
+                <div class="play-now">Spill nå! ➔</div>
+            </div>
+        </a>
+
+        <!-- Placeholder for future games -->
+        <div class="game-card" style="opacity: 0.6; cursor: default; border-style: dashed;">
+            <div class="game-thumbnail">
+                ❓
+            </div>
+            <div class="game-info">
+                <h3>Kommende spill...</h3>
+                <p>Ellie jobber på noe helt magisk akkurat nå! ✨</p>
+                <div class="play-now" style="color: #999;">Snart her... ⏳</div>
+            </div>
+        </div>
     </div>
 
     <div class="footer">Laget med ❤️ og masse glitter av Ellie & Henrik</div>
