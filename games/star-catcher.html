@@ -32,6 +32,9 @@
             font-weight: bold;
             z-index: 10;
             pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
         canvas {
             display: block;
@@ -66,7 +69,11 @@
     </style>
 </head>
 <body>
-    <div id="game-ui">Stjerner: <span id="score">0</span></div>
+    <div id="game-ui">
+        <div>Stjerner: <span id="score">0</span></div>
+        <div>Liv: <span id="lives">3</span> ❤️</div>
+        <div>Beste: <span id="highscore">0</span> 🌟</div>
+    </div>
     
     <div id="overlay">
         <h1 id="status-text">Spillet er over! 🌸</h1>
@@ -80,13 +87,20 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
+        const livesEl = document.getElementById('lives');
+        const highscoreEl = document.getElementById('highscore');
         const overlay = document.getElementById('overlay');
         const statusText = document.getElementById('status-text');
         const finalScoreEl = document.getElementById('final-score');
 
         let score = 0;
+        let lives = 3;
+        let highscore = localStorage.getItem('starCatcherHighscore') || 0;
         let gameActive = true;
         let canvasWidth, canvasHeight;
+        let spawnTimer;
+
+        highscoreEl.innerText = highscore;
 
         const player = {
             x: 0,
@@ -137,7 +151,7 @@
                 speed: type.speed + (score * 0.1)
             });
             
-            setTimeout(spawnObject, Math.max(300, 1000 - (score * 10)));
+            spawnTimer = setTimeout(spawnObject, Math.max(300, 1000 - (score * 10)));
         }
 
         function drawPlayer() {
@@ -154,7 +168,9 @@
             drawPlayer();
 
             for (let i = objects.length - 1; i >= 0; i--) {
-                const obj = objects[i];
+                const obj = objects.length > 0 ? objects[i] : null;
+                if (!obj) continue;
+
                 obj.y += obj.speed;
 
                 ctx.font = '40px Arial';
@@ -171,17 +187,22 @@
                         scoreEl.innerText = score;
                         createParticles(obj.x + 20, obj.y + 20, 'gold');
                     } else {
-                        gameOver();
+                        loseLife();
+                        createParticles(player.x + 30, player.y + 30, 'red');
                     }
                     objects.splice(i, 1);
                     continue;
                 }
 
                 if (obj.y > canvasHeight) {
+                    if (obj.type === objectTypes.STAR) {
+                        loseLife(); // Lose life when star is missed
+                        createParticles(obj.x + 20, canvasHeight - 10, 'grey');
+                    }
                     objects.splice(i, 1);
                 }
             }
-
+            drawParticles();
             requestAnimationFrame(update);
         }
 
@@ -217,34 +238,52 @@
             }
         }
 
-        // Overriding update slightly to include particles
-        const originalUpdate = update;
-        function updateWithParticles() {
-            if (gameActive) {
-                originalUpdate();
-                drawParticles();
+        function loseLife() {
+            lives--;
+            livesEl.innerText = lives;
+            if (lives <= 0) {
+                gameOver();
             }
         }
 
         function gameOver() {
             gameActive = false;
-            statusText.innerText = "Oi! En sint sky tok deg! ☁️";
+            clearTimeout(spawnTimer);
+            
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('starCatcherHighscore', highscore);
+                highscoreEl.innerText = highscore;
+                statusText.innerText = "NY REKORD! 🎉";
+            } else {
+                statusText.innerText = "Spillet er over! 🌸";
+            }
+            
             finalScoreEl.innerText = `Du fanget ${score} stjerner!`;
             overlay.style.display = 'block';
         }
 
         function resetGame() {
+            // Clear existing timers
+            clearTimeout(spawnTimer);
+            
             score = 0;
+            lives = 3;
             scoreEl.innerText = '0';
+            livesEl.innerText = '3';
+            
             objects = [];
             particles = [];
             gameActive = true;
             overlay.style.display = 'none';
-            updateWithParticles();
+            
+            // Restart spawning and game loop
+            spawnObject();
+            requestAnimationFrame(update);
         }
 
         spawnObject();
-        updateWithParticles();
+        requestAnimationFrame(update);
     </script>
 </body>
 </html>
