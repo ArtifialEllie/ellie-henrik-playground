@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Star Catcher 🌟</title>
+    <style>
+        :root {
+            --bg-color: #fce4ec;
+            --player-color: #ff80ab;
+            --star-color: #ffd700;
+            --cloud-color: #b0bec5;
+            --text-color: #880e4f;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+        }
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, #e1f5fe, #fce4ec);
+            cursor: none;
+        }
+        #overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 30px;
+            border: 5px solid var(--player-color);
+            text-align: center;
+            z-index: 20;
+            display: none;
+        }
+        .btn {
+            background-color: var(--player-color);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body>
+    <div id="game-ui">Stjerner: <span id="score">0</span></div>
+    
+    <div id="overlay">
+        <h1 id="status-text">Spillet er over! 🌸</h1>
+        <p id="final-score">Du fanget 0 stjerner!</p>
+        <button class="btn" onclick="resetGame()">Prøv igjen! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const overlay = document.getElementById('overlay');
+        const statusText = document.getElementById('status-text');
+        const finalScoreEl = document.getElementById('final-score');
+
+        let score = 0;
+        let gameActive = true;
+        let canvasWidth, canvasHeight;
+
+        const player = {
+            x: 0,
+            y: 0,
+            width: 60,
+            height: 60,
+            emoji: '🐱'
+        };
+
+        let objects = [];
+        const objectTypes = {
+            STAR: { emoji: '🌟', points: 1, speed: 2, color: 'gold' },
+            CLOUD: { emoji: '☁️', points: -5, speed: 3, color: 'grey' }
+        };
+
+        function resize() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            player.y = canvasHeight - 80;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+            player.x = e.clientX - player.width / 2;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            player.x = e.touches[0].clientX - player.width / 2;
+            e.preventDefault();
+        }, { passive: false });
+
+        function spawnObject() {
+            if (!gameActive) return;
+            
+            const isStar = Math.random() > 0.2;
+            const type = isStar ? objectTypes.STAR : objectTypes.CLOUD;
+            
+            objects.push({
+                x: Math.random() * (canvasWidth - 40),
+                y: -50,
+                width: 40,
+                height: 40,
+                type: type,
+                speed: type.speed + (score * 0.1)
+            });
+            
+            setTimeout(spawnObject, Math.max(300, 1000 - (score * 10)));
+        }
+
+        function drawPlayer() {
+            ctx.font = '50px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(player.emoji, player.x + player.width / 2, player.y + 50);
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            drawPlayer();
+
+            for (let i = objects.length - 1; i >= 0; i--) {
+                const obj = objects[i];
+                obj.y += obj.speed;
+
+                ctx.font = '40px Arial';
+                ctx.fillText(obj.type.emoji, obj.x + 20, obj.y + 30);
+
+                // Collision check
+                if (obj.y + 30 > player.y && 
+                    obj.y < player.y + player.height &&
+                    obj.x + 40 > player.x && 
+                    obj.x < player.x + player.width) {
+                    
+                    if (obj.type === objectTypes.STAR) {
+                        score++;
+                        scoreEl.innerText = score;
+                        createParticles(obj.x + 20, obj.y + 20, 'gold');
+                    } else {
+                        gameOver();
+                    }
+                    objects.splice(i, 1);
+                    continue;
+                }
+
+                if (obj.y > canvasHeight) {
+                    objects.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        let particles = [];
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x, y, 
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 1.0,
+                    color
+                });
+            }
+        }
+
+        function drawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // Overriding update slightly to include particles
+        const originalUpdate = update;
+        function updateWithParticles() {
+            if (gameActive) {
+                originalUpdate();
+                drawParticles();
+            }
+        }
+
+        function gameOver() {
+            gameActive = false;
+            statusText.innerText = "Oi! En sint sky tok deg! ☁️";
+            finalScoreEl.innerText = `Du fanget ${score} stjerner!`;
+            overlay.style.display = 'block';
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreEl.innerText = '0';
+            objects = [];
+            particles = [];
+            gameActive = true;
+            overlay.style.display = 'none';
+            updateWithParticles();
+        }
+
+        spawnObject();
+        updateWithParticles();
+    </script>
+</body>
+</html>
