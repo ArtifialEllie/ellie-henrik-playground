@@ -71,6 +71,20 @@
             background-color: #f06292;
         }
         h1 { color: var(--primary-pink); }
+        #perfect-text {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--accent-gold);
+            text-shadow: 3px 3px white;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.5s;
+            z-index: 15;
+        }
     </style>
 </head>
 <body>
@@ -78,6 +92,7 @@
         <div>Sabel: <span id="score">0</span> 🥞</div>
         <div>Beste: <span id="highscore">0</span> 🏆</div>
     </div>
+    <div id="perfect-text">PERFEKT! ✨</div>
     
     <div id="overlay">
         <h1 id="status-text">Oi! Det falt! 🌸</h1>
@@ -95,11 +110,13 @@
         const overlay = document.getElementById('overlay');
         const statusText = document.getElementById('status-text');
         const finalScoreEl = document.getElementById('final-score');
+        const perfectText = document.getElementById('perfect-text');
 
         let score = 0;
         let highscore = localStorage.getItem('pancakeFlipHighscore') || 0;
         let gameActive = true;
         let canvasWidth, canvasHeight;
+        let shakeAmount = 0;
         
         highscoreEl.innerText = highscore;
 
@@ -120,10 +137,10 @@
         let particles = [];
 
         class Pancake {
-            constructor(x, y, color, topping = null) {
+            constructor(x, y, color, topping = null, width = 120) {
                 this.x = x;
                 this.y = y;
-                this.width = 120;
+                this.width = width;
                 this.height = 20;
                 this.color = color;
                 this.topping = topping;
@@ -132,23 +149,30 @@
                 this.rotation = 0;
                 this.vr = 0;
                 this.isFlipping = false;
+                this.scaleY = 1; 
+                this.targetScaleY = 1;
+                this.tiltOffset = 0; // The tilt this pancake adds to the stack
             }
 
             update() {
                 if (this.isFlipping) {
                     this.y += this.vy;
                     this.x += this.vx;
-                    this.vy += 0.4; // Gravity
+                    this.vy += 0.4;
                     this.rotation += this.vr;
+                }
+                this.scaleY += (this.targetScaleY - this.scaleY) * 0.2;
+                if (Math.abs(this.scaleY - this.targetScaleY) < 0.01) {
+                    this.scaleY = this.targetScaleY;
                 }
             }
 
-            draw() {
+            draw(cumulativeTilt) {
                 ctx.save();
                 ctx.translate(this.x + this.width/2, this.y + this.height/2);
-                ctx.rotate(this.rotation);
+                ctx.rotate(cumulativeTilt + this.rotation);
+                ctx.scale(1, this.scaleY);
                 
-                // Pancake body
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
                 ctx.ellipse(0, 0, this.width/2, this.height/2, 0, 0, Math.PI * 2);
@@ -157,13 +181,11 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // Topping
                 if (this.topping) {
                     ctx.font = '20px Arial';
                     ctx.textAlign = 'center';
                     ctx.fillText(this.topping, 0, -this.height/2 + 5);
                 }
-                
                 ctx.restore();
             }
         }
@@ -196,7 +218,8 @@
             stack = [];
             const startY = canvasHeight - 50;
             const startX = canvasWidth / 2 - 60;
-            stack.push(new Pancake(startX, startY, pancakeColors[0]));
+            const base = new Pancake(startX, startY, pancakeColors[0]);
+            stack.push(base);
             spawnActivePancake();
         }
 
@@ -204,13 +227,14 @@
             const last = stack[stack.length - 1];
             const color = pancakeColors[Math.floor(Math.random() * pancakeColors.length)];
             const topping = toppings[Math.floor(Math.random() * toppings.length)];
-            activePancake = new Pancake(last.x, last.y - 20, color, topping);
+            const newWidth = Math.max(60, 120 - (stack.length * 2));
+            
+            activePancake = new Pancake(last.x, last.y - 20, color, topping, newWidth);
             activePancake.isFlipping = false;
         }
 
         function flipPancake() {
             if (!gameActive || activePancake.isFlipping) return;
-
             activePancake.isFlipping = true;
             activePancake.vy = -12 - Math.random() * 4;
             activePancake.vx = (Math.random() - 0.5) * 2;
@@ -222,42 +246,56 @@
 
             const last = stack[stack.length - 1];
             if (activePancake.vy > 0 && activePancake.y >= last.y - 20) {
-                // Landing check
                 const overlap = Math.min(activePancake.x + activePancake.width, last.x + last.width) - 
                                 Math.max(activePancake.x, last.x);
                 
-                if (overlap > 40) {
-                    // Success!
+                if (overlap > 30) {
                     activePancake.isFlipping = false;
                     activePancake.vy = 0;
                     activePancake.vx = 0;
                     activePancake.rotation = 0;
                     
-                    // Snap to stack center-ish
-                    activePancake.x = last.x + (overlap - activePancake.width)/2; // simplistic centering
+                    const centerDiff = (activePancake.x + activePancake.width/2) - (last.x + last.width/2);
+                    activePancake.tiltOffset = centerDiff * 0.002;
                     
+                    if (Math.abs(centerDiff) < 10) {
+                        showPerfect();
+                        score += 2;
+                    } else {
+                        score++;
+                    }
+
+                    activePancake.targetScaleY = 0.7;
+                    setTimeout(() => activePancake.targetScaleY = 1, 100);
+
                     stack.push(activePancake);
-                    score++;
                     scoreEl.innerText = score;
-                    
                     createPopEffect(activePancake.x + activePancake.width/2, activePancake.y, activePancake.color);
-                    
                     spawnActivePancake();
                 } else {
-                    // Miss!
                     gameOver();
                 }
             }
         }
 
+        function showPerfect() {
+            perfectText.style.opacity = '1';
+            perfectText.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            setTimeout(() => {
+                perfectText.style.opacity = '0';
+                perfectText.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 600);
+        }
+
         function createPopEffect(x, y, color) {
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 15; i++) {
                 particles.push(new Particle(x, y, color));
             }
         }
 
         function gameOver() {
             gameActive = false;
+            shakeAmount = 20;
             if (score > highscore) {
                 highscore = score;
                 localStorage.setItem('pancakeFlipHighscore', highscore);
@@ -282,11 +320,25 @@
         function update() {
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-            stack.forEach(p => p.draw());
+            if (shakeAmount > 0) {
+                ctx.save();
+                ctx.translate((Math.random()-0.5)*shakeAmount, (Math.random()-0.5)*shakeAmount);
+                shakeAmount *= 0.9;
+                if (shakeAmount < 0.1) shakeAmount = 0;
+            }
+
+            let currentTilt = 0;
+            stack.forEach((p) => {
+                currentTilt += p.tiltOffset;
+                p.draw(currentTilt);
+            });
             
             if (activePancake) {
                 activePancake.update();
-                activePancake.draw();
+                // Use the tilt of the top pancake for the active one too
+                let topTilt = 0;
+                stack.forEach(p => topTilt += p.tiltOffset);
+                activePancake.draw(topTilt);
                 checkLanding();
             }
 
@@ -296,6 +348,7 @@
                 if (particles[i].life <= 0) particles.splice(i, 1);
             }
 
+            if (shakeAmount > 0) ctx.restore();
             requestAnimationFrame(update);
         }
 
