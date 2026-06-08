@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Prism Pop! 💎</title>
+    <style>
+        :root {
+            --bg: #fffafa;
+            --primary: #ffb7b2;
+            --secondary: #b5ead7;
+            --accent: #c7ceea;
+            --text: #5d5d5d;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+            width: 100%;
+        }
+        .stat-box {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 3px solid var(--primary);
+            display: inline-block;
+            margin: 0 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        #target-display {
+            margin-top: 20px;
+            font-size: 1.8rem;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 4px solid var(--accent);
+            display: inline-block;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #target-color-box {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-left: 10px;
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #game-canvas {
+            display: block;
+            cursor: crosshair;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+        }
+        .overlay h1 {
+            color: var(--primary);
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .overlay p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.5rem;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 183, 178, 0.4);
+        }
+        .btn:hover {
+            transform: scale(1.1);
+            background-color: #ff9aa2;
+        }
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            animation: fly 0.6s ease-out forwards;
+            font-size: 1.2rem;
+        }
+        @keyframes fly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-ui">
+        <div class="stat-box">Score: <span id="score">0</span></div>
+        <div class="stat-box">Time: <span id="timer">60</span>s</div>
+        <br>
+        <div id="target-display">
+            Pop the <span id="target-name">...</span> prisms! <div id="target-color-box"></div>
+        </div>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <div id="start-overlay" class="overlay">
+        <h1>Pastel Prism Pop! 💎</h1>
+        <p>Welcome to Ellie's magical prism garden! Pop only the prisms that match the target color to get points. Be careful not to pop the wrong ones! ✨</p>
+        <button class="btn" onclick="startGame()">Start Popping! 🌸</button>
+    </div>
+
+    <div id="end-overlay" class="overlay" style="display: none;">
+        <h1>Game Over! ✨</h1>
+        <p>You popped so many pretty prisms! Your final score is:</p>
+        <div class="stat-box" style="font-size: 3rem; margin-bottom: 30px;"><span id="final-score">0</span></div>
+        <button class="btn" onclick="location.reload()">Play Again! 🎀</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        const targetNameEl = document.getElementById('target-name');
+        const targetColorBox = document.getElementById('target-color-box');
+        const startOverlay = document.getElementById('start-overlay');
+        const endOverlay = document.getElementById('end-overlay');
+        const finalScoreEl = document.getElementById('final-score');
+
+        const colors = [
+            { name: 'Pink', value: '#FFB7B2' },
+            { name: 'Peach', value: '#FFDAC1' },
+            { name: 'Lime', value: '#E2F0CB' },
+            { name: 'Mint', value: '#B5EAD7' },
+            { name: 'Lavender', value: '#C7CEEA' }
+        ];
+
+        let score = 0;
+        let timeLeft = 60;
+        let targetColor = colors[0];
+        let prisms = [];
+        let gameActive = false;
+        let lastPrismTime = 0;
+        let lastColorChangeTime = 0;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Prism {
+            constructor() {
+                this.radius = Math.random() * 20 + 30;
+                this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+                this.y = canvas.height + this.radius;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.speed = Math.random() * 2 + 1.5;
+                this.vx = Math.sin(Math.random() * Math.PI * 2) * 0.5;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+            }
+
+            update() {
+                this.y -= this.speed;
+                this.x += this.vx;
+                this.rotation += this.rotationSpeed;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                // Draw diamond/prism shape
+                ctx.beginPath();
+                ctx.moveTo(0, -this.radius);
+                ctx.lineTo(this.radius * 0.7, 0);
+                ctx.lineTo(0, this.radius);
+                ctx.lineTo(-this.radius * 0.7, 0);
+                ctx.closePath();
+
+                ctx.fillStyle = this.color.value;
+                ctx.fill();
+                
+                // Add some "shine"
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        function changeTargetColor() {
+            const newIdx = Math.floor(Math.random() * colors.length);
+            targetColor = colors[newIdx];
+            targetNameEl.innerText = targetColor.name;
+            targetColorBox.style.backgroundColor = targetColor.value;
+            
+            // Little pop animation for the target display
+            const display = document.getElementById('target-display');
+            display.style.transform = 'scale(1.2)';
+            setTimeout(() => display.style.transform = 'scale(1)', 200);
+        }
+
+        function createSparkle(x, y, color) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.innerText = '✨';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.style.color = color;
+            
+            const tx = (Math.random() - 0.5) * 100;
+            const ty = (Math.random() - 0.5) * 100;
+            sparkle.style.setProperty('--tx', `${tx}px`);
+            sparkle.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(sparkle);
+            setTimeout(() => sparkle.remove(), 600);
+        }
+
+        function spawnPrism(timestamp) {
+            if (timestamp - lastPrismTime > 800) {
+                prisms.push(new Prism());
+                lastPrismTime = timestamp;
+            }
+        }
+
+        function handleInput(e) {
+            if (!gameActive) return;
+            
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            if (!clientX || !clientY) return;
+
+            for (let i = prisms.length - 1; i >= 0; i--) {
+                const p = prisms[i];
+                const dist = Math.hypot(clientX - p.x, clientY - p.y);
+                if (dist < p.radius) {
+                    if (p.color.value === targetColor.value) {
+                        score += 10;
+                        createSparkle(p.x, p.y, p.color.value);
+                    } else {
+                        score = Math.max(0, score - 5);
+                        // Simple shake effect would go here
+                    }
+                    scoreEl.innerText = score;
+                    prisms.splice(i, 1);
+                    return;
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleInput);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleInput(e);
+        }, { passive: false });
+
+        function startGame() {
+            startOverlay.style.display = 'none';
+            gameActive = true;
+            score = 0;
+            timeLeft = 60;
+            prisms = [];
+            changeTargetColor();
+            requestAnimationFrame(gameLoop);
+            
+            const timerInterval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameActive = false;
+            endOverlay.style.display = 'flex';
+            finalScoreEl.innerText = score;
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (timestamp - lastColorChangeTime > 7000) {
+                changeTargetColor();
+                lastColorChangeTime = timestamp;
+            }
+
+            spawnPrism(timestamp);
+
+            for (let i = prisms.length - 1; i >= 0; i--) {
+                const p = prisms[i];
+                p.update();
+                p.draw();
+                if (p.y < -p.radius) {
+                    prisms.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
