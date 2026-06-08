@@ -251,18 +251,24 @@
             { emoji: '🌿', name: 'Minty Basil' },
             { emoji: '🍅', name: 'Ruby Tomato' },
             { emoji: '🧀', name: 'Golden Cheese' },
+            { emoji: '🍬', name: 'Candy Cane' },
+            { emoji: '🌈', name: 'Rainbow Sprinkle' },
+            { emoji: '🧁', name: 'Cupcake Crumbs' },
+            { emoji: '🍓', name: 'Strawberry Slice' },
             { emoji: '✨', name: 'Magic Sparkle', bonus: true }
         ];
 
         let score = 0;
         let timeLeft = 60;
         let currentRequest = null;
+        let requestQuantity = 1;
         let gameActive = false;
         let spawnTimer = null;
         let countdownTimer = null;
         let combo = 0;
         let toppingsCount = 0;
         const TOPPINGS_PER_PIZZA = 6;
+        let isRainbowMode = false;
 
         const scoreEl = document.getElementById('score');
         const timerEl = document.getElementById('timer');
@@ -303,7 +309,8 @@
             // Ensure we don't request the bonus magic sparkle too often
             let filtered = ingredients.filter(i => !i.bonus);
             currentRequest = filtered[Math.floor(Math.random() * filtered.length)];
-            requestEl.innerText = `Need: ${currentRequest.emoji} ${currentRequest.name}!`;
+            requestQuantity = Math.floor(Math.random() * 3) + 1;
+            requestEl.innerText = `Need: ${requestQuantity}x ${currentRequest.emoji} ${currentRequest.name}!`;
             requestEl.style.borderColor = 'var(--primary)';
         }
 
@@ -338,7 +345,7 @@
             el.onclick = () => {
                 if (!gameActive) return;
                 
-                if (ing.emoji === currentRequest.emoji || ing.bonus) {
+                if (isRainbowMode || ing.emoji === currentRequest.emoji || ing.bonus) {
                     handleCorrect(ing, el);
                 } else {
                     handleWrong(el);
@@ -353,12 +360,17 @@
                 showPop('MAGIC! 🌟', el.offsetLeft, el.offsetTop, 'gold');
                 completePizza();
             } else {
+                if (!isRainbowMode) {
+                    requestQuantity--;
+                    if (requestQuantity <= 0) {
+                        setRequest();
+                    }
+                }
                 combo++;
                 score += 10 + (combo * 2);
                 showPop(`+${10 + (combo * 2)}! ✨`, el.offsetLeft, el.offsetTop, 'var(--primary)');
                 addToPizza(ing.emoji);
                 updateComboUI();
-                setRequest();
             }
             
             scoreEl.innerText = score;
@@ -396,10 +408,15 @@
             
             toppingsLayer.appendChild(topping);
             
+            // Add some sparkles around the topping
+            for(let i=0; i<3; i++) {
+                showPop('✨', x + (Math.random()-0.5)*40, y + (Math.random()-0.5)*40, 'white');
+            }
+            
             // Juice: Pizza pulses when topping is added
             pizzaArea.style.transform = 'translate(-50%, -50%) scale(1.1)';
             setTimeout(() => pizzaArea.style.transform = 'translate(-50%, -50%) scale(1)', 100);
-
++
             if (toppingsCount >= TOPPINGS_PER_PIZZA) {
                 completePizza();
             }
@@ -415,6 +432,11 @@
             pizzaArea.style.transition = 'all 0.5s ease-in';
             pizzaArea.style.transform = 'translate(-50%, -200%) scale(0) rotate(360deg)';
             
+            // Chance to trigger Rainbow Mode for the next pizza
+            if (Math.random() < 0.2) {
+                triggerRainbowMode();
+            }
+            
             setTimeout(() => {
                 toppingsLayer.innerHTML = '';
                 toppingsCount = 0;
@@ -426,6 +448,18 @@
             }, 500);
         }
 
+            function triggerRainbowMode() {
+            isRainbowMode = true;
+            requestEl.innerText = "🌈 RAINBOW FRENZY! 🌈";
+            requestEl.style.borderColor = 'var(--accent)';
+            requestEl.style.backgroundColor = 'var(--accent)';
+            
+            setTimeout(() => {
+                isRainbowMode = false;
+                setRequest();
+            }, 5000);
+        }
+    
         function updateComboUI() {
             if (combo > 1) {
                 comboEl.innerText = `Combo x${combo}!`;
