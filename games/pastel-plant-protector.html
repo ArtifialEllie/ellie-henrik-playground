@@ -263,8 +263,8 @@
             { emoji: '🌼', value: 10 },
             { emoji: '🌹', value: 20 },
             { emoji: '🌺', value: 15 }
-        ];
-        const WEEDS = ['🌵', '🥀', '🍂', '🍄'];
+        ]
+        const WEEDS = ['🌵', '🥀', '🍂', '🍄', '🕷️', '🕸️'];
         const POWERUPS = ['🌟'];
         const PARTICLES = ['💧', '✨', '💖', '☁️'];
 
@@ -400,7 +400,7 @@
                     obj.remove();
                 } else if (isPlant) {
                     combo++;
-                    const points = plantData.value * (1 + Math.floor(combo / 5));
+                    const points = plantData.value * (1 + Math.floor(combo / 3));
                     score += points;
                     scoreEl.textContent = score;
                     updateCombo();
@@ -422,7 +422,7 @@
                     if (lives <= 0) {
                         endGame();
                     }
-                    setTimeout(() => obj.remove(), 300);
+                    setTimeout(() => obj.remove(), 200);
                 }
             };
 
