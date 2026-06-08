@@ -41,7 +41,7 @@
             margin: 0 10px;
             font-size: 1.5rem;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 0 var(--primary);
         }
         #target-display {
             margin-top: 20px;
@@ -67,6 +67,16 @@
         #game-canvas {
             display: block;
             cursor: crosshair;
+            transition: transform 0.1s;
+        }
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
         .overlay {
             position: fixed;
@@ -81,6 +91,7 @@
             justify-content: center;
             z-index: 100;
             text-align: center;
+            backdrop-filter: blur(4px);
         }
         .overlay h1 {
             color: var(--primary);
@@ -114,6 +125,7 @@
             pointer-events: none;
             animation: fly 0.6s ease-out forwards;
             font-size: 1.2rem;
+            z-index: 20;
         }
         @keyframes fly {
             0% { transform: translate(0, 0) scale(1); opacity: 1; }
@@ -125,6 +137,7 @@
 
     <div id="game-ui">
         <div class="stat-box">Score: <span id="score">0</span></div>
+        <div class="stat-box">High Score: <span id="high-score">0</span></div>
         <div class="stat-box">Time: <span id="timer">60</span>s</div>
         <br>
         <div id="target-display">
@@ -151,6 +164,7 @@
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('high-score');
         const timerEl = document.getElementById('timer');
         const targetNameEl = document.getElementById('target-name');
         const targetColorBox = document.getElementById('target-color-box');
@@ -173,6 +187,21 @@
         let gameActive = false;
         let lastPrismTime = 0;
         let lastColorChangeTime = 0;
+
+        // Audio Context
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -205,7 +234,6 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 
-                // Draw diamond/prism shape
                 ctx.beginPath();
                 ctx.moveTo(0, -this.radius);
                 ctx.lineTo(this.radius * 0.7, 0);
@@ -216,7 +244,6 @@
                 ctx.fillStyle = this.color.value;
                 ctx.fill();
                 
-                // Add some "shine"
                 ctx.strokeStyle = 'rgba(255,255,255,0.8)';
                 ctx.lineWidth = 3;
                 ctx.stroke();
@@ -231,7 +258,6 @@
             targetNameEl.innerText = targetColor.name;
             targetColorBox.style.backgroundColor = targetColor.value;
             
-            // Little pop animation for the target display
             const display = document.getElementById('target-display');
             display.style.transform = 'scale(1.2)';
             setTimeout(() => display.style.transform = 'scale(1)', 200);
@@ -276,9 +302,12 @@
                     if (p.color.value === targetColor.value) {
                         score += 10;
                         createSparkle(p.x, p.y, p.color.value);
+                        playSound(400 + Math.random() * 200, 'sine', 0.2);
                     } else {
                         score = Math.max(0, score - 5);
-                        // Simple shake effect would go here
+                        playSound(150 + Math.random() * 50, 'sawtooth', 0.3);
+                        canvas.classList.add('shake');
+                        setTimeout(() => canvas.classList.remove('shake'), 400);
                     }
                     scoreEl.innerText = score;
                     prisms.splice(i, 1);
@@ -293,7 +322,15 @@
             handleInput(e);
         }, { passive: false });
 
+        function updateHighScore() {
+            const saved = localStorage.getItem('ellie-prism-highscore') || 0;
+            highScoreEl.textContent = saved;
+        }
+
         function startGame() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
             startOverlay.style.display = 'none';
             gameActive = true;
             score = 0;
@@ -319,6 +356,12 @@
             gameActive = false;
             endOverlay.style.display = 'flex';
             finalScoreEl.innerText = score;
+            
+            const saved = localStorage.getItem('ellie-prism-highscore') || 0;
+            if (score > saved) {
+                localStorage.setItem('ellie-prism-highscore', score);
+            }
+            updateHighScore();
         }
 
         function gameLoop(timestamp) {
@@ -344,6 +387,8 @@
 
             requestAnimationFrame(gameLoop);
         }
+
+        updateHighScore();
     </script>
 </body>
 </html>
