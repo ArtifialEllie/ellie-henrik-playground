@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bokstav- og Lyd-eventyret 🦄</title>
+    <title>Bokstav- og Ord-eventyret 🦄</title>
     <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
@@ -60,7 +60,7 @@
         }
 
         .letter-btn {
-            font-size: 3rem;
+            font-size: 2.5rem;
             padding: 20px;
             border: none;
             border-radius: 25px;
@@ -167,12 +167,12 @@
 <body>
 
     <div id="start-screen">
-        <h1>Bokstav- og Lyd-eventyret 🦄</h1>
-        <p style="font-size: 1.5rem;">Klar for å lære lyder?</p>
+        <h1>Bokstav- og Ord-eventyret 🦄</h1>
+        <p style="font-size: 1.5rem;">Klar for å lære å lese?</p>
         <button id="start-btn">START SPILLET! 🌟</button>
     </div>
 
-    <h1>Bokstav- og Lyd-eventyret 🦄</h1>
+    <h1>Bokstav- og Ord-eventyret 🦄</h1>
     
     <div id="game-container">
         <div id="level-up-banner">NIVÅ OPPHØYD! 🎉</div>
@@ -183,7 +183,7 @@
         </div>
 
         <button class="repeat-btn" onclick="speakPrompt()">🔊</button>
-        <div id="prompt">Hvilken lyd hører du?</div>
+        <div id="prompt">Hvilken bokstav er dette?</div>
         
         <div id="letter-grid"></div>
 
@@ -225,27 +225,43 @@
                 }
             },
             2: {
-                name: "Lure Lyder",
-                promptText: "Hvilken lyd er dette?",
-                items: {
-                    'Kj': { name: 'Kjeks', emoji: '🍪', audioHint: 'lyden i starten av kjeks' },
-                    'Skj': { name: 'Skjorte', emoji: '👕', audioHint: 'lyden i starten av skjorte' },
-                    'Sj': { name: 'Sjø', emoji: '🌊', audioHint: 'lyden i starten av sjokolade' },
-                    'Ng': { name: 'Ring', emoji: '💍', audioHint: 'lyden i slutten av ring' },
-                    'Øy': { name: 'Øy', emoji: '🏝️', audioHint: 'lyden i starten av øy' },
-                    'Hj': { name: 'Hjerte', emoji: '❤️', audioHint: 'lyden i starten av hjerte' },
-                }
-            },
-            3: {
                 name: "Ord-utfordring",
                 promptText: "Hvilket ord er dette?",
                 items: {
-                    'Sol': { name: 'Sol', emoji: '☀️' },
+                    // H-ord
                     'Hus': { name: 'Hus', emoji: '🏠' },
+                    'Hatt': { name: 'Hatt', emoji: '🎩' },
+                    'Hest': { name: 'Hest', emoji: '🐴' },
+                    'Hund': { name: 'Hund', emoji: '🐶' },
+                    // S-ord
+                    'Sol': { name: 'Sol', emoji: '☀️' },
+                    'Susi': { name: 'Susi', emoji: '👧' },
+                    'Sel': { name: 'Sel', emoji: '🦭' },
+                    'Sot': { name: 'Sot', emoji: '💨' },
+                    // B-ord
                     'Bil': { name: 'Bil', emoji: '🚗' },
-                    'Is': { name: 'Is', emoji: '🍦' },
                     'Ball': { name: 'Ball', emoji: '⚽' },
+                    'Båt': { name: 'Båt', emoji: '⛵' },
+                    'Bok': { name: 'Bok', emoji: '📚' },
+                    // K-ord
                     'Kake': { name: 'Kake', emoji: '🍰' },
+                    'Katt': { name: 'Katt', emoji: '🐱' },
+                    'Kopp': { name: 'Kopp', emoji: '☕' },
+                    'Kose': { name: 'Kose', emoji: '🧸' },
+                    // I-ord
+                    'Is': { name: 'Is', emoji: '🍦' },
+                    'Igle': { name: 'Igle', emoji: '🐛' },
+                    'Ild': { name: 'Ild', emoji: '🔥' },
+                    // P-ord
+                    'Pape': { name: 'Pape', emoji: '🦜' },
+                    'Panda': { name: 'Panda', emoji: '🐼' },
+                    'Pipe': { name: 'Pipe', emoji: '🎷' },
+                    'Pære': { name: 'Pære', emoji: '🍐' },
+                    // M-ord
+                    'Mus': { name: 'Mus', emoji: '🐭' },
+                    'Mamma': { name: 'Mamma', emoji: '👩' },
+                    'Måne': { name: 'Måne', emoji: '🌙' },
+                    'Munn': { name: 'Munn', emoji: '👄' },
                 }
             }
         };
@@ -273,17 +289,7 @@
 
         function speakPrompt() {
             const level = levelData[currentLevel];
-            const data = level.items[currentItem];
-            
-            let audioText = level.promptText;
-            
-            if (data.audioHint) {
-                audioText += ` ${data.audioHint}`;
-            } else {
-                audioText += ` ${currentItem}`;
-            }
-            
-            speak(audioText);
+            speak(`${level.promptText} ${currentItem}`);
         }
 
         function nextRound() {
@@ -303,9 +309,33 @@
             lastItem = currentItem;
             
             let options = [currentItem];
-            while(options.length < 3) {
-                let randomK = keys[Math.floor(Math.random() * keys.length)];
-                if(!options.includes(randomK)) options.push(randomK);
+            
+            if (currentLevel === 2) {
+                // Word level: find words starting with the same letter to prevent guessing
+                const firstLetter = currentItem[0].toUpperCase();
+                const similarWords = keys.filter(k => k[0].toUpperCase() === firstLetter && k !== currentItem);
+                
+                // Try to fill distractors with similar-starting words
+                while (options.length < 3 && similarWords.length > 0) {
+                    const randomSimilar = similarWords[Math.floor(Math.random() * similarWords.length)];
+                    if (!options.includes(randomSimilar)) {
+                        options.push(randomSimilar);
+                    }
+                    // Remove from list to avoid duplicates in the same round
+                    similarWords.splice(similarWords.indexOf(randomSimilar), 1);
+                }
+                
+                // If we still need more options, pick random words
+                while (options.length < 3) {
+                    const randomWord = keys[Math.floor(Math.random() * keys.length)];
+                    if (!options.includes(randomWord)) options.push(randomWord);
+                }
+            } else {
+                // Letter level: just random letters
+                while(options.length < 3) {
+                    let randomK = keys[Math.floor(Math.random() * keys.length)];
+                    if(!options.includes(randomK)) options.push(randomK);
+                }
             }
             
             options.sort(() => Math.random() - 0.5);
@@ -335,7 +365,7 @@
                 
                 updateStatus();
                 
-                if(streak >= 5 && currentLevel < 3) {
+                if(streak >= 5 && currentLevel < 2) {
                     levelUp();
                 }
 
