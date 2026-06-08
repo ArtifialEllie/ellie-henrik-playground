@@ -13,6 +13,8 @@
             --text: #5d5d5d;
             --success: #c1f0c1;
             --error: #ffcccb;
+            --pizza-crust: #f4d35e;
+            --pizza-cheese: #fffae6;
         }
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
@@ -29,7 +31,13 @@
             position: relative;
             width: 100vw;
             height: 100vh;
-            background: radial-gradient(circle, #fffafa 0%, #ffe4e1 100%);
+            background: 
+                linear-gradient(45deg, #fffafa 25%, transparent 25%), 
+                linear-gradient(-45deg, #fffafa 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #fffafa 75%), 
+                linear-gradient(-45deg, transparent 75%, #fffafa 75%);
+            background-size: 100px 100px;
+            background-color: #ffe4e1;
             cursor: crosshair;
         }
         #ui {
@@ -61,6 +69,7 @@
             font-weight: bold;
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             animation: bounce 2s infinite;
+            z-index: 11;
         }
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
@@ -73,6 +82,7 @@
             transition: transform 0.1s;
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
             user-select: none;
+            z-index: 5;
         }
         .ingredient:hover {
             transform: scale(1.2);
@@ -102,6 +112,7 @@
             align-items: center;
             z-index: 100;
             text-align: center;
+            backdrop-filter: blur(5px);
         }
         .btn {
             background-color: var(--primary);
@@ -126,6 +137,76 @@
             margin-bottom: 20px;
         }
         .hidden { display: none !important; }
+        
+        /* Pizza Styling */
+        #pizza-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .pizza-base {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: var(--pizza-crust);
+            border-radius: 50%;
+            border: 10px solid #e6c24d;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .pizza-cheese {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            background-color: var(--pizza-cheese);
+            border-radius: 50%;
+            border: 2px solid #f0e68c;
+        }
+        .pizza-topping {
+            position: absolute;
+            font-size: 2.5rem;
+            animation: toppingDrop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            z-index: 6;
+        }
+        @keyframes toppingDrop {
+            0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        #combo-counter {
+            position: absolute;
+            top: 100px;
+            right: 50px;
+            font-size: 3rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-shadow: 2px 2px white;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 15;
+        }
+        .combo-pop {
+            animation: comboPop 0.3s ease-out;
+        }
+        @keyframes comboPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
     </style>
 </head>
 <body>
@@ -137,11 +218,20 @@
             <div class="stat-box">Time: <span id="timer">60</span>s</div>
         </div>
 
+        <div id="combo-counter">Combo x0</div>
+
+        <div id="pizza-area">
+            <div class="pizza-base"></div>
+            <div class="pizza-cheese"></div>
+            <div id="toppings-layer"></div>
+        </div>
+
         <div id="start-screen">
             <h1>Ellie's Pastel Pizza Party! 🍕✨</h1>
             <p style="font-size: 1.5rem; max-width: 600px; margin-bottom: 30px;">
                 Welcome to the most whimsical pizzeria! 🌸<br>
-                Click the ingredients that match the request to make a magical pizza!
+                Click the ingredients that match the request to top your pizza!<br>
+                Fill the pizza to serve it and get bonus points! ✨
             </p>
             <button class="btn" onclick="startGame()">Let's Cook! 👩‍🍳</button>
         </div>
@@ -160,7 +250,8 @@
             { emoji: '🍍', name: 'Yellow Pineapple' },
             { emoji: '🌿', name: 'Minty Basil' },
             { emoji: '🍅', name: 'Ruby Tomato' },
-            { emoji: '🧀', name: 'Golden Cheese' }
+            { emoji: '🧀', name: 'Golden Cheese' },
+            { emoji: '✨', name: 'Magic Sparkle', bonus: true }
         ];
 
         let score = 0;
@@ -169,18 +260,49 @@
         let gameActive = false;
         let spawnTimer = null;
         let countdownTimer = null;
+        let combo = 0;
+        let toppingsCount = 0;
+        const TOPPINGS_PER_PIZZA = 6;
 
         const scoreEl = document.getElementById('score');
         const timerEl = document.getElementById('timer');
         const requestEl = document.getElementById('request-box');
         const gameContainer = document.getElementById('game-container');
+        const pizzaArea = document.getElementById('pizza-area');
+        const toppingsLayer = document.getElementById('toppings-layer');
+        const comboEl = document.getElementById('combo-counter');
+
+        // Audio Setup
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type, duration, vol = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playCorrectSound() { playSound(500 + Math.random() * 200, 'sine', 0.2); }
+        function playWrongSound() { playSound(150, 'sawtooth', 0.3); }
+        function playPizzaCompleteSound() {
+            playSound(600, 'sine', 0.1);
+            setTimeout(() => playSound(800, 'sine', 0.1), 100);
+            setTimeout(() => playSound(1000, 'sine', 0.3), 200);
+        }
 
         function getRandomIngredient() {
             return ingredients[Math.floor(Math.random() * ingredients.length)];
         }
 
         function setRequest() {
-            currentRequest = getRandomIngredient();
+            // Ensure we don't request the bonus magic sparkle too often
+            let filtered = ingredients.filter(i => !i.bonus);
+            currentRequest = filtered[Math.floor(Math.random() * filtered.length)];
             requestEl.innerText = `Need: ${currentRequest.emoji} ${currentRequest.name}!`;
             requestEl.style.borderColor = 'var(--primary)';
         }
@@ -193,14 +315,12 @@
             el.className = 'ingredient';
             el.innerText = ing.emoji;
             
-            // Random starting position (off-screen)
-            const startX = Math.random() * window.innerWidth;
+            const startX = Math.random() * (window.innerWidth - 100);
             const startY = window.innerHeight + 100;
             el.style.left = startX + 'px';
             el.style.top = startY + 'px';
 
-            // Animation properties
-            const duration = 3000 + Math.random() * 3000;
+            const duration = 3000 + Math.random() * 3000 - (score / 5);
             const drift = (Math.random() - 0.5) * 200;
 
             gameContainer.appendChild(el);
@@ -209,7 +329,7 @@
                 { top: startY + 'px', left: startX + 'px' },
                 { top: '-100px', left: (startX + drift) + 'px' }
             ], {
-                duration: duration,
+                duration: Math.max(1500, duration),
                 easing: 'linear'
             });
 
@@ -218,19 +338,104 @@
             el.onclick = () => {
                 if (!gameActive) return;
                 
-                if (ing.emoji === currentRequest.emoji) {
-                    score += 10;
-                    scoreEl.innerText = score;
-                    showPop('YUM! 🌟', el.offsetLeft, el.offsetTop, 'var(--primary)');
-                    setRequest();
-                    // Burst of confetti effect could go here
+                if (ing.emoji === currentRequest.emoji || ing.bonus) {
+                    handleCorrect(ing, el);
                 } else {
-                    score = Math.max(0, score - 5);
-                    scoreEl.innerText = score;
-                    showPop('Oops! ☁️', el.offsetLeft, el.offsetTop, 'var(--text)');
+                    handleWrong(el);
                 }
-                el.remove();
             };
+        }
+
+        function handleCorrect(ing, el) {
+            playCorrectSound();
+            
+            if (ing.bonus) {
+                showPop('MAGIC! 🌟', el.offsetLeft, el.offsetTop, 'gold');
+                completePizza();
+            } else {
+                combo++;
+                score += 10 + (combo * 2);
+                showPop(`+${10 + (combo * 2)}! ✨`, el.offsetLeft, el.offsetTop, 'var(--primary)');
+                addToPizza(ing.emoji);
+                updateComboUI();
+                setRequest();
+            }
+            
+            scoreEl.innerText = score;
+            el.remove();
+        }
+
+        function handleWrong(el) {
+            playWrongSound();
+            combo = 0;
+            updateComboUI();
+            score = Math.max(0, score - 5);
+            scoreEl.innerText = score;
+            showPop('Oops! ☁️', el.offsetLeft, el.offsetTop, 'var(--text)');
+            
+            gameContainer.classList.add('shake');
+            setTimeout(() => gameContainer.classList.remove('shake'), 400);
+            
+            el.remove();
+        }
+
+        function addToPizza(emoji) {
+            toppingsCount++;
+            const topping = document.createElement('div');
+            topping.className = 'pizza-topping';
+            topping.innerText = emoji;
+            
+            // Random position on the cheese area
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 110; // Stay within the cheese
+            const x = 150 + Math.cos(angle) * dist - 20;
+            const y = 150 + Math.sin(angle) * dist - 20;
+            
+            topping.style.left = x + 'px';
+            topping.style.top = y + 'px';
+            
+            toppingsLayer.appendChild(topping);
+            
+            // Juice: Pizza pulses when topping is added
+            pizzaArea.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            setTimeout(() => pizzaArea.style.transform = 'translate(-50%, -50%) scale(1)', 100);
+
+            if (toppingsCount >= TOPPINGS_PER_PIZZA) {
+                completePizza();
+            }
+        }
+
+        function completePizza() {
+            playPizzaCompleteSound();
+            score += 100;
+            scoreEl.innerText = score;
+            showPop('PIZZA SERVED! 🍕🎉', window.innerWidth/2 - 100, window.innerHeight/2 - 100, 'var(--primary)');
+            
+            // Serve animation
+            pizzaArea.style.transition = 'all 0.5s ease-in';
+            pizzaArea.style.transform = 'translate(-50%, -200%) scale(0) rotate(360deg)';
+            
+            setTimeout(() => {
+                toppingsLayer.innerHTML = '';
+                toppingsCount = 0;
+                pizzaArea.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                pizzaArea.style.transform = 'translate(-50%, -50%) scale(0)';
+                setTimeout(() => {
+                    pizzaArea.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 50);
+            }, 500);
+        }
+
+        function updateComboUI() {
+            if (combo > 1) {
+                comboEl.innerText = `Combo x${combo}!`;
+                comboEl.style.opacity = '1';
+                comboEl.classList.remove('combo-pop');
+                void comboEl.offsetWidth;
+                comboEl.classList.add('combo-pop');
+            } else {
+                comboEl.style.opacity = '0';
+            }
         }
 
         function showPop(text, x, y, color) {
@@ -245,10 +450,15 @@
         }
 
         function startGame() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
             document.getElementById('start-screen').classList.add('hidden');
             gameActive = true;
             score = 0;
             timeLeft = 60;
+            combo = 0;
+            toppingsCount = 0;
             scoreEl.innerText = score;
             timerEl.innerText = timeLeft;
             
