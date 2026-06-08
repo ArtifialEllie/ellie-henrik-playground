@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Cosmic Cupcake Catcher 🧁✨</title>
+    <style>
+        :root {
+            --space-bg: #2d1b4e;
+            --pastel-pink: #ffb7ce;
+            --pastel-blue: #b2e2f2;
+            --pastel-purple: #d1b3ff;
+            --pastel-yellow: #fff9b1;
+            --text-color: #ffffff;
+            --accent-gold: #ffd700;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--space-bg);
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            color: var(--text-color);
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-shadow: 2px 2px #ff69b4;
+        }
+        canvas {
+            display: block;
+            background: radial-gradient(circle at center, #4b307a 0%, #2d1b4e 100%);
+            cursor: none;
+        }
+        #overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 30px;
+            border: 5px solid var(--pastel-pink);
+            text-align: center;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 10px 30px rgba(255, 183, 206, 0.5);
+            color: var(--space-bg);
+        }
+        .btn {
+            background-color: var(--pastel-pink);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s, background-color 0.2s;
+            margin-top: 20px;
+        }
+        .btn:hover { 
+            transform: scale(1.1); 
+            background-color: #ff8da1;
+        }
+        h1 { color: #ff69b4; margin-top: 0; }
+        .magnet-alert {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            color: var(--accent-gold);
+            text-shadow: 2px 2px #ff69b4;
+            display: none;
+            z-index: 10;
+            animation: bounce 0.5s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateX(-50%) translateY(0); }
+            to { transform: translateX(-50%) translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-ui">
+        <div>Kaker: <span id="score">0</span> 🧁</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+    
+    <div id="magnet-alert" class="magnet-alert">MAGISK MAGNET! ✨🧲</div>
+
+    <div id="overlay">
+        <h1 id="status-text">Kosmisk Kaos! 🌌</h1>
+        <p id="final-score">Du fanget 0 kaker!</p>
+        <button class="btn" onclick="resetGame()">Prøv igjen! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const overlay = document.getElementById('overlay');
+        const statusText = document.getElementById('status-text');
+        const finalScoreEl = document.getElementById('final-score');
+        const magnetAlert = document.getElementById('magnet-alert');
+
+        let score = 0;
+        let highscore = localStorage.getItem('cosmicCupcakeHighscore') || 0;
+        let gameActive = true;
+        let canvasWidth, canvasHeight;
+        let magnetActive = false;
+        let magnetTimer = 0;
+
+        highscoreEl.innerText = highscore;
+
+        const cupcakeColors = ['#ffb7ce', '#b2e2f2', '#d1b3ff', '#fff9b1', '#a5d6a7', '#ffccf9'];
+        const starColors = ['#ffffff', '#ffd700', '#ff69b4', '#b2e2f2'];
+
+        function resize() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        let player = {
+            x: canvasWidth / 2,
+            y: canvasHeight - 80,
+            width: 100,
+            height: 60,
+            color: '#ff69b4'
+        };
+
+        let items = [];
+        let particles = [];
+        let stars = [];
+
+        // Initialize static stars for background
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * canvasWidth,
+                y: Math.random() * canvasHeight,
+                size: Math.random() * 2,
+                opacity: Math.random(),
+                blinkSpeed: 0.01 + Math.random() * 0.02
+            });
+        }
+
+        class Item {
+            constructor() {
+                this.radius = 20;
+                this.x = Math.random() * (canvasWidth - this.radius * 2) + this.radius;
+                this.y = -this.radius;
+                this.speed = 2 + Math.random() * 3 + (score / 20);
+                
+                const rand = Math.random();
+                if (rand > 0.9) {
+                    this.type = 'gold';
+                    this.color = '#ffd700';
+                    this.emoji = '🌟';
+                } else if (rand < 0.15) {
+                    this.type = 'rock';
+                    this.color = '#888';
+                    this.emoji = '🌑';
+                } else {
+                    this.type = 'normal';
+                    this.color = cupcakeColors[Math.floor(Math.random() * cupcakeColors.length)];
+                    this.emoji = '🧁';
+                }
+            }
+
+            update() {
+                if (magnetActive) {
+                    const dx = player.x - this.x;
+                    this.x += dx * 0.05;
+                }
+                this.y += this.speed;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.font = `${this.radius * 2}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Glow effect for gold
+                if (this.type === 'gold') {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'gold';
+                }
+                
+                ctx.fillText(this.emoji, this.x, this.y);
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8;
+                this.radius = Math.random() * 3 + 1;
+                this.life = 1.0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.02;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+                ctx.closePath();
+            }
+        }
+
+        function spawnItem() {
+            if (!gameActive) return;
+            items.push(new Item());
+            setTimeout(spawnItem, Math.max(400, 1000 - (score * 5)));
+        }
+
+        function createBurst(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function handleMove(e) {
+            const mouseX = (e.clientX || (e.touches && e.touches[0].clientX));
+            if (mouseX) {
+                player.x = mouseX;
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            // Draw Background Stars
+            stars.forEach(s => {
+                s.opacity += s.blinkSpeed;
+                if (s.opacity > 1 || s.opacity < 0) s.blinkSpeed *= -1;
+                ctx.globalAlpha = Math.abs(s.opacity);
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
+            // Update Magnet
+            if (magnetActive) {
+                magnetTimer--;
+                if (magnetTimer <= 0) {
+                    magnetActive = false;
+                    magnetAlert.style.display = 'none';
+                }
+            }
+
+            // Draw Player Bowl
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            
+            // Bowl Body
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(0, 0, player.width/2, 0, Math.PI, false);
+            ctx.fill();
+            
+            // Bowl Rim
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, player.width/2, 10, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Cute Bow
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(-15, 5, 8, 0, Math.PI * 2);
+            ctx.arc(15, 5, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ff69b4';
+            ctx.beginPath();
+            ctx.arc(0, 5, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+
+            // Update and Draw Items
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                item.update();
+                item.draw();
+
+                // Collision check
+                const dx = item.x - player.x;
+                const dy = item.y - player.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist < 50) {
+                    if (item.type === 'normal') {
+                        score++;
+                        createBurst(item.x, item.y, item.color);
+                    } else if (item.type === 'gold') {
+                        score += 5;
+                        activateMagnet();
+                        createBurst(item.x, item.y, 'gold');
+                    } else if (item.type === 'rock') {
+                        gameOver();
+                    }
+                    
+                    scoreEl.innerText = score;
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                if (item.y > canvasHeight + item.radius) {
+                    items.splice(i, 1);
+                }
+            }
+
+            // Update and Draw Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function activateMagnet() {
+            magnetActive = true;
+            magnetTimer = 300; // Approx 5 seconds at 60fps
+            magnetAlert.style.display = 'block';
+        }
+
+        function gameOver() {
+            gameActive = false;
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('cosmicCupcakeHighscore', highscore);
+                highscoreEl.innerText = highscore;
+                statusText.innerText = "NY REKORD! 🎉";
+            } else {
+                statusText.innerText = "Kosmisk Kaos! 🌌";
+            }
+            finalScoreEl.innerText = `Du fanget ${score} kaker!`;
+            overlay.style.display = 'block';
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreEl.innerText = '0';
+            items = [];
+            particles = [];
+            magnetActive = false;
+            magnetAlert.style.display = 'none';
+            gameActive = true;
+            overlay.style.display = 'none';
+            spawnItem();
+            update();
+        }
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', (e) => {
+            handleMove(e);
+            e.preventDefault();
+        }, { passive: false });
+
+        // Initialize
+        spawnItem();
+        update();
+    </script>
+</body>
+</html>
