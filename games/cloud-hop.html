@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Dreamy Cloud Hop ☁️✨</title>
+    <style>
+        :root {
+            --primary: #ff69b4;
+            --secondary: #87ceeb;
+            --bg: #e0f7fa;
+            --text: #4a4a4a;
+            --accent: #ffd700;
+            --cloud: #ffffff;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: var(--bg);
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            color: var(--text);
+            overflow: hidden;
+            user-select: none;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            background: linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%);
+            border: 8px solid white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+        }
+        #score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px var(--primary);
+        }
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+        .hidden {
+            display: none !important;
+        }
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px white;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+        }
+        .btn:hover {
+            transform: scale(1.1);
+        }
+        .controls-hint {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">0</div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="overlay">
+            <h1 id="overlay-title">Dreamy Cloud Hop ☁️</h1>
+            <p id="overlay-text">Jump as high as you can!</p>
+            <button class="btn" id="start-btn">Start Jumping! ✨</button>
+            <div class="controls-hint">Use Left/Right Arrows or A/D to move! 🐾</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const overlay = document.getElementById('overlay');
+        const startBtn = document.getElementById('start-btn');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayText = document.getElementById('overlay-text');
+
+        canvas.width = 400;
+        canvas.height = 600;
+
+        // Game Constants
+        const GRAVITY = 0.4;
+        const JUMP_FORCE = -12;
+        const CLOUD_WIDTH = 70;
+        const CLOUD_HEIGHT = 30;
+        const PLAYER_SIZE = 30;
+
+        let player = {
+            x: canvas.width / 2 - PLAYER_SIZE / 2,
+            y: canvas.height - 100,
+            vx: 0,
+            vy: 0,
+            width: PLAYER_SIZE,
+            height: PLAYER_SIZE,
+            color: '#ff69b4'
+        };
+
+        let clouds = [];
+        let particles = [];
+        let score = 0;
+        let gameActive = false;
+        let cameraY = 0;
+        let keys = {};
+
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        function init() {
+            player.x = canvas.width / 2 - PLAYER_SIZE / 2;
+            player.y = canvas.height - 100;
+            player.vx = 0;
+            player.vy = JUMP_FORCE;
+            score = 0;
+            cameraY = 0;
+            clouds = [];
+            particles = [];
+            
+            // Starting cloud
+            clouds.push({
+                x: canvas.width / 2 - CLOUD_WIDTH / 2,
+                y: canvas.height - 50,
+                width: CLOUD_WIDTH,
+                height: CLOUD_HEIGHT,
+                color: '#ffffff'
+            });
+
+            // Initial clouds
+            for (let i = 0; i < 10; i++) {
+                spawnCloud(canvas.height - i * 80);
+            }
+            
+            scoreElement.innerText = score;
+        }
+
+        function spawnCloud(y) {
+            const colors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5'];
+            clouds.push({
+                x: Math.random() * (canvas.width - CLOUD_WIDTH),
+                y: y,
+                width: CLOUD_WIDTH,
+                height: CLOUD_HEIGHT,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    life: 1.0,
+                    color: color
+                });
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            // Player movement
+            if (keys['ArrowLeft'] || keys['KeyA']) player.vx = -5;
+            else if (keys['ArrowRight'] || keys['KeyD']) player.vx = 5;
+            else player.vx *= 0.8;
+
+            player.x += player.vx;
+            player.vy += GRAVITY;
+            player.y += player.vy;
+
+            // Screen wrap
+            if (player.x + player.width < 0) player.x = canvas.width;
+            if (player.x > canvas.width) player.x = -player.width;
+
+            // Camera follow
+            if (player.y < canvas.height / 2 + cameraY) {
+                cameraY = player.y - canvas.height / 2;
+            }
+
+            // Collision with clouds (only when falling)
+            if (player.vy > 0) {
+                clouds.forEach(cloud => {
+                    if (player.x + player.width > cloud.x && 
+                        player.x < cloud.x + cloud.width && 
+                        player.y + player.height > cloud.y && 
+                        player.y + player.height < cloud.y + cloud.height + player.vy) {
+                        
+                        player.vy = JUMP_FORCE;
+                        createParticles(player.x + player.width/2, player.y + player.height, cloud.color);
+                        
+                        // Update score based on height
+                        let currentHeight = Math.floor(Math.abs(player.y - (canvas.height - 100)) / 10);
+                        if (currentHeight > score) {
+                            score = currentHeight;
+                            scoreElement.innerText = score;
+                        }
+                    }
+                });
+            }
+
+            // Clean up and spawn new clouds
+            clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100);
+            while (clouds.length < 15) {
+                const highestCloudY = Math.min(...clouds.map(c => c.y));
+                spawnCloud(highestCloudY - 80);
+            }
+
+            // Particles
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+            });
+            particles = particles.filter(p => p.life > 0);
+
+            // Game over
+            if (player.y > cameraY + canvas.height) {
+                gameOver();
+            }
+        }
+
+        function gameOver() {
+            gameActive = false;
+            overlay.classList.remove('hidden');
+            overlayTitle.innerText = "Oh No! 🌸";
+            overlayText.innerText = `You hopped ${score} meters high!`;
+            startBtn.innerText = "Try Again! ✨";
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(0, -cameraY);
+
+            // Draw clouds
+            clouds.forEach(cloud => {
+                ctx.fillStyle = cloud.color;
+                // Draw a fluffy cloud using circles
+                ctx.beginPath();
+                ctx.arc(cloud.x + 15, cloud.y + 15, 15, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 35, cloud.y + 10, 20, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 55, cloud.y + 15, 15, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw player (cute cat/blob)
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.roundRect(player.x, player.y, player.width, player.height, 10);
+            ctx.fill();
+            
+            // Cute eyes
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(player.x + 8, player.y + 10, 3, 0, Math.PI * 2);
+            ctx.arc(player.x + 22, player.y + 10, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(player.x + 8, player.y + 10, 1.5, 0, Math.PI * 2);
+            ctx.arc(player.x + 22, player.y + 10, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw particles
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
+            ctx.restore();
+
+            requestAnimationFrame(() => {
+                update();
+                draw();
+            });
+        }
+
+        startBtn.addEventListener('click', () => {
+            overlay.classList.add('hidden');
+            init();
+            gameActive = true;
+        });
+
+        draw();
+    </script>
+</body>
+</html>
