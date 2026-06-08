@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bokstav-dyrehagen 🦄</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+            background-color: #f0fdfa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #ff69b4;
+            font-size: 3rem;
+            text-shadow: 2px 2px #fff;
+            margin-bottom: 10px;
+        }
+
+        #game-container {
+            background: white;
+            padding: 30px;
+            border-radius: 50px;
+            box-shadow: 0 15px 0 #ddd, 0 20px 30px rgba(0,0,0,0.1);
+            border: 8px solid #ffeb3b;
+            max-width: 90%;
+            width: 600px;
+        }
+
+        #prompt {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        #letter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .letter-btn {
+            font-size: 4rem;
+            padding: 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            background-color: #4fc3f7;
+            color: white;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 8px 0 #0288d1;
+        }
+
+        .letter-btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #0288d1;
+        }
+
+        .letter-btn.correct {
+            background-color: #8bc34a !important;
+            box-shadow: 0 8px 0 #558b2f !important;
+        }
+
+        .letter-btn.wrong {
+            background-color: #ff5252 !important;
+            box-shadow: 0 8px 0 #c62828 !important;
+        }
+
+        #result {
+            font-size: 6rem;
+            height: 120px;
+            margin: 20px 0;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #animal-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff69b4;
+            height: 40px;
+            margin-bottom: 20px;
+        }
+
+        #start-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffeb3b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #start-btn {
+            font-size: 3rem;
+            padding: 20px 50px;
+            border-radius: 50px;
+            border: none;
+            background: #ff69b4;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #d81b60;
+        }
+
+        .pop-in {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .repeat-btn {
+            background: #fff;
+            border: 3px solid #4fc3f7;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1>Bokstav-dyrehagen 🦄</h1>
+        <button id="start-btn">START SPILLET! 🌟</button>
+    </div>
+
+    <h1>Bokstav-dyrehagen 🦄</h1>
+    
+    <div id="game-container">
+        <button class="repeat-btn" onclick="speakLetter()">🔊</button>
+        <div id="prompt">Hvilken bokstav hører du?</div>
+        
+        <div id="letter-grid">
+            <!-- Knapper genereres av JS -->
+        </div>
+
+        <div id="result"></div>
+        <div id="animal-name"></div>
+    </div>
+
+    <script>
+        const animals = {
+            'A': { name: 'Ape', emoji: '🐒' },
+            'B': { name: 'Bjørn', emoji: '🐻' },
+            'D': { name: 'Delfin', emoji: '🐬' },
+            'E': { name: 'Elefant', emoji: '🐘' },
+            'F': { name: 'Fisk', emoji: '🐟' },
+            'G': { name: 'Giraff', emoji: '🦒' },
+            'H': { name: 'Hund', emoji: '🐶' },
+            'I': { name: 'Igle', emoji: '🐛' },
+            'J': { name: 'Jaguar', emoji: '🐆' },
+            'K': { name: 'Katt', emoji: '🐱' },
+            'L': { name: 'Løve', emoji: '🦁' },
+            'M': { name: 'Mus', emoji: '🐭' },
+            'N': { name: 'Neshorn', emoji: '🦏' },
+            'O': { name: 'Oter', emoji: '🦦' },
+            'P': { name: 'Panda', emoji: '🐼' },
+            'R': { name: 'Rødrev', emoji: '🦊' },
+            'S': { name: 'Sel', emoji: '🦭' },
+            'T': { name: 'Tiger', emoji: '🐯' },
+            'U': { name: 'Ugle', emoji: '🦉' },
+            'V': { name: 'Valross', emoji: '🦭' },
+            'Y': { name: 'Yak', emoji: '🐂' },
+            'Z': { name: 'Zebra', emoji: '🦓' },
+            'Æ': { name: 'Ærfugl', emoji: '🦆' },
+            'Ø': { name: 'Ørn', emoji: '🦅' },
+            'Å': { name: 'Ål', emoji: '🐍' },
+        };
+
+        const letters = Object.keys(animals);
+        let currentLetter = '';
+
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const letterGrid = document.getElementById('letter-grid');
+        const resultDiv = document.getElementById('result');
+        const nameDiv = document.getElementById('animal-name');
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'no-NO';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function speakLetter() {
+            speak(`Hvilken bokstav er dette? ${currentLetter}`);
+        }
+
+        function nextRound() {
+            resultDiv.innerText = '';
+            nameDiv.innerText = '';
+            letterGrid.innerHTML = '';
+            
+            currentLetter = letters[Math.floor(Math.random() * letters.length)];
+            
+            let options = [currentLetter];
+            while(options.length < 3) {
+                let randomL = letters[Math.floor(Math.random() * letters.length)];
+                if(!options.includes(randomL)) options.push(randomL);
+            }
+            
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(l => {
+                const btn = document.createElement('button');
+                btn.className = 'letter-btn';
+                btn.classList.add('letter-btn'); 
+                btn.innerText = l;
+                btn.onclick = () => checkAnswer(l, btn);
+                letterGrid.appendChild(btn);
+            });
+
+            setTimeout(speakLetter, 500);
+        }
+
+        function checkAnswer(letter, btn) {
+            if(letter === currentLetter) {
+                btn.classList.add('correct');
+                const animal = {
+                    'A': { name: 'Ape', emoji: '🐒' },
+                    'B': { name: 'Bjørn', emoji: '🐻' },
+                    'D': { name: 'Delfin', emoji: '🐬' },
+                    'E': { name: 'Elefant', emoji: '🐘' },
+                    ' la la la la la la l la la la la laL': { name: 'Løve', emoji: '🦁' },
+                    'F': { name: 'Fisk', emoji: '🐟' },
+                    'G': { name: 'Giraff', emoji: '🦒' },
+                    'H': { name: 'Hund', emoji: '🐶' },
+                    'I': { name: 'Igle', emoji: '🐛' },
+                    'J': { name: 'Jaguar', emoji: '🐆' },
+                    'K': { name: 'Katt', emoji: '🐱' },
+                    'L': { name: 'Løve', emoji: '🦁' },
+                    'M': { name: 'Mus', emoji: '🐭' },
+                    'N': { name: 'Neshorn', emoji: '🦏' },
+                    'O': { name: 'Oter', emoji: '🦦' },
+                    'P': { name: 'Panda', emoji: '🐼' },
+                    'R': { name: 'Rødrev', emoji: '🦊' },
+                    'S': { name: 'Sel', emoji: '🦭' },
+                    'T': { name: 'Tiger', emoji: '🐯' },
+                    'U': { name: 'Ugle', emoji: '🦉' },
+                    'V': { name: 'Valross', emoji: '🦭' },
+                    'Y': { name: 'Yak', emoji: '🐂' },
+                    'Z': { name: 'Zebra', emoji: '🦓' },
+                    'Æ': { name: 'Ærfugl', emoji: '🦆' },
+                    'Ø': { name: 'Ørn', emoji: '🦅' },
+                    'Å': { name: 'Ål', emoji: '🐍' },
+                };
+                resultDiv.innerText = animal[currentLetter].emoji;
+                resultDiv.classList.add('pop-in');
+                nameDiv.innerText = `${currentLetter} er for ${animal[currentLetter].name}!`;
+                
+                speak(`Riktig! ${currentLetter} er for ${animal[currentLetter].name}`);
+                
+                setTimeout(() => {
+                    resultDiv.classList.remove('pop-in');
+                    nextRound();
+                }, 3000);
+            } else {
+                btn.classList.add('wrong');
+                speak(`Nei, prøv igjen!`);
+                setTimeout(() => btn.classList.remove('wrong'), 500);
+            }
+        }
+
+        startBtn.onclick = () => {
+            startScreen.style.display = 'none';
+            nextRound();
+        };
+    </script>
+</body>
+</html>
