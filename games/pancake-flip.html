@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Pancake Flip! 🥞</title>
+    <style>
+        :root {
+            --bg-color: #fff9c4;
+            --primary-pink: #ffc1e3;
+            --primary-blue: #b3e5fc;
+            --primary-purple: #e1bee7;
+            --primary-green: #c8e6c9;
+            --text-color: #5d4037;
+            --accent-gold: #ffd700;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            color: var(--text-color);
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 2px 2px white;
+        }
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, #fff9c4, #ffe0b2);
+            cursor: pointer;
+        }
+        #overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 30px;
+            border: 5px solid var(--primary-pink);
+            text-align: center;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background-color: var(--primary-pink);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn:hover { 
+            transform: scale(1.1); 
+            background-color: #f06292;
+        }
+        h1 { color: var(--primary-pink); }
+    </style>
+</head>
+<body>
+    <div id="game-ui">
+        <div>Sabel: <span id="score">0</span> 🥞</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+    
+    <div id="overlay">
+        <h1 id="status-text">Oi! Det falt! 🌸</h1>
+        <p id="final-score">Du stablet 0 pannekaker!</p>
+        <button class="btn" onclick="resetGame()">Prøv igjen! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const overlay = document.getElementById('overlay');
+        const statusText = document.getElementById('status-text');
+        const finalScoreEl = document.getElementById('final-score');
+
+        let score = 0;
+        let highscore = localStorage.getItem('pancakeFlipHighscore') || 0;
+        let gameActive = true;
+        let canvasWidth, canvasHeight;
+        
+        highscoreEl.innerText = highscore;
+
+        const pancakeColors = ['#ffc1e3', '#b3e5fc', '#e1bee7', '#c8e6c9', '#fff59d', '#ffccbc'];
+        const toppings = ['🍓', '🫐', '🍯', '🧈', '✨', '🌸'];
+
+        function resize() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let stack = [];
+        let activePancake = null;
+        let particles = [];
+
+        class Pancake {
+            constructor(x, y, color, topping = null) {
+                this.x = x;
+                this.y = y;
+                this.width = 120;
+                this.height = 20;
+                this.color = color;
+                this.topping = topping;
+                this.vy = 0;
+                this.vx = 0;
+                this.rotation = 0;
+                this.vr = 0;
+                this.isFlipping = false;
+            }
+
+            update() {
+                if (this.isFlipping) {
+                    this.y += this.vy;
+                    this.x += this.vx;
+                    this.vy += 0.4; // Gravity
+                    this.rotation += this.vr;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.width/2, this.y + this.height/2);
+                ctx.rotate(this.rotation);
+                
+                // Pancake body
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.width/2, this.height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Topping
+                if (this.topping) {
+                    ctx.font = '20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(this.topping, 0, -this.height/2 + 5);
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8;
+                this.life = 1.0;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.02;
+            }
+            draw() {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function initStack() {
+            stack = [];
+            const startY = canvasHeight - 50;
+            const startX = canvasWidth / 2 - 60;
+            stack.push(new Pancake(startX, startY, pancakeColors[0]));
+            spawnActivePancake();
+        }
+
+        function spawnActivePancake() {
+            const last = stack[stack.length - 1];
+            const color = pancakeColors[Math.floor(Math.random() * pancakeColors.length)];
+            const topping = toppings[Math.floor(Math.random() * toppings.length)];
+            activePancake = new Pancake(last.x, last.y - 20, color, topping);
+            activePancake.isFlipping = false;
+        }
+
+        function flipPancake() {
+            if (!gameActive || activePancake.isFlipping) return;
+
+            activePancake.isFlipping = true;
+            activePancake.vy = -12 - Math.random() * 4;
+            activePancake.vx = (Math.random() - 0.5) * 2;
+            activePancake.vr = (Math.random() - 0.5) * 0.2;
+        }
+
+        function checkLanding() {
+            if (!activePancake || !activePancake.isFlipping) return;
+
+            const last = stack[stack.length - 1];
+            if (activePancake.vy > 0 && activePancake.y >= last.y - 20) {
+                // Landing check
+                const overlap = Math.min(activePancake.x + activePancake.width, last.x + last.width) - 
+                                Math.max(activePancake.x, last.x);
+                
+                if (overlap > 40) {
+                    // Success!
+                    activePancake.isFlipping = false;
+                    activePancake.vy = 0;
+                    activePancake.vx = 0;
+                    activePancake.rotation = 0;
+                    
+                    // Snap to stack center-ish
+                    activePancake.x = last.x + (overlap - activePancake.width)/2; // simplistic centering
+                    
+                    stack.push(activePancake);
+                    score++;
+                    scoreEl.innerText = score;
+                    
+                    createPopEffect(activePancake.x + activePancake.width/2, activePancake.y, activePancake.color);
+                    
+                    spawnActivePancake();
+                } else {
+                    // Miss!
+                    gameOver();
+                }
+            }
+        }
+
+        function createPopEffect(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function gameOver() {
+            gameActive = false;
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('pancakeFlipHighscore', highscore);
+                highscoreEl.innerText = highscore;
+                statusText.innerText = "NY REKORD! 🎉";
+            } else {
+                statusText.innerText = "Oi! Det falt! 🌸";
+            }
+            finalScoreEl.innerText = `Du stablet ${score} pannekaker!`;
+            overlay.style.display = 'block';
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreEl.innerText = '0';
+            gameActive = true;
+            overlay.style.display = 'none';
+            particles = [];
+            initStack();
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            stack.forEach(p => p.draw());
+            
+            if (activePancake) {
+                activePancake.update();
+                activePancake.draw();
+                checkLanding();
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        window.addEventListener('mousedown', flipPancake);
+        window.addEventListener('touchstart', (e) => {
+            flipPancake();
+            e.preventDefault();
+        }, { passive: false });
+
+        initStack();
+        update();
+    </script>
+</body>
+</html>
