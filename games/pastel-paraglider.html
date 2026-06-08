@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Paraglider 🪂✨</title>
+    <style>
+        :root {
+            --bg-sky: #e0f7fa;
+            --sky-bottom: #b2ebf2;
+            --primary-pink: #ff80ab;
+            --primary-purple: #ce93d8;
+            --primary-yellow: #fff59d;
+            --text-color: #006064;
+            --cloud-gray: #bdbdbd;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-sky);
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+            color: var(--text-color);
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 2px 2px white;
+        }
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, var(--bg-sky), var(--sky-bottom));
+            cursor: pointer;
+        }
+        #overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 30px;
+            border: 5px solid var(--primary-pink);
+            text-align: center;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background-color: var(--primary-pink);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s, background-color 0.2s;
+            margin-top: 20px;
+        }
+        .btn:hover { 
+            transform: scale(1.1); 
+            background-color: #f06292;
+        }
+        h1 { color: var(--primary-pink); margin-top: 0; }
+        .instructions { font-size: 18px; color: #666; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div id="game-ui">
+        <div>Glede: <span id="score">0</span> ✨</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+    
+    <div id="overlay">
+        <h1 id="status-text">Oi da! 🌸</h1>
+        <p id="final-score">Du samlet 0 gledesgnister!</p>
+        <div class="instructions">Hold musen nede eller trykk på skjermen for å fly opp! 🎈</div>
+        <button class="btn" onclick="resetGame()">Fly igjen! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highscoreEl = document.getElementById('highscore');
+        const overlay = document.getElementById('overlay');
+        const statusText = document.getElementById('status-text');
+        const finalScoreEl = document.getElementById('final-score');
+
+        let score = 0;
+        let highscore = localStorage.getItem('paragliderHighscore') || 0;
+        let gameActive = false;
+        let canvasWidth, canvasHeight;
+        let isPressing = false;
+
+        highscoreEl.innerText = highscore;
+
+        function resize() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Player {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = 100;
+                this.y = canvasHeight / 2;
+                this.radius = 20;
+                this.velocity = 0;
+                this.gravity = 0.25;
+                this.lift = -0.6;
+                this.angle = 0;
+            }
+            update() {
+                if (isPressing) {
+                    this.velocity += this.lift;
+                } else {
+                    this.velocity += this.gravity;
+                }
+                
+                this.velocity *= 0.98; // Air resistance
+                this.y += this.velocity;
+                
+                // Rotation based on velocity
+                this.angle = this.velocity * 0.05;
+
+                // Boundary checks
+                if (this.y < 0) {
+                    this.y = 0;
+                    this.velocity = 0;
+                }
+                if (this.y > canvasHeight) {
+                    gameOver();
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                
+                // Draw Paraglider Canopy
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius * 1.5, Math.PI, 0);
+                ctx.fillStyle = '#ff80ab';
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw Lines
+                ctx.beginPath();
+                ctx.moveTo(-this.radius * 1.5, 0);
+                ctx.lineTo(0, this.radius);
+                ctx.lineTo(this.radius * 1.5, 0);
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                ctx.stroke();
+                
+                // Draw Ellie (small circle)
+                ctx.beginPath();
+                ctx.arc(0, this.radius, 10, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+                ctx.strokeStyle = '#ff80ab';
+                ctx.stroke();
+                
+                // Blushing cheeks
+                ctx.beginPath();
+                ctx.arc(-4, this.radius + 2, 2, 0, Math.PI * 2);
+                ctx.arc(4, this.radius + 2, 2, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffc1e3';
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        class Obstacle {
+            constructor(type) {
+                this.type = type; // 'cloud' or 'sparkle'
+                this.x = canvasWidth + 50;
+                this.y = Math.random() * (canvasHeight - 100) + 50;
+                this.radius = type === 'cloud' ? Math.random() * 40 + 30 : 15;
+                this.speed = Math.random() * 2 + 3;
+                this.color = type === 'cloud' ? '#bdbdbd' : '#fff59d';
+                this.emoji = type === 'cloud' ? '☁️' : '✨';
+            }
+            update() {
+                this.x -= this.speed;
+            }
+            draw() {
+                ctx.font = `${this.radius * 2}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.emoji, this.x, this.y);
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.life = 1.0;
+                this.size = Math.random() * 4 + 2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.02;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        const player = new Player();
+        let obstacles = [];
+        let particles = [];
+        let frameCount = 0;
+
+        function spawnObstacle() {
+            const type = Math.random() > 0.3 ? 'cloud' : 'sparkle';
+            obstacles.push(new Obstacle(type));
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            frameCount++;
+
+            if (frameCount % 60 === 0) {
+                spawnObstacle();
+            }
+
+            player.update();
+            player.draw();
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                obs.update();
+                obs.draw();
+
+                // Collision detection
+                const dist = Math.hypot(player.x - obs.x, player.y - obs.y);
+                if (dist < player.radius + obs.radius * 0.7) {
+                    if (obs.type === 'cloud') {
+                        gameOver();
+                    } else {
+                        score++;
+                        scoreEl.innerText = score;
+                        createExplosion(obs.x, obs.y, '#fff59d');
+                        obstacles.splice(i, 1);
+                    }
+                }
+
+                if (obs.x < -100) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function gameOver() {
+            gameActive = false;
+            createExplosion(player.x, player.y, '#ff80ab');
+            
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('paragliderHighscore', highscore);
+                highscoreEl.innerText = highscore;
+                statusText.innerText = "NY REKORD! 🎉";
+            } else {
+                statusText.innerText = "Oi da! 🌸";
+            }
+            
+            finalScoreEl.innerText = `Du samlet ${score} gledesgnister!`;
+            overlay.style.display = 'block';
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreEl.innerText = '0';
+            obstacles = [];
+            particles = [];
+            frameCount = 0;
+            player.reset();
+            gameActive = true;
+            overlay.style.display = 'none';
+            update();
+        }
+
+        // Input handling
+        const handleStart = (e) => {
+            if (!gameActive && overlay.style.display === 'none') {
+                // Initial start
+                gameActive = true;
+                update();
+            }
+            isPressing = true;
+            e.preventDefault();
+        };
+        const handleEnd = () => {
+            isPressing = false;
+        };
+
+        window.addEventListener('mousedown', handleStart);
+        window.addEventListener('mouseup', handleEnd);
+        window.addEventListener('touchstart', handleStart, { passive: false });
+        window.addEventListener('touchend', handleEnd);
+
+        // Show initial overlay
+        overlay.style.display = 'block';
+        statusText.innerText = "Ellie's Pastel Paraglider 🪂";
+        finalScoreEl.innerText = "Klar for en magisk flytur?";
+    </script>
+</body>
+</html>
