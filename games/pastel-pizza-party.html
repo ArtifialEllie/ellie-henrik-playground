@@ -255,7 +255,10 @@
             { emoji: '🌈', name: 'Rainbow Sprinkle' },
             { emoji: '🧁', name: 'Cupcake Crumbs' },
             { emoji: '🍓', name: 'Strawberry Slice' },
-            { emoji: '✨', name: 'Magic Sparkle', bonus: true }
+            { emoji: '✨', name: 'Magic Sparkle', bonus: true },
+            { emoji: '❄️', name: 'Frosty Pepperoni', powerup: 'slow' },
+            { emoji: '🔥', name: 'Spicy Chili', powerup: 'double' },
+            { emoji: '🍭', name: 'Lolly Pop', powerup: 'clear' }
         ];
 
         let score = 0;
@@ -269,6 +272,7 @@
         let toppingsCount = 0;
         const TOPPINGS_PER_PIZZA = 6;
         let isRainbowMode = false;
+        let activePowerups = { slow: 0, double: 0 };
 
         const scoreEl = document.getElementById('score');
         const timerEl = document.getElementById('timer');
@@ -307,7 +311,7 @@
 
         function setRequest() {
             // Ensure we don't request the bonus magic sparkle too often
-            let filtered = ingredients.filter(i => !i.bonus);
+            let filtered = ingredients.filter(i => !i.bonus && !i.powerup);
             currentRequest = filtered[Math.floor(Math.random() * filtered.length)];
             requestQuantity = Math.floor(Math.random() * 3) + 1;
             requestEl.innerText = `Need: ${requestQuantity}x ${currentRequest.emoji} ${currentRequest.name}!`;
@@ -327,7 +331,8 @@
             el.style.left = startX + 'px';
             el.style.top = startY + 'px';
 
-            const duration = 3000 + Math.random() * 3000 - (score / 5);
+            let duration = 3000 + Math.random() * 3000 - (score / 10);
+            if (activePowerups.slow > Date.now()) duration *= 2;
             const drift = (Math.random() - 0.5) * 200;
 
             gameContainer.appendChild(el);
@@ -345,7 +350,7 @@
             el.onclick = () => {
                 if (!gameActive) return;
                 
-                if (isRainbowMode || ing.emoji === currentRequest.emoji || ing.bonus) {
+                if (isRainbowMode || ing.emoji === currentRequest.emoji || ing.bonus || ing.powerup) {
                     handleCorrect(ing, el);
                 } else {
                     handleWrong(el);
@@ -356,7 +361,9 @@
         function handleCorrect(ing, el) {
             playCorrectSound();
             
-            if (ing.bonus) {
+            if (ing.powerup) {
+                handlePowerup(ing, el);
+            } else if (ing.bonus) {
                 showPop('MAGIC! 🌟', el.offsetLeft, el.offsetTop, 'gold');
                 completePizza();
             } else {
@@ -367,14 +374,45 @@
                     }
                 }
                 combo++;
-                score += 10 + (combo * 2);
-                showPop(`+${10 + (combo * 2)}! ✨`, el.offsetLeft, el.offsetTop, 'var(--primary)');
+                let points = 10 + (combo * 2);
+                if (activePowerups.double > Date.now()) points *= 2;
+                score += points;
+                showPop(`+${points}! ✨`, el.offsetLeft, el.offsetTop, 'var(--primary)');
                 addToPizza(ing.emoji);
                 updateComboUI();
             }
             
             scoreEl.innerText = score;
             el.remove();
+        }
+
+        function handlePowerup(ing, el) {
+            const type = ing.powerup;
+            showPop(`POWERUP: ${ing.name}! 🌟`, el.offsetLeft, el.offsetTop, 'gold');
+            
+            if (type === 'slow') {
+                activePowerups.slow = Date.now() + 5000;
+                showPop('TIME SLOWED! ❄️', window.innerWidth/2 - 50, 100, 'var(--secondary)');
+            } else if (type === 'double') {
+                activePowerups.double = Date.now() + 5000;
+                showPop('DOUBLE POINTS! 🔥', window.innerWidth/2 - 50, 100, 'red');
+            } else if (type === 'clear') {
+                const allIngs = document.querySelectorAll('.ingredient');
+                allIngs.forEach(i => {
+                    if (i !== el) {
+                        createSparkleEffect(i.offsetLeft, i.offsetTop);
+                        i.remove();
+                    }
+                });
+                showPop('SCREEN CLEARED! 🍭', window.innerWidth/2 - 50, 100, 'var(--primary)');
+            }
+            el.remove();
+        }
+
+        function createSparkleEffect(x, y) {
+            for(let i=0; i<5; i++) {
+                showPop('✨', x + (Math.random()-0.5)*40, y + (Math.random()-0.5)*40, 'white');
+            }
         }
 
         function handleWrong(el) {
