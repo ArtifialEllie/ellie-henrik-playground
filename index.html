@@ -87,7 +87,6 @@
             color: #888;
         }
         
-        /* Games Gallery Styles */
         .games-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -154,7 +153,6 @@
             align-items: center;
             gap: 5px;
         }
-
         .confetti {
             position: fixed;
             width: 10px;
@@ -186,132 +184,41 @@
     <h2 style="color: var(--primary); font-size: 2rem; margin-bottom: 10px;">Våre Spill 🌟</h2>
     <p style="margin-bottom: 30px;">Klikk på et spill for å begynne å leke!</p>
 
-    <div class="games-gallery">
-        <!-- Game: Bokstav-dyrehagen -->
-        <a href="games/bokstavspill.html" class="game-card">
-            <div class="game-thumbnail">
-                🦄🦁
-            </div>
-            <div class="game-info">
-                <h3>Bokstav-dyrehagen</h3>
-                <p>Lær bokstaver og lyder med søte dyr! Perfekt for små barn. 🦄</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 1: Star Catcher -->
-        <a href="games/star-catcher.html" class="game-card">
-            <div class="game-thumbnail">
-                🐱🌟
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Star Catcher</h3>
-                <p>Hjelp den søte katten med å fange så mange stjerner som mulig!</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 2: Bubble Pop -->
-        <a href="games/bubble-pop.html" class="game-card">
-            <div class="game-thumbnail">
-                🫧✨
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Bubble Pop!</h3>
-                <p>Popp så mange magiske bobler som mulig før tiden renner ut! 🫧</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 3: Pancake Flip -->
-        <a href="games/pancake-flip.html" class="game-card">
-            <div class="game-thumbnail">
-                🥞🍓
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Pastel Pancake Flip!</h3>
-                <p>Stable så mange fargerike pannekaker du kan uten at tårnet velter! 🥞</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 5: Cloud Hop -->
-        <a href="games/cloud-hop.html" class="game-card">
-            <div class="game-thumbnail">
-                ☁️✨
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Dreamy Cloud Hop</h3>
-                <p>Hopp oppover i de myke skyene og se hvor høyt du kan nå! ☁️</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 4: Memory Match -->
-        <a href="games/memory-match.html" class="game-card">
-            <div class="game-thumbnail">
-                🧠✨
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Memory Match</h3>
-                <p>Hvor god er hukommelsen din? Finn alle parene! 🧠</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 6: Pastel Pet Party -->
-        <a href="games/pastel-pet-party.html" class="game-card">
-            <div class="game-thumbnail">
-                🐾💖
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Pastel Pet Party!</h3>
-                <p>Gi godbiter til så mange søte kjæledyr som mulig! 🐾</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 11: Pastel Plant Protector -->
-        <a href="games/pastel-plant-protector.html" class="game-card">
-            <div class="game-thumbnail">
-                🌸💧
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Pastel Plant Protector!</h3>
-                <p>Vann blomstene, men pass deg for de gretne ugressene! 🌸✨</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 9: Pastel Prism Pop -->
-
-        <!-- Game 8: Pastel Pizza Party -->
-        <a href="games/pastel-pizza-party.html" class="game-card">
-            <div class="game-thumbnail">
-                🍕🌸
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Pastel Pizza Party!</h3>
-                <p>Lag magiske pizzaer ved å fange de riktige ingrediensene! 🍕✨</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
-
-        <!-- Game 7: Cosmic Cupcake Catcher -->
-        <a href="games/cosmic-cupcake-catcher.html" class="game-card">
-            <div class="game-thumbnail">
-                🧁🌌
-            </div>
-            <div class="game-info">
-                <h3>Ellie's Cosmic Cupcake Catcher</h3>
-                <p>Fang magiske kaker i verdensrommet, men pass deg for asteroider! 🧁✨</p>
-                <div class="play-now">Spill nå! ➔</div>
-            </div>
-        </a>
+    <div id="games-gallery" class="games-gallery">
+        <!-- Spill lastes inn dynamisk fra games.json -->
+    </div>
 
     <div class="footer">Laget med ❤️ og masse glitter av Ellie & Henrik</div>
     
     <script>
+        async function loadGames() {
+            try {
+                const response = await fetch('games.json');
+                const games = await response.json();
+                const gallery = document.getElementById('games-gallery');
+                
+                games.forEach(game => {
+                    const card = document.createElement('a');
+                    card.className = 'game-card';
+                    card.href = game.path;
+                    
+                    card.innerHTML = `
+                        <div class="game-thumbnail">
+                            ${game.emoji}
+                        </div>
+                        <div class="game-info">
+                            <h3>${game.name}</h3>
+                            <p>${game.description}</p>
+                            <div class="play-now">Spill nå! ➔</div>
+                        </div>
+                    `;
+                    gallery.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Kunne ikke laste spill-listen:', error);
+            }
+        }
+
         function createConfetti() {
             const colors = ['#ff69b4', '#87ceeb', '#ffd700', '#98fb98', '#dda0dd'];
             const confetti = document.createElement('div');
@@ -324,6 +231,9 @@
             setTimeout(() => confetti.remove(), 5000);
         }
         setInterval(createConfetti, 300);
+        
+        // Last spillene når siden starter
+        window.onload = loadGames;
     </script>
 </body>
 </html>
