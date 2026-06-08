@@ -226,12 +226,12 @@
             2: {
                 name: "Lure Lyder",
                 items: {
-                    'Kj': { name: 'Kjeks', emoji: '🍪', audio: 'Lydene k og j sammen' },
-                    'Skj': { name: 'Skjorte', emoji: '👕', audio: 'S k j sammen' },
-                    'Sj': { name: 'Sjø', emoji: '🌊', audio: 'Lydene s og j sammen' },
-                    'Ng': { name: 'Ring', emoji: '💍', audio: 'Lydene n og g sammen' },
-                    'Øy': { name: 'Øy', emoji: '🏝️', audio: 'Lydene ø og y sammen' },
-                    'Hj': { name: 'Hjerte', emoji: '❤️', audio: 'Lydene h og j sammen' },
+                    'Kj': { name: 'Kjeks', emoji: '🍪', audioHint: 'lyden i starten av kjeks' },
+                    'Skj': { name: 'Skjorte', emoji: '👕', audioHint: 'lyden i starten av skjorte' },
+                    'Sj': { name: 'Sjø', emoji: '🌊', audioHint: 'lyden i starten av sjokolade' },
+                    'Ng': { name: 'Ring', emoji: '💍', audioHint: 'lyden i slutten av ring' },
+                    'Øy': { name: 'Øy', emoji: '🏝️', audioHint: 'lyden i starten av øy' },
+                    'Hj': { name: 'Hjerte', emoji: '❤️', audioHint: 'lyden i starten av hjerte' },
                 }
             },
             3: {
@@ -250,6 +250,7 @@
         let currentLevel = 1;
         let streak = 0;
         let currentItem = '';
+        let lastItem = '';
 
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
@@ -269,8 +270,15 @@
 
         function speakPrompt() {
             const data = levelData[currentLevel].items[currentItem];
-            const audioText = data.audio || currentItem;
-            speak(`Hvilken lyd eller bokstav er dette? ${audioText}`);
+            let audioText = currentItem;
+            
+            if (data.audioHint) {
+                audioText = `Hvilken lyd er dette? ${data.audioHint}`;
+            } else {
+                audioText = `Hvilken lyd eller bokstav er dette? ${currentItem}`;
+            }
+            
+            speak(audioText);
         }
 
         function nextRound() {
@@ -280,7 +288,15 @@
             
             const pool = levelData[currentLevel].items;
             const keys = Object.keys(pool);
-            currentItem = keys[Math.floor(Math.random() * keys.length)];
+            
+            // Anti-repetisjon: Sjekk at vi ikke får samme lyd som sist
+            let newItem;
+            do {
+                newItem = keys[Math.floor(Math.random() * keys.length)];
+            } while (newItem === lastItem);
+            
+            currentItem = newItem;
+            lastItem = currentItem;
             
             let options = [currentItem];
             while(options.length < 3) {
