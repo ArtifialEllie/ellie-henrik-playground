@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bokstav-dyrehagen 🦄</title>
+    <title>Bokstav- og Lyd-eventyret 🦄</title>
     <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
@@ -21,7 +21,7 @@
 
         h1 {
             color: #ff69b4;
-            font-size: 3rem;
+            font-size: 2.5rem;
             text-shadow: 2px 2px #fff;
             margin-bottom: 10px;
         }
@@ -34,6 +34,17 @@
             border: 8px solid #ffeb3b;
             max-width: 90%;
             width: 600px;
+            position: relative;
+        }
+
+        #status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff69b4;
         }
 
         #prompt {
@@ -49,7 +60,7 @@
         }
 
         .letter-btn {
-            font-size: 4rem;
+            font-size: 3rem;
             padding: 20px;
             border: none;
             border-radius: 25px;
@@ -58,6 +69,10 @@
             color: white;
             transition: transform 0.1s, background-color 0.2s;
             box-shadow: 0 8px 0 #0288d1;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .letter-btn:active {
@@ -131,114 +146,60 @@
             cursor: pointer;
             margin-bottom: 10px;
         }
+
+        #level-up-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: 10px solid #ffeb3b;
+            padding: 40px;
+            border-radius: 50px;
+            font-size: 3rem;
+            color: #ff69b4;
+            display: none;
+            z-index: 10;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
     <div id="start-screen">
-        <h1>Bokstav-dyrehagen 🦄</h1>
+        <h1>Bokstav- og Lyd-eventyret 🦄</h1>
+        <p style="font-size: 1.5rem;">Klar for å lære lyder?</p>
         <button id="start-btn">START SPILLET! 🌟</button>
     </div>
 
-    <h1>Bokstav-dyrehagen 🦄</h1>
+    <h1>Bokstav- og Lyd-eventyret 🦄</h1>
     
     <div id="game-container">
-        <button class="repeat-btn" onclick="speakLetter()">🔊</button>
-        <div id="prompt">Hvilken bokstav hører du?</div>
+        <div id="level-up-banner">NIVÅ OPPHØYD! 🎉</div>
         
-        <div id="letter-grid">
-            <!-- Knapper genereres av JS -->
+        <div id="status-bar">
+            <span id="level-text">Nivå: 1 (Enkel)</span>
+            <span id="streak-text">Streak: 0 🔥</span>
         </div>
+
+        <button class="repeat-btn" onclick="speakPrompt()">🔊</button>
+        <div id="prompt">Hvilken lyd hører du?</div>
+        
+        <div id="letter-grid"></div>
 
         <div id="result"></div>
         <div id="animal-name"></div>
     </div>
 
     <script>
-        const animals = {
-            'A': { name: 'Ape', emoji: '🐒' },
-            'B': { name: 'Bjørn', emoji: '🐻' },
-            'D': { name: 'Delfin', emoji: '🐬' },
-            'E': { name: 'Elefant', emoji: '🐘' },
-            'F': { name: 'Fisk', emoji: '🐟' },
-            'G': { name: 'Giraff', emoji: '🦒' },
-            'H': { name: 'Hund', emoji: '🐶' },
-            'I': { name: 'Igle', emoji: '🐛' },
-            'J': { name: 'Jaguar', emoji: '🐆' },
-            'K': { name: 'Katt', emoji: '🐱' },
-            'L': { name: 'Løve', emoji: '🦁' },
-            'M': { name: 'Mus', emoji: '🐭' },
-            'N': { name: 'Neshorn', emoji: '🦏' },
-            'O': { name: 'Oter', emoji: '🦦' },
-            'P': { name: 'Panda', emoji: '🐼' },
-            'R': { name: 'Rødrev', emoji: '🦊' },
-            'S': { name: 'Sel', emoji: '🦭' },
-            'T': { name: 'Tiger', emoji: '🐯' },
-            'U': { name: 'Ugle', emoji: '🦉' },
-            'V': { name: 'Valross', emoji: '🦭' },
-            'Y': { name: 'Yak', emoji: '🐂' },
-            'Z': { name: 'Zebra', emoji: '🦓' },
-            'Æ': { name: 'Ærfugl', emoji: '🦆' },
-            'Ø': { name: 'Ørn', emoji: '🦅' },
-            'Å': { name: 'Ål', emoji: '🐍' },
-        };
-
-        const letters = Object.keys(animals);
-        let currentLetter = '';
-
-        const startScreen = document.getElementById('start-screen');
-        const startBtn = document.getElementById('start-btn');
-        const letterGrid = document.getElementById('letter-grid');
-        const resultDiv = document.getElementById('result');
-        const nameDiv = document.getElementById('animal-name');
-
-        function speak(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'no-NO';
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
-        }
-
-        function speakLetter() {
-            speak(`Hvilken bokstav er dette? ${currentLetter}`);
-        }
-
-        function nextRound() {
-            resultDiv.innerText = '';
-            nameDiv.innerText = '';
-            letterGrid.innerHTML = '';
-            
-            currentLetter = letters[Math.floor(Math.random() * letters.length)];
-            
-            let options = [currentLetter];
-            while(options.length < 3) {
-                let randomL = letters[Math.floor(Math.random() * letters.length)];
-                if(!options.includes(randomL)) options.push(randomL);
-            }
-            
-            options.sort(() => Math.random() - 0.5);
-
-            options.forEach(l => {
-                const btn = document.createElement('button');
-                btn.className = 'letter-btn';
-                btn.classList.add('letter-btn'); 
-                btn.innerText = l;
-                btn.onclick = () => checkAnswer(l, btn);
-                letterGrid.appendChild(btn);
-            });
-
-            setTimeout(speakLetter, 500);
-        }
-
-        function checkAnswer(letter, btn) {
-            if(letter === currentLetter) {
-                btn.classList.add('correct');
-                const animal = {
+        const levelData = {
+            1: {
+                name: "Enkel",
+                items: {
                     'A': { name: 'Ape', emoji: '🐒' },
                     'B': { name: 'Bjørn', emoji: '🐻' },
                     'D': { name: 'Delfin', emoji: '🐬' },
                     'E': { name: 'Elefant', emoji: '🐘' },
-                    ' la la la la la la l la la la la laL': { name: 'Løve', emoji: '🦁' },
                     'F': { name: 'Fisk', emoji: '🐟' },
                     'G': { name: 'Giraff', emoji: '🦒' },
                     'H': { name: 'Hund', emoji: '🐶' },
@@ -260,26 +221,136 @@
                     'Æ': { name: 'Ærfugl', emoji: '🦆' },
                     'Ø': { name: 'Ørn', emoji: '🦅' },
                     'Å': { name: 'Ål', emoji: '🐍' },
-                };
-                resultDiv.innerText = animal[currentLetter].emoji;
+                }
+            },
+            2: {
+                name: "Lure Lyder",
+                items: {
+                    'Kj': { name: 'Kjeks', emoji: '🍪', audio: 'Lydene k og j sammen' },
+                    'Skj': { name: 'Skjorte', emoji: '👕', audio: 'S k j sammen' },
+                    'Sj': { name: 'Sjø', emoji: '🌊', audio: 'Lydene s og j sammen' },
+                    'Ng': { name: 'Ring', emoji: '💍', audio: 'Lydene n og g sammen' },
+                    'Øy': { name: 'Øy', emoji: '🏝️', audio: 'Lydene ø og y sammen' },
+                    'Hj': { name: 'Hjerte', emoji: '❤️', audio: 'Lydene h og j sammen' },
+                }
+            },
+            3: {
+                name: "Ord-utfordring",
+                items: {
+                    'Sol': { name: 'Sol', emoji: '☀️' },
+                    'Hus': { name: 'Hus', emoji: '🏠' },
+                    'Bil': { name: 'Bil', emoji: '🚗' },
+                    'Is': { name: 'Is', emoji: '🍦' },
+                    'Ball': { name: 'Ball', emoji: '⚽' },
+                    'Kake': { name: 'Kake', emoji: '🍰' },
+                }
+            }
+        };
+
+        let currentLevel = 1;
+        let streak = 0;
+        let currentItem = '';
+
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const letterGrid = document.getElementById('letter-grid');
+        const resultDiv = document.getElementById('result');
+        const nameDiv = document.getElementById('animal-name');
+        const levelText = document.getElementById('level-text');
+        const streakText = document.getElementById('streak-text');
+        const levelUpBanner = document.getElementById('level-up-banner');
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'no-NO';
+            utterance.rate = 0.8;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function speakPrompt() {
+            const data = levelData[currentLevel].items[currentItem];
+            const audioText = data.audio || currentItem;
+            speak(`Hvilken lyd eller bokstav er dette? ${audioText}`);
+        }
+
+        function nextRound() {
+            resultDiv.innerText = '';
+            nameDiv.innerText = '';
+            letterGrid.innerHTML = '';
+            
+            const pool = levelData[currentLevel].items;
+            const keys = Object.keys(pool);
+            currentItem = keys[Math.floor(Math.random() * keys.length)];
+            
+            let options = [currentItem];
+            while(options.length < 3) {
+                let randomK = keys[Math.floor(Math.random() * keys.length)];
+                if(!options.includes(randomK)) options.push(randomK);
+            }
+            
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(k => {
+                const btn = document.createElement('button');
+                btn.className = 'letter-btn';
+                btn.innerText = k;
+                btn.onclick = () => checkAnswer(k, btn);
+                letterGrid.appendChild(btn);
+            });
+
+            setTimeout(speakPrompt, 500);
+        }
+
+        function checkAnswer(letter, btn) {
+            if(letter === currentItem) {
+                btn.classList.add('correct');
+                streak++;
+                
+                const item = levelData[currentLevel].items[currentItem];
+                resultDiv.innerText = item.emoji;
                 resultDiv.classList.add('pop-in');
-                nameDiv.innerText = `${currentLetter} er for ${animal[currentLetter].name}!`;
+                nameDiv.innerText = `${currentItem} er for ${item.name}!`;
                 
-                speak(`Riktig! ${currentLetter} er for ${animal[currentLetter].name}`);
+                speak(`Riktig! ${currentItem} er for ${item.name}`);
                 
+                updateStatus();
+                
+                if(streak >= 5 && currentLevel < 3) {
+                    levelUp();
+                }
+
                 setTimeout(() => {
                     resultDiv.classList.remove('pop-in');
                     nextRound();
                 }, 3000);
             } else {
                 btn.classList.add('wrong');
+                streak = 0;
+                updateStatus();
                 speak(`Nei, prøv igjen!`);
                 setTimeout(() => btn.classList.remove('wrong'), 500);
             }
         }
 
+        function updateStatus() {
+            levelText.innerText = `Nivå: ${currentLevel} (${levelData[currentLevel].name})`;
+            streakText.innerText = `Streak: ${streak} 🔥`;
+        }
+
+        function levelUp() {
+            currentLevel++;
+            streak = 0;
+            levelUpBanner.style.display = 'block';
+            speak(`Wow! Du er superflink! Nå går vi opp til nivå ${currentLevel}!`);
+            
+            setTimeout(() => {
+                levelUpBanner.style.display = 'none';
+            }, 3000);
+        }
+
         startBtn.onclick = () => {
             startScreen.style.display = 'none';
+            updateStatus();
             nextRound();
         };
     </script>
