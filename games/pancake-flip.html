@@ -118,6 +118,8 @@
         let stack = [];
         let activePancake = null;
         let particles = [];
+        let slideDirection = 1;
+        let slideSpeed = 3;
 
         class Pancake {
             constructor(x, y, color, topping = null) {
@@ -138,8 +140,14 @@
                 if (this.isFlipping) {
                     this.y += this.vy;
                     this.x += this.vx;
-                    this.vy += 0.4; // Gravity
+                    this.vy += 0.5; // Gravity
                     this.rotation += this.vr;
+                } else if (this.y > canvasHeight - 100) {
+                    // Slide on the bottom
+                    this.x += slideSpeed * slideDirection;
+                    if (this.x <= 0 || this.x + this.width >= canvasWidth) {
+                        slideDirection *= -1;
+                    }
                 }
             }
 
@@ -148,7 +156,6 @@
                 ctx.translate(this.x + this.width/2, this.y + this.height/2);
                 ctx.rotate(this.rotation);
                 
-                // Pancake body
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
                 ctx.ellipse(0, 0, this.width/2, this.height/2, 0, 0, Math.PI * 2);
@@ -157,7 +164,6 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // Topping
                 if (this.topping) {
                     ctx.font = '20px Arial';
                     ctx.textAlign = 'center';
@@ -201,10 +207,10 @@
         }
 
         function spawnActivePancake() {
-            const last = stack[stack.length - 1];
             const color = pancakeColors[Math.floor(Math.random() * pancakeColors.length)];
             const topping = toppings[Math.floor(Math.random() * toppings.length)];
-            activePancake = new Pancake(last.x, last.y - 20, color, topping);
+            // Start at the bottom
+            activePancake = new Pancake(0, canvasHeight - 80, color, topping);
             activePancake.isFlipping = false;
         }
 
@@ -212,9 +218,9 @@
             if (!gameActive || activePancake.isFlipping) return;
 
             activePancake.isFlipping = true;
-            activePancake.vy = -12 - Math.random() * 4;
-            activePancake.vx = (Math.random() - 0.5) * 2;
-            activePancake.vr = (Math.random() - 0.5) * 0.2;
+            activePancake.vy = -15; // Consistent jump height
+            activePancake.vx = 0; // Only vertical jump
+            activePancake.vr = (Math.random() - 0.5) * 0.1;
         }
 
         function checkLanding() {
@@ -222,29 +228,28 @@
 
             const last = stack[stack.length - 1];
             if (activePancake.vy > 0 && activePancake.y >= last.y - 20) {
-                // Landing check
                 const overlap = Math.min(activePancake.x + activePancake.width, last.x + last.width) - 
                                 Math.max(activePancake.x, last.x);
                 
-                if (overlap > 40) {
-                    // Success!
+                if (overlap > 50) {
                     activePancake.isFlipping = false;
                     activePancake.vy = 0;
                     activePancake.vx = 0;
                     activePancake.rotation = 0;
                     
-                    // Snap to stack center-ish
-                    activePancake.x = last.x + (overlap - activePancake.width)/2; // simplistic centering
+                    // Snap to stack
+                    activePancake.x = last.x + (overlap - activePancake.width)/2;
                     
                     stack.push(activePancake);
                     score++;
                     scoreEl.innerText = score;
                     
-                    createPopEffect(activePancake.x + activePancake.width/2, activePancake.y, activePancake.color);
+                    // Increase speed as it gets harder
+                    slideSpeed += 0.2;
                     
+                    createPopEffect(activePancake.x + activePancake.width/2, activePancake.y, activePancake.color);
                     spawnActivePancake();
                 } else {
-                    // Miss!
                     gameOver();
                 }
             }
@@ -272,6 +277,7 @@
 
         function resetGame() {
             score = 0;
+            slideSpeed = 3;
             scoreEl.innerText = '0';
             gameActive = true;
             overlay.style.display = 'none';
@@ -281,6 +287,15 @@
 
         function update() {
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            // Draw target line
+            ctx.strokeStyle = 'rgba(255, 193, 227, 0.5)';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, canvasHeight - 100);
+            ctx.lineTo(canvasWidth, canvasHeight - 100);
+            ctx.stroke();
+            ctx.setLineDash([]);
 
             stack.forEach(p => p.draw());
             
