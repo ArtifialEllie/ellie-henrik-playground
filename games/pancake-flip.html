@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ellie's Pastel Pancake Flip! 🥞</title>
+    <title>Ellie's Pastel Pancake Flip! 🥞✨</title>
     <style>
         :root {
             --bg-color: #fff9c4;
@@ -35,6 +35,22 @@
             z-index: 10;
             pointer-events: none;
             text-shadow: 2px 2px white;
+        }
+        #combo-ui {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary-pink);
+            z-index: 10;
+            text-shadow: 2px 2px white;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        #combo-ui.show {
+            opacity: 1;
+            transform: scale(1.2);
         }
         canvas {
             display: block;
@@ -85,6 +101,20 @@
             transition: opacity 0.2s, transform 0.5s;
             z-index: 15;
         }
+        .floating-text {
+            position: absolute;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--primary-pink);
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 15;
+            text-shadow: 2px 2px white;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -92,6 +122,7 @@
         <div>Sabel: <span id="score">0</span> 🥞</div>
         <div>Beste: <span id="highscore">0</span> 🏆</div>
     </div>
+    <div id="combo-ui">COMBO x<span id="combo-val">0</span> ✨</div>
     <div id="perfect-text">PERFEKT! ✨</div>
     
     <div id="overlay">
@@ -107,12 +138,15 @@
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const highscoreEl = document.getElementById('highscore');
+        const comboEl = document.getElementById('combo-ui');
+        const comboValEl = document.getElementById('combo-val');
         const overlay = document.getElementById('overlay');
         const statusText = document.getElementById('status-text');
         const finalScoreEl = document.getElementById('final-score');
         const perfectText = document.getElementById('perfect-text');
 
         let score = 0;
+        let combo = 0;
         let highscore = localStorage.getItem('pancakeFlipHighscore') || 0;
         let gameActive = true;
         let canvasWidth, canvasHeight;
@@ -135,6 +169,9 @@
         let stack = [];
         let activePancake = null;
         let particles = [];
+        let slideDirection = 1;
+        let slideSpeed = 3;
+        let currentTotalLean = 0;
 
         class Pancake {
             constructor(x, y, color, topping = null, width = 120) {
@@ -151,7 +188,7 @@
                 this.isFlipping = false;
                 this.scaleY = 1; 
                 this.targetScaleY = 1;
-                this.tiltOffset = 0; // The tilt this pancake adds to the stack
+                this.tiltOffset = 0;
             }
 
             update() {
@@ -160,6 +197,11 @@
                     this.x += this.vx;
                     this.vy += 0.4;
                     this.rotation += this.vr;
+                } else if (this.y > canvasHeight - 100 && !stack.includes(this)) {
+                    this.x += slideSpeed * slideDirection;
+                    if (this.x <= 0 || this.x + this.width >= canvasWidth) {
+                        slideDirection *= -1;
+                    }
                 }
                 this.scaleY += (this.targetScaleY - this.scaleY) * 0.2;
                 if (Math.abs(this.scaleY - this.targetScaleY) < 0.01) {
@@ -191,24 +233,27 @@
         }
 
         class Particle {
-            constructor(x, y, color) {
+            constructor(x, y, color, isSyrup = false) {
                 this.x = x;
                 this.y = y;
                 this.color = color;
+                this.isSyrup = isSyrup;
                 this.vx = (Math.random() - 0.5) * 8;
                 this.vy = (Math.random() - 0.5) * 8;
                 this.life = 1.0;
+                this.radius = isSyrup ? Math.random() * 4 + 2 : Math.random() * 3 + 1;
             }
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
+                this.vy += this.isSyrup ? 0.1 : 0;
                 this.life -= 0.02;
             }
             draw() {
                 ctx.globalAlpha = this.life;
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.globalAlpha = 1.0;
             }
@@ -216,20 +261,21 @@
 
         function initStack() {
             stack = [];
+            currentTotalLean = 0;
             const startY = canvasHeight - 50;
             const startX = canvasWidth / 2 - 60;
-            const base = new Pancake(startX, startY, pancakeColors[0]);
-            stack.push(base);
+            stack.push(new Pancake(startX, startY, pancakeColors[0]));
             spawnActivePancake();
         }
 
         function spawnActivePancake() {
-            const last = stack[stack.length - 1];
             const color = pancakeColors[Math.floor(Math.random() * pancakeColors.length)];
             const topping = toppings[Math.floor(Math.random() * toppings.length)];
-            const newWidth = Math.max(60, 120 - (stack.length * 2));
+            const sizeReduction = Math.min(40, stack.length * 2);
+            const currentWidth = 120 - sizeReduction;
             
-            activePancake = new Pancake(last.x, last.y - 20, color, topping, newWidth);
+            const last = stack[stack.length - 1];
+            activePancake = new Pancake(last.x, last.y - 20, color, topping, currentWidth);
             activePancake.isFlipping = false;
         }
 
@@ -241,13 +287,25 @@
             activePancake.vr = (Math.random() - 0.5) * 0.2;
         }
 
+        function showFloatingText(text, x, y) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
         function checkLanding() {
             if (!activePancake || !activePancake.isFlipping) return;
 
             const last = stack[stack.length - 1];
+            const visualLastX = last.x + currentTotalLean;
+            
             if (activePancake.vy > 0 && activePancake.y >= last.y - 20) {
-                const overlap = Math.min(activePancake.x + activePancake.width, last.x + last.width) - 
-                                Math.max(activePancake.x, last.x);
+                const overlap = Math.min(activePancake.x + activePancake.width, visualLastX + last.width) - 
+                                Math.max(activePancake.x, visualLastX);
                 
                 if (overlap > 30) {
                     activePancake.isFlipping = false;
@@ -255,13 +313,22 @@
                     activePancake.vx = 0;
                     activePancake.rotation = 0;
                     
-                    const centerDiff = (activePancake.x + activePancake.width/2) - (last.x + last.width/2);
+                    const centerDiff = (activePancake.x + activePancake.width/2) - (visualLastX + last.width/2);
+                    currentTotalLean += centerDiff * 0.1;
                     activePancake.tiltOffset = centerDiff * 0.002;
                     
                     if (Math.abs(centerDiff) < 10) {
                         showPerfect();
+                        combo++;
                         score += 2;
+                        showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
+                        if (combo > 1) {
+                            comboEl.classList.add('show');
+                            comboValEl.innerText = combo;
+                        }
                     } else {
+                        combo = 0;
+                        comboEl.classList.remove('show');
                         score++;
                     }
 
@@ -291,6 +358,9 @@
             for (let i = 0; i < 15; i++) {
                 particles.push(new Particle(x, y, color));
             }
+            for (let i = 0; i < 5; i++) {
+                particles.push(new Particle(x, y, '#fbc02d', true));
+            }
         }
 
         function gameOver() {
@@ -306,11 +376,22 @@
             }
             finalScoreEl.innerText = `Du stablet ${score} pannekaker!`;
             overlay.style.display = 'block';
+            
+            // Tip the tower over
+            stack.forEach(p => {
+                p.isFlipping = true;
+                p.vy = 2;
+                p.vx = currentTotalLean > 0 ? 2 : -2;
+                p.vr = (Math.random() - 0.5) * 0.2;
+            });
         }
 
         function resetGame() {
             score = 0;
+            combo = 0;
+            slideSpeed = 3;
             scoreEl.innerText = '0';
+            comboEl.classList.remove('show');
             gameActive = true;
             overlay.style.display = 'none';
             particles = [];
@@ -335,7 +416,6 @@
             
             if (activePancake) {
                 activePancake.update();
-                // Use the tilt of the top pancake for the active one too
                 let topTilt = 0;
                 stack.forEach(p => topTilt += p.tiltOffset);
                 activePancake.draw(topTilt);
