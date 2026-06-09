@@ -154,8 +154,29 @@
         
         highscoreEl.innerText = highscore;
 
-        const pancakeColors = ['#ffc1e3', '#b3e5fc', '#e1bee7', '#c8e6c9', '#fff59d', '#ffccbc'];
+        const pancakeColors = {
+            normal: ['#ffc1e3', '#b3e5fc', '#e1bee7', '#c8e6c9', '#fff59d', '#ffccbc'],
+            gold: ['#ffd700', '#ffecb3', '#fff176'],
+            rainbow: ['#ff80ab', '#80d8ff', '#ccff90', '#ffff8d', '#cfd8dc'],
+            glitter: ['#f3e5f5', '#e1bee7', '#ce93d8']
+        };
         const toppings = ['🍓', '🫐', '🍯', '🧈', '✨', '🌸'];
+
+        // Audio Context for "Juice"
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        function playSound(freq, type, duration, volume = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
 
         function resize() {
             canvasWidth = window.innerWidth;
@@ -269,7 +290,24 @@
         }
 
         function spawnActivePancake() {
-            const color = pancakeColors[Math.floor(Math.random() * pancakeColors.length)];
+            const rand = Math.random();
+            let colorSet;
+            let isSpecial = false;
+            let specialType = '';
+
+            if (rand > 0.95) {
+                colorSet = pancakeColors.gold;
+                specialType = 'gold';
+                isSpecial = true;
+            } else if (rand > 0.90) {
+                colorSet = pancakeColors.rainbow;
+                specialType = 'rainbow';
+                isSpecial = true;
+            } else {
+                colorSet = pancakeColors.normal;
+            }
+
+            const color = colorSet[Math.floor(Math.random() * colorSet.length)];
             const topping = toppings[Math.floor(Math.random() * toppings.length)];
             const sizeReduction = Math.min(40, stack.length * 2);
             const currentWidth = 120 - sizeReduction;
@@ -277,6 +315,8 @@
             const last = stack[stack.length - 1];
             activePancake = new Pancake(last.x, last.y - 20, color, topping, currentWidth);
             activePancake.isFlipping = false;
+            activePancake.isSpecial = isSpecial;
+            activePancake.specialType = specialType;
         }
 
         function flipPancake() {
@@ -299,7 +339,7 @@
 
         function checkLanding() {
             if (!activePancake || !activePancake.isFlipping) return;
-
+        
             const last = stack[stack.length - 1];
             const visualLastX = last.x + currentTotalLean;
             
@@ -322,6 +362,7 @@
                         combo++;
                         score += 2;
                         showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
+                        playSound(660, 'sine', 0.1);
                         if (combo > 1) {
                             comboEl.classList.add('show');
                             comboValEl.innerText = combo;
@@ -330,11 +371,25 @@
                         combo = 0;
                         comboEl.classList.remove('show');
                         score++;
+                        playSound(440, 'sine', 0.1);
                     }
 
+                    // Special Pancake Bonuses
+                    if (activePancake.isSpecial) {
+                        if (activePancake.specialType === 'gold') {
+                            score += 5;
+                            showFloatingText("GOLDEN! 🏆 +5", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(880, 'square', 0.2);
+                        } else if (activePancake.specialType === 'rainbow') {
+                            score += 3;
+                            showFloatingText("RAINBOW! 🌈 +3", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(523.25, 'triangle', 0.2);
+                        }
+                    }
+        
                     activePancake.targetScaleY = 0.7;
                     setTimeout(() => activePancake.targetScaleY = 1, 100);
-
+        
                     stack.push(activePancake);
                     scoreEl.innerText = score;
                     createPopEffect(activePancake.x + activePancake.width/2, activePancake.y, activePancake.color);
@@ -366,11 +421,13 @@
         function gameOver() {
             gameActive = false;
             shakeAmount = 20;
+            playSound(150, 'sawtooth', 0.5, 0.2);
             if (score > highscore) {
                 highscore = score;
                 localStorage.setItem('pancakeFlipHighscore', highscore);
                 highscoreEl.innerText = highscore;
                 statusText.innerText = "NY REKORD! 🎉";
+                playSound(523.25, 'sine', 0.5);
             } else {
                 statusText.innerText = "Oi! Det falt! 🌸";
             }
