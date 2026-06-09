@@ -7,6 +7,7 @@
     <style>
         :root {
             --space-bg: #2d1b4e;
+            --shield-color: #a2ffdf;
             --pastel-pink: #ffb7ce;
             --pastel-blue: #b2e2f2;
             --pastel-purple: #d1b3ff;
@@ -33,6 +34,11 @@
             font-size: 24px;
             font-weight: bold;
             z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-shadow: 2px 2px #ff69b4;
             pointer-events: none;
             display: flex;
             flex-direction: column;
@@ -88,6 +94,15 @@
             z-index: 10;
             animation: bounce 0.5s infinite alternate;
         }
+        .combo-text {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 30px;
+            color: var(--pastel-yellow);
+            text-shadow: 2px 2px #ff69b4;
+            z-index: 10;
+        }
         @keyframes bounce {
             from { transform: translateX(-50%) translateY(0); }
             to { transform: translateX(-50%) translateY(-10px); }
@@ -99,8 +114,10 @@
         <div>Kaker: <span id="score">0</span> 🧁</div>
         <div>Beste: <span id="highscore">0</span> 🏆</div>
     </div>
+    <div id="combo-ui" class="combo-text"></div>
     
     <div id="magnet-alert" class="magnet-alert">MAGISK MAGNET! ✨🧲</div>
+    <div id="shield-alert" class="magnet-alert">SKJOLD AKTIVERT! 🛡️</div>
 
     <div id="overlay">
         <h1 id="status-text">Kosmisk Kaos! 🌌</h1>
@@ -119,13 +136,22 @@
         const statusText = document.getElementById('status-text');
         const finalScoreEl = document.getElementById('final-score');
         const magnetAlert = document.getElementById('magnet-alert');
+        const shieldAlert = document.getElementById('shield-alert');
+        const comboUi = document.getElementById('combo-ui');
 
         let score = 0;
+        let combo = 0;
+        let comboTimer = 0;
         let highscore = localStorage.getItem('cosmicCupcakeHighscore') || 0;
         let gameActive = true;
         let canvasWidth, canvasHeight;
         let magnetActive = false;
         let magnetTimer = 0;
+        let shieldActive = false;
+        let slowMoActive = false;
+        let slowMoTimer = 0;
+        let screenShake = 0;
+        let playerScale = 1;
 
         highscoreEl.innerText = highscore;
 
@@ -154,6 +180,22 @@
         let particles = [];
         let stars = [];
 
+        // Audio Context for "Juice"
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        function playSound(freq, type, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
         // Initialize static stars for background
         for (let i = 0; i < 100; i++) {
             stars.push({
@@ -170,13 +212,22 @@
                 this.radius = 20;
                 this.x = Math.random() * (canvasWidth - this.radius * 2) + this.radius;
                 this.y = -this.radius;
-                this.speed = 2 + Math.random() * 3 + (score / 20);
+                this.baseSpeed = 2 + Math.random() * 3 + (score / 50);
+                this.speed = this.baseSpeed;
                 
                 const rand = Math.random();
-                if (rand > 0.9) {
+                if (rand > 0.95) {
                     this.type = 'gold';
                     this.color = '#ffd700';
                     this.emoji = '🌟';
+                } else if (rand > 0.90) {
+                    this.type = 'shield';
+                    this.color = '#a2ffdf';
+                    this.emoji = '🛡️';
+                } else if (rand > 0.85) {
+                    this.type = 'slowmo';
+                    this.color = '#b2e2f2';
+                    this.emoji = '❄️';
                 } else if (rand < 0.15) {
                     this.type = 'rock';
                     this.color = '#888';
@@ -193,6 +244,7 @@
                     const dx = player.x - this.x;
                     this.x += dx * 0.05;
                 }
+                this.speed = slowMoActive ? this.baseSpeed * 0.4 : this.baseSpeed;
                 this.y += this.speed;
             }
 
@@ -265,6 +317,14 @@
 
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+            // Screen Shake
+            if (screenShake > 0) {
+                ctx.save();
+                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+                screenShake *= 0.9;
+                if (screenShake < 0.1) screenShake = 0;
+            }
+
             // Draw Background Stars
             stars.forEach(s => {
                 s.opacity += s.blinkSpeed;
@@ -286,9 +346,19 @@
                 }
             }
 
+            // Combo Logic
+            if (comboTimer > 0) {
+                comboTimer--;
+                if (comboTimer <= 0) {
+                    combo = 0;
+                    comboUi.innerText = '';
+                }
+            }
+
             // Draw Player Bowl
             ctx.save();
             ctx.translate(player.x, player.y);
+            ctx.scale(playerScale, playerScale);
             
             // Bowl Body
             ctx.fillStyle = player.color;
@@ -316,6 +386,8 @@
             
             ctx.restore();
 
+            if (screenShake > 0) ctx.restore();
+
             // Update and Draw Items
             for (let i = items.length - 1; i >= 0; i--) {
                 const item = items[i];
@@ -329,14 +401,43 @@
 
                 if (dist < 50) {
                     if (item.type === 'normal') {
-                        score++;
+                        combo++;
+                        comboTimer = 60;
+                        const multiplier = Math.floor(combo / 5) + 1;
+                        score += multiplier;
+                        comboUi.innerText = `COMBO x${multiplier}! ✨`;
+                        playSound(440 + (combo * 20), 'sine', 0.1);
                         createBurst(item.x, item.y, item.color);
+                        playerScale = 1.2;
                     } else if (item.type === 'gold') {
                         score += 5;
                         activateMagnet();
+                        playSound(880, 'square', 0.2);
                         createBurst(item.x, item.y, 'gold');
+                        playerScale = 1.3;
+                    } else if (item.type === 'shield') {
+                        shieldActive = true;
+                        shieldAlert.style.display = 'block';
+                        playSound(600, 'triangle', 0.3);
+                        createBurst(item.x, item.y, item.color);
+                        playerScale = 1.2;
+                    } else if (item.type === 'slowmo') {
+                        activateSlowMo();
+                        playSound(300, 'sine', 0.4);
+                        createBurst(item.x, item.y, item.color);
+                        playerScale = 1.2;
                     } else if (item.type === 'rock') {
-                        gameOver();
+                        if (shieldActive) {
+                            shieldActive = false;
+                            shieldAlert.style.display = 'none';
+                            playSound(200, 'sine', 0.2);
+                            createBurst(item.x, item.y, 'white');
+                            playerScale = 1.2;
+                        } else {
+                            screenShake = 20;
+                            playSound(100, 'sawtooth', 0.5);
+                            gameOver();
+                        }
                     }
                     
                     scoreEl.innerText = score;
@@ -358,6 +459,8 @@
                 }
             }
 
+            playerScale += (1 - playerScale) * 0.2;
+
             requestAnimationFrame(update);
         }
 
@@ -365,6 +468,13 @@
             magnetActive = true;
             magnetTimer = 300; // Approx 5 seconds at 60fps
             magnetAlert.style.display = 'block';
+        }
+
+        function activateSlowMo() {
+            slowMoActive = true;
+            slowMoTimer = 300; 
+            // Add visual cue for slowmo? maybe background color shift.
+            setTimeout(() => { slowMoActive = false; }, 5000);
         }
 
         function gameOver() {
@@ -383,11 +493,17 @@
 
         function resetGame() {
             score = 0;
+            combo = 0;
+            comboTimer = 0;
+            comboUi.innerText = '';
             scoreEl.innerText = '0';
             items = [];
             particles = [];
             magnetActive = false;
             magnetAlert.style.display = 'none';
+            shieldActive = false;
+            shieldAlert.style.display = 'none';
+            slowMoActive = false;
             gameActive = true;
             overlay.style.display = 'none';
             spawnItem();
