@@ -6,15 +6,22 @@
     <title>Ellie's Dreamy Cloud Hop ☁️✨</title>
     <style>
         :root {
+            --primary-pink: #ffb7ce;
+            --primary-blue: #b2e2f2;
+            --primary-purple: #d1b3ff;
+            --primary-yellow: #fff9b1;
+            --bg-top: #a1c4fd;
+            --bg-bottom: #c2e9fb;
+            --bg-sunset-top: #ff7e5f;
+            --bg-sunset-bottom: #feb47b;
+            --bg-twilight-top: #6a11cb;
+            --bg-twilight-bottom: #2575fc;
+            --bg-space-top: #0f0c29;
+            --bg-space-bottom: #302b63;
+            --text-color: #5d4037;
+            --accent-gold: #ffd700;
             --primary: #ff69b4;
-            --secondary: #87ceeb;
-            --bg: #e0f7fa;
-            --text: #4a4a4a;
             --accent: #ffd700;
-            --cloud: #ffffff;
-            --pastel-pink: #ffb7ce;
-            --pastel-blue: #b2e2f2;
-            --pastel-purple: #d1b3ff;
         }
         body {
             margin: 0;
@@ -24,9 +31,9 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background-color: var(--bg);
+            background: var(--current-bg, linear-gradient(to bottom, var(--bg-top), var(--bg-bottom)));
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
-            color: var(--text);
+            color: var(--text-color);
             overflow: hidden;
             user-select: none;
         }
@@ -34,10 +41,10 @@
             position: relative;
             width: 400px;
             height: 600px;
-            background: linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%);
+            background: var(--game-bg, linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%));
             border: 8px solid white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         canvas {
@@ -56,12 +63,17 @@
             font-size: 2.5rem;
             font-weight: bold;
             color: white;
-            text-shadow: 3px 3px var(--primary);
+            text-shadow: 3px 3px var(--primary-pink);
+        }
+        #highscore {
+            font-size: 1.2rem;
+            color: white;
+            text-shadow: 1px 1px var(--primary-pink);
         }
         #combo-ui {
             font-size: 1.5rem;
-            color: var(--accent);
-            text-shadow: 2px 2px var(--primary);
+            color: var(--accent-gold);
+            text-shadow: 2px 2px var(--primary-pink);
             opacity: 0;
             transition: opacity 0.2s, transform 0.2s;
             transform: scale(0.8);
@@ -76,7 +88,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -84,33 +96,42 @@
             text-align: center;
             z-index: 20;
             transition: opacity 0.3s;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(5px);
         }
         .hidden {
             display: none !important;
+            opacity: 0;
         }
         h1 {
-            color: var(--primary);
+            color: var(--primary-pink);
+            font-size: 2.5rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px white;
-            font-size: 2.5rem;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
         }
         .btn {
-            background-color: var(--primary);
+            background-color: var(--primary-pink);
             color: white;
             padding: 15px 30px;
             border-radius: 50px;
-            text-decoration: none;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             border: none;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.2s;
-            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            box-shadow: 0 6px 0 #f06292;
+            font-family: inherit;
         }
         .btn:hover {
             transform: scale(1.1);
-            background-color: #ff1493;
+            background-color: #f06292;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #f06292;
         }
         .controls-hint {
             margin-top: 20px;
@@ -122,7 +143,7 @@
             pointer-events: none;
             font-weight: bold;
             font-size: 20px;
-            color: var(--primary);
+            color: var(--primary-pink);
             animation: floatUp 0.8s ease-out forwards;
             z-index: 15;
             text-shadow: 1px 1px white;
@@ -138,6 +159,7 @@
     <div id="game-container">
         <div id="ui">
             <div id="score">0</div>
+            <div id="highscore">Beste: 0 🏆</div>
             <div id="combo-ui">Combo x1 ✨</div>
         </div>
         
@@ -145,9 +167,9 @@
 
         <div id="overlay">
             <h1 id="overlay-title">Dreamy Cloud Hop ☁️</h1>
-            <p id="overlay-text">Jump as high as you can!</p>
-            <button class="btn" id="start-btn">Start Jumping! ✨</button>
-            <div class="controls-hint">Use Left/Right Arrows or A/D to move! 🐾</div>
+            <p id="overlay-text">Hopp så høyt du kan! ✨</p>
+            <button class="btn" id="start-btn">Start Hopping! 🐾</button>
+            <div class="controls-hint">Bruk Pilene eller A/D for å bevege deg!</div>
         </div>
     </div>
 
@@ -155,6 +177,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
+        const highscoreElement = document.getElementById('highscore');
         const comboElement = document.getElementById('combo-ui');
         const overlay = document.getElementById('overlay');
         const startBtn = document.getElementById('start-btn');
@@ -164,7 +187,6 @@
         canvas.width = 400;
         canvas.height = 600;
 
-        // Audio Setup
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioCtx();
         function playSound(freq, type, duration, volume = 0.1) {
@@ -180,13 +202,14 @@
             osc.stop(audioCtx.currentTime + duration);
         }
 
-        // Game Constants
         const GRAVITY = 0.4;
         const JUMP_FORCE = -12;
         const SPRING_JUMP_FORCE = -20;
         const CLOUD_WIDTH = 70;
         const CLOUD_HEIGHT = 30;
-        const PLAYER_SIZE = 30;
+        const PLAYER_SIZE = 35;
+        const STAR_SIZE = 20;
+        const STORM_CLOUD_WIDTH = 80;
 
         let player = {
             x: canvas.width / 2 - PLAYER_SIZE / 2,
@@ -202,13 +225,20 @@
 
         let clouds = [];
         let particles = [];
+        let backgroundDecor = [];
+        let stars = [];
+        let stormClouds = [];
         let score = 0;
+        let highscore = localStorage.getItem('cloudHopHighscore') || 0;
         let combo = 0;
         let comboTimer = 0;
         let gameActive = false;
         let cameraY = 0;
+        let currentTheme = 0;
         let keys = {};
         let screenShake = 0;
+
+        highscoreElement.innerText = `Beste: ${highscore} 🏆`;
 
         window.addEventListener('keydown', e => keys[e.code] = true);
         window.addEventListener('keyup', e => keys[e.code] = false);
@@ -223,11 +253,24 @@
             combo = 0;
             comboTimer = 0;
             cameraY = 0;
+            currentTheme = 0;
             clouds = [];
             particles = [];
             screenShake = 0;
+            stars = [];
+            stormClouds = [];
             
-            // Starting cloud
+            backgroundDecor = [];
+            for(let i=0; i<20; i++) {
+                backgroundDecor.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 5 + 2,
+                    type: Math.random() > 0.5 ? '⭐' : '🌸',
+                    speed: Math.random() * 0.5 + 0.2
+                });
+            }
+
             clouds.push({
                 x: canvas.width / 2 - CLOUD_WIDTH / 2,
                 y: canvas.height - 50,
@@ -238,7 +281,6 @@
                 pulse: 0
             });
 
-            // Initial clouds
             for (let i = 0; i < 15; i++) {
                 spawnCloud(canvas.height - i * 80);
             }
@@ -280,7 +322,8 @@
                     vx: (Math.random() - 0.5) * 6,
                     vy: (Math.random() - 0.5) * 6,
                     life: 1.0,
-                    color: color
+                    color: color,
+                    size: Math.random() * 4 + 2
                 });
             }
         }
@@ -298,28 +341,41 @@
         function update() {
             if (!gameActive) return;
 
-            // Player movement
-            if (keys['ArrowLeft'] || keys['KeyA']) player.vx = -5;
-            else if (keys['ArrowRight'] || keys['KeyD']) player.vx = 5;
-            else player.vx *= 0.8;
+            const themes = [
+                { bg: 'linear-gradient(to bottom, var(--bg-top), var(--bg-bottom))' },
+                { bg: 'linear-gradient(to bottom, var(--bg-sunset-top), var(--bg-sunset-bottom))' },
+                { bg: 'linear-gradient(to bottom, var(--bg-twilight-top), var(--bg-twilight-bottom))' },
+                { bg: 'linear-gradient(to bottom, var(--bg-space-top), var(--bg-space-bottom))' }
+            ];
+            const themeIndex = Math.min(themes.length - 1, Math.floor(Math.abs(cameraY) / 3000));
+            if (themeIndex !== currentTheme) {
+                currentTheme = themeIndex;
+                document.documentElement.style.setProperty('--current-bg', themes[currentTheme].bg);
+                document.getElementById('game-container').style.setProperty('--game-bg', themes[currentTheme].bg);
+            }
+
+            if (keys['ArrowLeft'] || keys['KeyA']) {
+                player.vx = -6;
+                player.rotation = -0.1;
+            } else if (keys['ArrowRight'] || keys['KeyD']) {
+                player.vx = 6;
+                player.rotation = 0.1;
+            } else {
+                player.vx *= 0.8;
+                player.rotation *= 0.8;
+            }
 
             player.x += player.vx;
             player.vy += GRAVITY;
             player.y += player.vy;
 
-            // Rotation effect based on horizontal velocity
-            player.rotation = player.vx * 0.05;
-
-            // Screen wrap
             if (player.x + player.width < 0) player.x = canvas.width;
             if (player.x > canvas.width) player.x = -player.width;
 
-            // Camera follow
             if (player.y < canvas.height / 2 + cameraY) {
                 cameraY = player.y - canvas.height / 2;
             }
 
-            // Combo timer
             if (comboTimer > 0) {
                 comboTimer--;
                 if (comboTimer <= 0) {
@@ -328,7 +384,6 @@
                 }
             }
 
-            // Collision with clouds (only when falling)
             if (player.vy > 0) {
                 clouds.forEach(cloud => {
                     if (player.x + player.width > cloud.x && 
@@ -336,7 +391,6 @@
                         player.y + player.height > cloud.y && 
                         player.y + player.height < cloud.y + cloud.height + player.vy) {
                         
-                        // Jump force based on cloud type
                         if (cloud.type === 'spring') {
                             player.vy = SPRING_JUMP_FORCE;
                             playSound(600, 'sine', 0.2);
@@ -361,7 +415,6 @@
 
                         createParticles(player.x + player.width/2, player.y + player.height, cloud.color);
                         
-                        // Combo logic
                         combo++;
                         comboTimer = 60;
                         if (combo > 1) {
@@ -369,9 +422,7 @@
                             comboElement.innerText = `Combo x${combo} ✨`;
                         }
 
-                        // Update score based on height and combo
                         let currentHeight = Math.floor(Math.abs(player.y - (canvas.height - 100)) / 10);
-                        let points = Math.max(1, Math.floor(currentHeight / 10) * combo);
                         if (currentHeight > score) {
                             score = currentHeight;
                             scoreElement.innerText = score;
@@ -380,14 +431,12 @@
                 });
             }
 
-            // Clean up and spawn new clouds
             clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100);
             while (clouds.length < 20) {
                 const highestCloudY = Math.min(...clouds.map(c => c.y));
                 spawnCloud(highestCloudY - 80);
             }
 
-            // Particles
             particles.forEach(p => {
                 p.x += p.vx;
                 p.y += p.vy;
@@ -395,10 +444,8 @@
             });
             particles = particles.filter(p => p.life > 0);
 
-            // Screen shake decay
             if (screenShake > 0) screenShake *= 0.9;
 
-            // Game over
             if (player.y > cameraY + canvas.height) {
                 gameOver();
             }
@@ -407,6 +454,13 @@
         function gameOver() {
             gameActive = false;
             playSound(100, 'sawtooth', 0.5);
+            
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('cloudHopHighscore', highscore);
+                highscoreElement.innerText = `Beste: ${highscore} 🏆`;
+            }
+            
             overlay.classList.remove('hidden');
             overlayTitle.innerText = "Oh No! 🌸";
             overlayText.innerText = `You hopped ${score} meters high!`;
@@ -418,45 +472,32 @@
 
             ctx.save();
             
-            // Apply screen shake
             if (screenShake > 0) {
                 ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
             }
             
             ctx.translate(0, -cameraY);
 
-            // Draw clouds
             clouds.forEach(cloud => {
                 cloud.pulse += 0.05;
                 const pulseOffset = Math.sin(cloud.pulse) * 3;
                 
                 ctx.fillStyle = cloud.color;
                 
-                // Fluffy cloud drawing
                 ctx.beginPath();
                 ctx.arc(cloud.x + 15, cloud.y + 15 + pulseOffset, 15, 0, Math.PI * 2);
-                ctx.arc(cloud.x + 35, cloud.y + 10 + pulseOffset, 20, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 35, cloud.y + 10 + pulseOffset, 15, 0, Math.PI * 2);
                 ctx.arc(cloud.x + 55, cloud.y + 15 + pulseOffset, 15, 0, Math.PI * 2);
                 ctx.fill();
-
-                // Add a little detail to storm clouds
-                if (cloud.type === 'storm') {
-                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
-                    ctx.beginPath();
-                    ctx.arc(cloud.x + 35, cloud.y + 20 + pulseOffset, 10, 0, Math.PI * 2);
-                    ctx.fill();
-                }
             });
 
-            // Draw player (cute blob with eyes)
             ctx.save();
             ctx.translate(player.x + player.width/2, player.y + player.height/2);
             ctx.rotate(player.rotation);
             
-            // Squish and stretch effect
             let stretch = 1;
-            if (player.vy < 0) stretch = 1.2; // stretch when jumping
-            if (player.vy > 0) stretch = 0.9; // squish when falling
+            if (player.vy < 0) stretch = 1.2; 
+            if (player.vy > 0) stretch = 0.9; 
             
             ctx.scale(1/stretch, stretch);
             ctx.fillStyle = player.color;
@@ -464,7 +505,6 @@
             ctx.roundRect(-player.width/2, -player.height/2, player.width, player.height, 10);
             ctx.fill();
             
-            // Eyes
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(-8, -5, 4, 0, Math.PI * 2);
@@ -479,7 +519,6 @@
             
             ctx.restore();
 
-            // Draw particles
             particles.forEach(p => {
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = p.color;

@@ -13,11 +13,14 @@
             --text: #6b5b95;
             --card-back: #ffc0cb;
             --success: #98fb98;
+            --gold: #ffd700;
         }
 
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
             background-color: var(--bg);
+            background-image: radial-gradient(var(--accent) 1px, transparent 1px);
+            background-size: 30px 30px;
             color: var(--text);
             display: flex;
             flex-direction: column;
@@ -29,17 +32,28 @@
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             color: var(--text);
-            text-shadow: 2px 2px var(--primary);
+            text-shadow: 3px 3px var(--primary);
             margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .stats {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             margin-bottom: 20px;
             display: flex;
-            gap: 20px;
+            gap: 25px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 3px solid var(--primary);
         }
 
         .game-container {
@@ -59,13 +73,19 @@
             cursor: pointer;
         }
 
+        .card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
         .card.flipped {
-            transform: rotateY(180deg);
+            transform: rotateY(180deg) scale(1.05);
         }
 
         .card.matched {
-            animation: match-bounce 0.5s ease forwards;
+            animation: match-bounce 0.6s ease forwards;
             cursor: default;
+            pointer-events: none;
         }
 
         .card-face {
@@ -77,15 +97,17 @@
             align-items: center;
             justify-content: center;
             font-size: 3rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border: 4px solid white;
+            border-radius: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            border: 5px solid white;
+            transition: background-color 0.3s;
         }
 
         .card-front {
             background-color: var(--card-back);
             color: white;
-            font-size: 2rem;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px rgba(0,0,0,0.1);
         }
 
         .card-back {
@@ -95,14 +117,16 @@
 
         @keyframes match-bounce {
             0% { transform: rotateY(180deg) scale(1); }
-            50% { transform: rotateY(180deg) scale(1.1); }
+            30% { transform: rotateY(180deg) scale(1.2); }
+            50% { transform: rotateY(180deg) scale(0.9); }
+            70% { transform: rotateY(180deg) scale(1.1); }
             100% { transform: rotateY(180deg) scale(1); opacity: 0.8; }
         }
 
         .btn {
             margin-top: 30px;
-            padding: 12px 25px;
-            font-size: 1.1rem;
+            padding: 15px 35px;
+            font-size: 1.3rem;
             background-color: var(--primary);
             color: white;
             border: none;
@@ -111,12 +135,17 @@
             font-family: inherit;
             font-weight: bold;
             transition: transform 0.2s, background-color 0.2s;
-            box-shadow: 0 4px 10px rgba(255, 182, 193, 0.5);
+            box-shadow: 0 6px 0 #f06292;
         }
 
         .btn:hover {
             transform: scale(1.1);
             background-color: #ff8da1;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #f06292;
         }
 
         .win-message {
@@ -126,12 +155,12 @@
             transform: translate(-50%, -50%) scale(0);
             background: white;
             padding: 40px;
-            border-radius: 30px;
-            border: 8px solid var(--primary);
+            border-radius: 40px;
+            border: 10px solid var(--primary);
             text-align: center;
             z-index: 100;
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
         }
 
         .win-message.show {
@@ -140,16 +169,18 @@
 
         .confetti {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             pointer-events: none;
+            z-index: 110;
         }
 
         .sparkle {
             position: absolute;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             pointer-events: none;
             animation: sparkle-fade 1s forwards;
+            z-index: 120;
         }
 
         @keyframes sparkle-fade {
@@ -163,18 +194,18 @@
     <h1>Ellie's Magic Memory Match ✨</h1>
     
     <div class="stats">
-        <span>Moves: <span id="moves">0</span></span>
-        <span>Matches: <span id="matches">0</span>/8</span>
+        <span>Trekk: <span id="moves">0</span></span>
+        <span>Par: <span id="matches">0</span>/8</span>
     </div>
 
     <div class="game-container" id="grid"></div>
 
-    <button class="btn" onclick="initGame()">Start New Game! 🌸</button>
+    <button class="btn" onclick="initGame()">Nytt Spill! 🌸</button>
 
     <div class="win-message" id="win-message">
-        <h2>You did it! 🌟</h2>
-        <p>Your magic memory is amazing!</p>
-        <button class="btn" onclick="closeWinMessage()">Play Again! 🦄</button>
+        <h2>Du klarte det! 🌟</h2>
+        <p id="final-stats">Din magiske hukommelse er fantastisk!</p>
+        <button class="btn" onclick="closeWinMessage()">Spill igjen! 🦄</button>
     </div>
 
     <script>
@@ -185,7 +216,24 @@
         let matches = 0;
         let isLockBoard = false;
 
+        // Audio
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        function playSound(freq, type, duration, vol = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
         function initGame() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
             cards = [...emojis, ...emojis];
@@ -225,6 +273,7 @@
             if (this === flippedCards[0]) return;
             if (this.classList.contains('matched')) return;
 
+            playSound(440, 'sine', 0.1);
             this.classList.add('flipped');
             flippedCards.push(this);
 
@@ -249,6 +298,9 @@
         }
 
         function disableCards() {
+            playSound(660, 'sine', 0.2);
+            setTimeout(() => playSound(880, 'sine', 0.2), 100);
+            
             flippedCards.forEach(card => {
                 card.classList.add('matched');
                 createSparkles(card);
@@ -264,6 +316,7 @@
 
         function unflipCards() {
             setTimeout(() => {
+                playSound(220, 'sine', 0.2);
                 flippedCards.forEach(card => card.classList.remove('flipped'));
                 resetBoard();
             }, 1000);
@@ -281,7 +334,7 @@
 
         function createSparkles(card) {
             const rect = card.getBoundingClientRect();
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 8; i++) {
                 const sparkle = document.createElement('div');
                 sparkle.className = 'sparkle';
                 sparkle.textContent = '✨';
@@ -294,8 +347,12 @@
 
         function showWinMessage() {
             setTimeout(() => {
+                document.getElementById('final-stats').innerText = `Du fant alle parene på ${moves} trekk! 🌟`;
                 document.getElementById('win-message').classList.add('show');
                 startConfetti();
+                playSound(523.25, 'sine', 0.5);
+                setTimeout(() => playSound(659.25, 'sine', 0.5), 150);
+                setTimeout(() => playSound(783.99, 'sine', 0.5), 300);
             }, 500);
         }
 
@@ -305,13 +362,13 @@
         }
 
         function startConfetti() {
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 120; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
                     confetti.style.left = Math.random() * 100 + 'vw';
                     confetti.style.top = '-10px';
-                    confetti.style.backgroundColor = ['#ffb6c1', '#add8e6', '#e6e6fa', '#ffd700', '#98fb98'][Math.floor(Math.random() * 5)];
+                    confetti.style.backgroundColor = ['#ffb6c1', '#add8e6', '#e6e6fa', '#ffd700', '#98fb98', '#ffc0cb'][Math.floor(Math.random() * 6)];
                     confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
                     
                     const animation = confetti.animate([
@@ -324,7 +381,7 @@
                     
                     document.body.appendChild(confetti);
                     animation.onfinish = () => confetti.remove();
-                }, i * 20);
+                }, i * 15);
             }
         }
 
