@@ -41,6 +41,35 @@
             gap: 5px;
             text-shadow: 2px 2px #ff69b4;
         }
+        #combo-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid var(--pastel-pink);
+            border-radius: 15px;
+            overflow: hidden;
+            z-index: 10;
+        }
+        #combo-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--pastel-pink), var(--accent-gold));
+            transition: width 0.2s;
+        }
+        #combo-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px #ff69b4;
+            z-index: 11;
+        }
         canvas {
             display: block;
             background: radial-gradient(circle at center, #4b307a 0%, #2d1b4e 100%);
@@ -131,7 +160,10 @@
         <div>Kaker: <span id="score">0</span> 🧁</div>
         <div>Beste: <span id="highscore">0</span> 🏆</div>
     </div>
-    <div id="combo-ui" class="combo-text"></div>
+    <div id="combo-container">
+        <div id="combo-bar"></div>
+        <div id="combo-text"></div>
+    </div>
     
     <div id="magnet-alert" class="magnet-alert">MAGISK MAGNET! ✨🧲</div>
     <div id="shield-alert" class="magnet-alert">SKJOLD AKTIVERT! 🛡️</div>
@@ -162,7 +194,9 @@
         const magnetAlert = document.getElementById('magnet-alert');
         const shieldAlert = document.getElementById('shield-alert');
         const superBowlAlert = document.getElementById('superbowl-alert');
-        const comboUi = document.getElementById('combo-ui');
+        const comboContainer = document.getElementById('combo-container');
+        const comboBar = document.getElementById('combo-bar');
+        const comboText = document.getElementById('combo-text');
 
         let score = 0;
         let combo = 0;
@@ -370,7 +404,8 @@
                 comboTimer--;
                 if (comboTimer <= 0) {
                     combo = 0;
-                    comboUi.innerText = '';
+                    comboText.innerText = '';
+                    comboBar.style.width = '0%';
                 }
             }
 
@@ -425,7 +460,11 @@
                         comboTimer = 60;
                         const multiplier = Math.floor(combo / 5) + 1;
                         score += multiplier;
-                        comboUi.innerText = `COMBO x${multiplier}! ✨`;
+                        
+                        comboText.innerText = `COMBO x${multiplier}! ✨`;
+                        const progress = Math.min(100, (combo % 5) * 20);
+                        comboBar.style.width = `${progress}%`;
+                        
                         playSound(440 + (combo * 20), 'sine', 0.1);
                         createBurst(item.x, item.y, item.color);
                         playerScale = 1.2;
@@ -530,7 +569,8 @@
             score = 0;
             combo = 0;
             comboTimer = 0;
-            comboUi.innerText = '';
+            comboText.innerText = '';
+            comboBar.style.width = '0%';
             scoreEl.innerText = '0';
             items = [];
             particles = [];
