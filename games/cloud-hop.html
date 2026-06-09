@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ellie's Dreamy Cloud Hop ☁️✨</title>
     <style>
         :root {
-            --primary: #ff69b4;
-            --secondary: #87ceeb;
-            --bg: #e0f7fa;
-            --text: #4a4a4a;
-            --accent: #ffd700;
-            --cloud: #ffffff;
+            --primary-pink: #ffb7ce;
+            --primary-blue: #b2e2f2;
+            --primary-purple: #d1b3ff;
+            --primary-yellow: #fff9b1;
+            --bg-top: #a1c4fd;
+            --bg-bottom: #c2e9fb;
+            --text-color: #5d4037;
+            --accent-gold: #ffd700;
         }
         body {
             margin: 0;
@@ -21,9 +23,9 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background-color: var(--bg);
+            background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
-            color: var(--text);
+            color: var(--text-color);
             overflow: hidden;
             user-select: none;
         }
@@ -33,8 +35,8 @@
             height: 600px;
             background: linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%);
             border: 8px solid white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         canvas {
@@ -47,12 +49,18 @@
             width: 100%;
             text-align: center;
             pointer-events: none;
+            z-index: 10;
         }
         #score {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: bold;
             color: white;
-            text-shadow: 2px 2px var(--primary);
+            text-shadow: 3px 3px var(--primary-pink);
+        }
+        #highscore {
+            font-size: 1.2rem;
+            color: white;
+            text-shadow: 1px 1px var(--primary-pink);
         }
         #overlay {
             position: absolute;
@@ -60,38 +68,50 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            z-index: 10;
+            z-index: 20;
             transition: opacity 0.3s;
+            backdrop-filter: blur(5px);
         }
         .hidden {
             display: none !important;
+            opacity: 0;
         }
         h1 {
-            color: var(--primary);
+            color: var(--primary-pink);
+            font-size: 2.5rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px white;
         }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
         .btn {
-            background-color: var(--primary);
+            background-color: var(--primary-pink);
             color: white;
             padding: 15px 30px;
             border-radius: 50px;
-            text-decoration: none;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             border: none;
             cursor: pointer;
-            transition: transform 0.2s;
-            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 6px 0 #f06292;
+            font-family: inherit;
         }
         .btn:hover {
             transform: scale(1.1);
+            background-color: #f06292;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #f06292;
         }
         .controls-hint {
             margin-top: 20px;
@@ -105,15 +125,16 @@
     <div id="game-container">
         <div id="ui">
             <div id="score">0</div>
+            <div id="highscore">Beste: 0 🏆</div>
         </div>
         
         <canvas id="gameCanvas"></canvas>
 
         <div id="overlay">
             <h1 id="overlay-title">Dreamy Cloud Hop ☁️</h1>
-            <p id="overlay-text">Jump as high as you can!</p>
-            <button class="btn" id="start-btn">Start Jumping! ✨</button>
-            <div class="controls-hint">Use Left/Right Arrows or A/D to move! 🐾</div>
+            <p id="overlay-text">Hopp så høyt du kan! ✨</p>
+            <button class="btn" id="start-btn">Start Hopping! 🐾</button>
+            <div class="controls-hint">Bruk Pilene eller A/D for å bevege deg!</div>
         </div>
     </div>
 
@@ -121,6 +142,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
+        const highscoreElement = document.getElementById('highscore');
         const overlay = document.getElementById('overlay');
         const startBtn = document.getElementById('start-btn');
         const overlayTitle = document.getElementById('overlay-title');
@@ -130,11 +152,12 @@
         canvas.height = 600;
 
         // Game Constants
-        const GRAVITY = 0.4;
-        const JUMP_FORCE = -12;
+        const GRAVITY = 0.35;
+        const JUMP_FORCE = -11;
+        const SPRING_FORCE = -22;
         const CLOUD_WIDTH = 70;
         const CLOUD_HEIGHT = 30;
-        const PLAYER_SIZE = 30;
+        const PLAYER_SIZE = 35;
 
         let player = {
             x: canvas.width / 2 - PLAYER_SIZE / 2,
@@ -143,15 +166,39 @@
             vy: 0,
             width: PLAYER_SIZE,
             height: PLAYER_SIZE,
-            color: '#ff69b4'
+            color: '#ff69b4',
+            stretchX: 1,
+            stretchY: 1,
+            rotation: 0
         };
 
         let clouds = [];
         let particles = [];
+        let backgroundDecor = [];
         let score = 0;
+        let highscore = localStorage.getItem('cloudHopHighscore') || 0;
         let gameActive = false;
         let cameraY = 0;
         let keys = {};
+        let screenShake = 0;
+
+        highscoreElement.innerText = `Beste: ${highscore} 🏆`;
+
+        // Audio
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        function playSound(freq, type, duration, vol = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
 
         window.addEventListener('keydown', e => keys[e.code] = true);
         window.addEventListener('keyup', e => keys[e.code] = false);
@@ -165,18 +212,33 @@
             cameraY = 0;
             clouds = [];
             particles = [];
+            screenShake = 0;
             
+            // Background decor
+            backgroundDecor = [];
+            for(let i=0; i<20; i++) {
+                backgroundDecor.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 5 + 2,
+                    type: Math.random() > 0.5 ? '⭐' : '🌸',
+                    speed: Math.random() * 0.5 + 0.2
+                });
+            }
+
             // Starting cloud
             clouds.push({
                 x: canvas.width / 2 - CLOUD_WIDTH / 2,
                 y: canvas.height - 50,
                 width: CLOUD_WIDTH,
                 height: CLOUD_HEIGHT,
-                color: '#ffffff'
+                color: '#ffffff',
+                type: 'normal',
+                vx: 0
             });
 
             // Initial clouds
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 12; i++) {
                 spawnCloud(canvas.height - i * 80);
             }
             
@@ -184,25 +246,32 @@
         }
 
         function spawnCloud(y) {
-            const colors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5'];
+            const colors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5', '#fff9b1'];
+            const types = ['normal', 'normal', 'normal', 'moving', 'disappearing', 'spring'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            
             clouds.push({
                 x: Math.random() * (canvas.width - CLOUD_WIDTH),
                 y: y,
                 width: CLOUD_WIDTH,
                 height: CLOUD_HEIGHT,
-                color: colors[Math.floor(Math.random() * colors.length)]
+                color: colors[Math.floor(Math.random() * colors.length)],
+                type: type,
+                vx: type === 'moving' ? (Math.random() > 0.5 ? 1.5 : -1.5) : 0,
+                life: 1.0
             });
         }
 
         function createParticles(x, y, color) {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 10; i++) {
                 particles.push({
                     x: x,
                     y: y,
-                    vx: (Math.random() - 0.5) * 4,
-                    vy: (Math.random() - 0.5) * 4,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
                     life: 1.0,
-                    color: color
+                    color: color,
+                    size: Math.random() * 4 + 2
                 });
             }
         }
@@ -211,13 +280,28 @@
             if (!gameActive) return;
 
             // Player movement
-            if (keys['ArrowLeft'] || keys['KeyA']) player.vx = -5;
-            else if (keys['ArrowRight'] || keys['KeyD']) player.vx = 5;
-            else player.vx *= 0.8;
+            if (keys['ArrowLeft'] || keys['KeyA']) {
+                player.vx = -6;
+                player.rotation = -0.1;
+            } else if (keys['ArrowRight'] || keys['KeyD']) {
+                player.vx = 6;
+                player.rotation = 0.1;
+            } else {
+                player.vx *= 0.8;
+                player.rotation *= 0.9;
+            }
 
             player.x += player.vx;
             player.vy += GRAVITY;
             player.y += player.vy;
+
+            // Squash and stretch based on velocity
+            player.stretchY = 1 - (player.vy * 0.02);
+            player.stretchX = 1 + (player.vy * 0.02);
+            if (player.vy > 0) {
+                player.stretchY = 1 + (player.vy * 0.01);
+                player.stretchX = 1 - (player.vy * 0.01);
+            }
 
             // Screen wrap
             if (player.x + player.width < 0) player.x = canvas.width;
@@ -228,7 +312,7 @@
                 cameraY = player.y - canvas.height / 2;
             }
 
-            // Collision with clouds (only when falling)
+            // Collision with clouds
             if (player.vy > 0) {
                 clouds.forEach(cloud => {
                     if (player.x + player.width > cloud.x && 
@@ -236,8 +320,20 @@
                         player.y + player.height > cloud.y && 
                         player.y + player.height < cloud.y + cloud.height + player.vy) {
                         
-                        player.vy = JUMP_FORCE;
+                        if (cloud.type === 'spring') {
+                            player.vy = SPRING_FORCE;
+                            playSound(600, 'sine', 0.2);
+                            screenShake = 10;
+                        } else {
+                            player.vy = JUMP_FORCE;
+                            playSound(400, 'sine', 0.1);
+                        }
+
                         createParticles(player.x + player.width/2, player.y + player.height, cloud.color);
+                        
+                        if (cloud.type === 'disappearing') {
+                            cloud.life = 0; // Mark for removal
+                        }
                         
                         // Update score based on height
                         let currentHeight = Math.floor(Math.abs(player.y - (canvas.height - 100)) / 10);
@@ -249,10 +345,20 @@
                 });
             }
 
+            // Update clouds
+            clouds.forEach(cloud => {
+                if (cloud.type === 'moving') {
+                    cloud.x += cloud.vx;
+                    if (cloud.x <= 0 || cloud.x + cloud.width >= canvas.width) {
+                        cloud.vx *= -1;
+                    }
+                }
+            });
+
             // Clean up and spawn new clouds
-            clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100);
+            clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100 && cloud.life > 0);
             while (clouds.length < 15) {
-                const highestCloudY = Math.min(...clouds.map(c => c.y));
+                const highestCloudY = clouds.length > 0 ? Math.min(...clouds.map(c => c.y)) : canvas.height;
                 spawnCloud(highestCloudY - 80);
             }
 
@@ -260,9 +366,18 @@
             particles.forEach(p => {
                 p.x += p.vx;
                 p.y += p.vy;
-                p.life -= 0.02;
+                p.life -= 0.03;
             });
             particles = particles.filter(p => p.life > 0);
+
+            // Background decor
+            backgroundDecor.forEach(d => {
+                d.y += d.speed;
+                if (d.y > canvas.height) {
+                    d.y = -20;
+                    d.x = Math.random() * canvas.width;
+                }
+            });
 
             // Game over
             if (player.y > cameraY + canvas.height) {
@@ -272,58 +387,110 @@
 
         function gameOver() {
             gameActive = false;
+            playSound(150, 'sawtooth', 0.4);
+            
+            if (score > highscore) {
+                highscore = score;
+                localStorage.setItem('cloudHopHighscore', highscore);
+                highscoreElement.innerText = `Beste: ${highscore} 🏆`;
+                overlayTitle.innerText = "NY REKORD! 🎉";
+            } else {
+                overlayTitle.innerText = "Oi! Du falt! 🌸";
+            }
+            
+            overlayText.innerText = `Du hoppet ${score} meter opp i lufta!`;
+            startBtn.innerText = "Prøv igjen! ✨";
             overlay.classList.remove('hidden');
-            overlayTitle.innerText = "Oh No! 🌸";
-            overlayText.innerText = `You hopped ${score} meters high!`;
-            startBtn.innerText = "Try Again! ✨";
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Shake effect
+            if (screenShake > 0) {
+                ctx.save();
+                ctx.translate((Math.random()-0.5)*screenShake, (Math.random()-0.5)*screenShake);
+                screenShake *= 0.9;
+                if (screenShake < 0.1) screenShake = 0;
+            }
+
             ctx.save();
             ctx.translate(0, -cameraY);
+
+            // Draw background decor
+            backgroundDecor.forEach(d => {
+                ctx.globalAlpha = 0.5;
+                ctx.font = `${d.size * 3}px Arial`;
+                ctx.fillText(d.type, d.x, d.y);
+                ctx.globalAlpha = 1.0;
+            });
 
             // Draw clouds
             clouds.forEach(cloud => {
                 ctx.fillStyle = cloud.color;
-                // Draw a fluffy cloud using circles
+                
+                // Cloud design based on type
+                if (cloud.type === 'spring') {
+                    ctx.fillStyle = '#fff9b1';
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 3;
+                } else if (cloud.type === 'disappearing') {
+                    ctx.globalAlpha = cloud.life;
+                }
+
                 ctx.beginPath();
                 ctx.arc(cloud.x + 15, cloud.y + 15, 15, 0, Math.PI * 2);
                 ctx.arc(cloud.x + 35, cloud.y + 10, 20, 0, Math.PI * 2);
                 ctx.arc(cloud.x + 55, cloud.y + 15, 15, 0, Math.PI * 2);
                 ctx.fill();
+                if (cloud.type === 'spring') ctx.stroke();
+                ctx.globalAlpha = 1.0;
             });
 
-            // Draw player (cute cat/blob)
+            // Draw player
+            ctx.save();
+            ctx.translate(player.x + player.width/2, player.y + player.height/2);
+            ctx.rotate(player.rotation);
+            ctx.scale(player.stretchX, player.stretchY);
+            
             ctx.fillStyle = player.color;
             ctx.beginPath();
-            ctx.roundRect(player.x, player.y, player.width, player.height, 10);
+            ctx.roundRect(-player.width/2, -player.height/2, player.width, player.height, 12);
             ctx.fill();
             
             // Cute eyes
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(player.x + 8, player.y + 10, 3, 0, Math.PI * 2);
-            ctx.arc(player.x + 22, player.y + 10, 3, 0, Math.PI * 2);
+            ctx.arc(-8, -5, 5, 0, Math.PI * 2);
+            ctx.arc(8, -5, 5, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = 'black';
             ctx.beginPath();
-            ctx.arc(player.x + 8, player.y + 10, 1.5, 0, Math.PI * 2);
-            ctx.arc(player.x + 22, player.y + 10, 1.5, 0, Math.PI * 2);
+            ctx.arc(-8, -5, 2.5, 0, Math.PI * 2);
+            ctx.arc(8, -5, 2.5, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Blush
+            ctx.fillStyle = 'rgba(255, 182, 193, 0.6)';
+            ctx.beginPath();
+            ctx.arc(-12, 2, 3, 0, Math.PI * 2);
+            ctx.arc(12, 2, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
 
             // Draw particles
             particles.forEach(p => {
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = p.color;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fill();
             });
             ctx.globalAlpha = 1.0;
 
             ctx.restore();
+            if (screenShake > 0) ctx.restore();
 
             requestAnimationFrame(() => {
                 update();
@@ -332,6 +499,7 @@
         }
 
         startBtn.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             overlay.classList.add('hidden');
             init();
             gameActive = true;
