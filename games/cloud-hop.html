@@ -313,6 +313,9 @@
         function update() {
             if (!gameActive) return;
 
+            // Difficulty scaling
+            const difficulty = Math.min(1, Math.abs(cameraY) / 10000);
+
             // Player movement
             if (keys['ArrowLeft'] || keys['KeyA']) {
                 player.vx = -6;
@@ -435,7 +438,7 @@
             while (stars.length < 5) {
                 spawnStar(cameraY - Math.random() * 600);
             }
-            while (stormClouds.length < 3) {
+            while (stormClouds.length < 3 + Math.floor(difficulty * 5)) {
                 spawnStormCloud(cameraY - Math.random() * 600);
             }
             while (clouds.length < 15) {
@@ -510,20 +513,6 @@
             clouds.forEach(cloud => {
                 ctx.fillStyle = cloud.color;
                 
-                // Draw stars
-                stars.forEach(star => {
-                    if (!star.collected) {
-                        ctx.fillStyle = '#ffd700';
-                        ctx.beginPath();
-                        ctx.arc(star.x + star.size/2, star.y + star.size/2, star.size/2, 0, Math.PI * 2);
-                        ctx.fill();
-                        // Star shine
-                        ctx.strokeStyle = 'white';
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-                    }
-                });
-                
                 // Cloud design based on type
                 if (cloud.type === 'spring') {
                     ctx.fillStyle = '#fff9b1';
@@ -540,6 +529,20 @@
                 ctx.fill();
                 if (cloud.type === 'spring') ctx.stroke();
                 ctx.globalAlpha = 1.0;
+            });
+
+            // Draw stars
+            stars.forEach(star => {
+                if (!star.collected) {
+                    ctx.fillStyle = '#ffd700';
+                    ctx.beginPath();
+                    ctx.arc(star.x + star.size/2, star.y + star.size/2, star.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Star shine
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             });
 
             // Draw storm clouds
