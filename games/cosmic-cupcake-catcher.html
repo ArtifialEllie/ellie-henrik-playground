@@ -72,7 +72,8 @@
         }
         canvas {
             display: block;
-            background: radial-gradient(circle at center, #4b307a 0%, #2d1b4e 100%);
+            background: radial-gradient(circle at center, #4b307a 0%, #2d1b4e 100%), 
+                        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="1" fill="white" opacity="0.3"/></svg>');
             cursor: none;
         }
         #overlay {
@@ -149,6 +150,20 @@
             text-shadow: 2px 2px #ff69b4;
             z-index: 10;
         }
+.crit-text {
+            position: absolute;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--pastel-yellow);
+            animation: floatUp 0.6s ease-out forwards;
+            z-index: 15;
+            text-shadow: 2px 2px #ff69b4;
+}
+@keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+}
         @keyframes bounce {
             from { transform: translateX(-50%) translateY(0); }
             to { transform: translateX(-50%) translateY(-10px); }
@@ -237,12 +252,13 @@
             color: '#ff69b4'
         };
 
-        let items = [];
-        let particles = [];
-        let stars = [];
+let items = [];
+let particles = [];
+let stars = [];
+let nebulae = [];
 
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioCtx();
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioCtx();
         function playSound(freq, type, duration) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -263,6 +279,17 @@
                 size: Math.random() * 2,
                 opacity: Math.random(),
                 blinkSpeed: 0.01 + Math.random() * 0.02
+            });
+        }
+
+        for (let i = 0; i < 5; i++) {
+            nebulae.push({
+                x: Math.random() * canvasWidth,
+                y: Math.random() * canvasHeight,
+                radius: 200 + Math.random() * 300,
+                color: Math.random() > 0.5 ? 'rgba(90, 50, 168, 0.2)' : 'rgba(178, 226, 242, 0.1)',
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: (Math.random() - 0.5) * 0.2,
             });
         }
 
@@ -381,6 +408,23 @@
                 if (screenShake < 0.1) screenShake = 0;
             }
 
+            nebulae.forEach(n => {
+                n.x += n.vx;
+                n.y += n.vy;
+                if (n.x < -n.radius) n.x = canvasWidth + n.radius;
+                if (n.x > canvasWidth + n.radius) n.x = -n.radius;
+                if (n.y < -n.radius) n.y = canvasHeight + n.radius;
+                if (n.y > canvasHeight + n.radius) n.y = -n.radius;
+                
+                let grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);
+                grad.addColorStop(0, n.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
             stars.forEach(s => {
                 s.opacity += s.blinkSpeed;
                 if (s.opacity > 1 || s.opacity < 0) s.blinkSpeed *= -1;
@@ -413,15 +457,18 @@
             ctx.translate(player.x, player.y);
             ctx.scale(playerScale, playerScale);
             
-            ctx.fillStyle = player.color;
+            const playerGrad = ctx.createLinearGradient(0, 0, 0, player.height);
+            playerGrad.addColorStop(0, player.color);
+            playerGrad.addColorStop(1, '#c2185b');
+            ctx.fillStyle = playerGrad;
+
             ctx.beginPath();
             ctx.arc(0, 0, player.width/2, 0, Math.PI, false);
             ctx.fill();
             
-            ctx.strokeStyle = 'white';
+            ctx.strokeStyle = superBowlActive ? 'gold' : 'white';
             ctx.lineWidth = 4;
             if (superBowlActive) {
-                ctx.strokeStyle = 'gold';
                 ctx.lineWidth = 8;
                 ctx.shadowBlur = 20;
                 ctx.shadowColor = 'gold';
@@ -462,6 +509,15 @@
                         score += multiplier;
                         
                         comboText.innerText = `COMBO x${multiplier}! ✨`;
+                        if (multiplier > 2) {
+                            const crit = document.createElement('div');
+                            crit.className = 'crit-text';
+                            crit.innerText = `+${multiplier} ✨`;
+                            crit.style.left = item.x + 'px';
+                            crit.style.top = item.y + 'px';
+                            document.body.appendChild(crit);
+                            setTimeout(() => crit.remove(), 600);
+                        }
                         const progress = Math.min(100, (combo % 5) * 20);
                         comboBar.style.width = `${progress}%`;
                         

@@ -217,6 +217,7 @@
                 this.color = color;
                 this.topping = topping;
                 this.vy = 0;
+                this.isSyrupy = false;
                 this.vx = 0;
                 this.rotation = 0;
                 this.vr = 0;
@@ -250,12 +251,24 @@
                 ctx.translate(this.x + this.width/2, this.y + this.height/2);
                 ctx.rotate(cumulativeTilt + this.rotation);
                 ctx.scale(1, this.scaleY);
-                
-                ctx.fillStyle = this.color;
+
+                // Better pancake look with gradient
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.width/2);
+                grad.addColorStop(0, this.color);
+                grad.addColorStop(1, this.darkenColor(this.color, 20));
+                ctx.fillStyle = grad;
+
                 ctx.beginPath();
                 ctx.ellipse(0, 0, this.width/2, this.height/2, 0, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+
+                if (this.isSyrupy) {
+                    ctx.strokeStyle = '#fbc02d';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                } else {
+                    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                }
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
@@ -265,6 +278,15 @@
                     ctx.fillText(this.topping, 0, -this.height/2 + 5);
                 }
                 ctx.restore();
+            }
+
+            darkenColor(color, percent) {
+                const num = parseInt(color.replace('#', ''), 16),
+                    amt = Math.round(2.55 * percent),
+                    R = (num >> 16) - amt,
+                    G = (num >> 8 & 0x00FF) - amt,
+                    B = (num & 0x0000FF) - amt;
+                return '#' + (0x1000000 + (R<0?0:R)*0x10000 + (G<0?0:G)*0x100 + (B<0?0:B)).toString(16).slice(1);
             }
         }
 
@@ -332,6 +354,7 @@
             activePancake.isFlipping = false;
             activePancake.isSpecial = isSpecial;
             activePancake.specialType = specialType;
+            activePancake.isSyrupy = Math.random() < 0.15;
         }
 
         function flipPancake() {
@@ -372,6 +395,12 @@
                     currentTotalLean += centerDiff * 0.1;
                     activePancake.tiltOffset = centerDiff * 0.002;
                     
+                    if (activePancake.isSyrupy) {
+                        currentTotalLean *= 0.95; // Syrup stabilizes the stack!
+                        showFloatingText("SYRUPY! 🍯 Stability!", activePancake.x + activePancake.width/2, activePancake.y - 40);
+                        playSound(500, 'sine', 0.2);
+                    }
+
                     if (Math.abs(centerDiff) < 10) {
                         showPerfect();
                         combo++;
@@ -473,6 +502,7 @@
         function update() {
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+            slideSpeed = 3 + (score * 0.1); // Increase speed as score goes up
             // Wind logic
             if (windChangeTimer <= 0) {
                 currentWind = (Math.random() - 0.5) * 1.5;
