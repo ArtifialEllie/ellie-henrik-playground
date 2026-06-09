@@ -26,6 +26,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
         #game-ui {
             position: absolute;
@@ -34,11 +35,6 @@
             font-size: 24px;
             font-weight: bold;
             z-index: 10;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            text-shadow: 2px 2px #ff69b4;
             pointer-events: none;
             display: flex;
             flex-direction: column;
@@ -64,6 +60,27 @@
             display: none;
             box-shadow: 0 10px 30px rgba(255, 183, 206, 0.5);
             color: var(--space-bg);
+        }
+        #start-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 27, 78, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            text-align: center;
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+        #start-overlay h1 {
+            color: var(--pastel-pink);
+            font-size: 3rem;
+            text-shadow: 0 0 20px var(--pastel-pink);
         }
         .btn {
             background-color: var(--pastel-pink);
@@ -118,11 +135,18 @@
     
     <div id="magnet-alert" class="magnet-alert">MAGISK MAGNET! ✨🧲</div>
     <div id="shield-alert" class="magnet-alert">SKJOLD AKTIVERT! 🛡️</div>
+    <div id="superbowl-alert" class="magnet-alert">SUPER-BOWL AKTIVERT! 🌟🥣</div>
 
     <div id="overlay">
         <h1 id="status-text">Kosmisk Kaos! 🌌</h1>
         <p id="final-score">Du fanget 0 kaker!</p>
         <button class="btn" onclick="resetGame()">Prøv igjen! ✨</button>
+    </div>
+
+    <div id="start-overlay">
+        <h1>Kosmisk Kake-kaos! 🧁✨</h1>
+        <p>Fang kaker, unngå steiner!</p>
+        <button class="btn" id="start-btn">Start Spill! 🚀</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -137,13 +161,14 @@
         const finalScoreEl = document.getElementById('final-score');
         const magnetAlert = document.getElementById('magnet-alert');
         const shieldAlert = document.getElementById('shield-alert');
+        const superBowlAlert = document.getElementById('superbowl-alert');
         const comboUi = document.getElementById('combo-ui');
 
         let score = 0;
         let combo = 0;
         let comboTimer = 0;
         let highscore = localStorage.getItem('cosmicCupcakeHighscore') || 0;
-        let gameActive = true;
+        let gameActive = false;
         let canvasWidth, canvasHeight;
         let magnetActive = false;
         let magnetTimer = 0;
@@ -152,6 +177,8 @@
         let slowMoTimer = 0;
         let screenShake = 0;
         let playerScale = 1;
+        let superBowlActive = false;
+        let superBowlTimer = 0;
 
         highscoreEl.innerText = highscore;
 
@@ -180,7 +207,6 @@
         let particles = [];
         let stars = [];
 
-        // Audio Context for "Juice"
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioCtx();
         function playSound(freq, type, duration) {
@@ -196,7 +222,6 @@
             osc.stop(audioCtx.currentTime + duration);
         }
 
-        // Initialize static stars for background
         for (let i = 0; i < 100; i++) {
             stars.push({
                 x: Math.random() * canvasWidth,
@@ -253,13 +278,10 @@
                 ctx.font = `${this.radius * 2}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                
-                // Glow effect for gold
                 if (this.type === 'gold') {
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = 'gold';
                 }
-                
                 ctx.fillText(this.emoji, this.x, this.y);
                 ctx.restore();
             }
@@ -275,13 +297,11 @@
                 this.radius = Math.random() * 3 + 1;
                 this.life = 1.0;
             }
-
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
                 this.life -= 0.02;
             }
-
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -312,12 +332,14 @@
             }
         }
 
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, { passive: false });
+
         function update() {
             if (!gameActive) return;
 
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-            // Screen Shake
             if (screenShake > 0) {
                 ctx.save();
                 ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
@@ -325,7 +347,6 @@
                 if (screenShake < 0.1) screenShake = 0;
             }
 
-            // Draw Background Stars
             stars.forEach(s => {
                 s.opacity += s.blinkSpeed;
                 if (s.opacity > 1 || s.opacity < 0) s.blinkSpeed *= -1;
@@ -337,7 +358,6 @@
             });
             ctx.globalAlpha = 1.0;
 
-            // Update Magnet
             if (magnetActive) {
                 magnetTimer--;
                 if (magnetTimer <= 0) {
@@ -346,7 +366,6 @@
                 }
             }
 
-            // Combo Logic
             if (comboTimer > 0) {
                 comboTimer--;
                 if (comboTimer <= 0) {
@@ -355,25 +374,28 @@
                 }
             }
 
-            // Draw Player Bowl
             ctx.save();
             ctx.translate(player.x, player.y);
             ctx.scale(playerScale, playerScale);
             
-            // Bowl Body
             ctx.fillStyle = player.color;
             ctx.beginPath();
             ctx.arc(0, 0, player.width/2, 0, Math.PI, false);
             ctx.fill();
             
-            // Bowl Rim
             ctx.strokeStyle = 'white';
             ctx.lineWidth = 4;
+            if (superBowlActive) {
+                ctx.strokeStyle = 'gold';
+                ctx.lineWidth = 8;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'gold';
+            }
             ctx.beginPath();
             ctx.ellipse(0, 0, player.width/2, 10, 0, 0, Math.PI * 2);
             ctx.stroke();
+            ctx.shadowBlur = 0;
             
-            // Cute Bow
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(-15, 5, 8, 0, Math.PI * 2);
@@ -388,13 +410,11 @@
 
             if (screenShake > 0) ctx.restore();
 
-            // Update and Draw Items
             for (let i = items.length - 1; i >= 0; i--) {
                 const item = items[i];
                 item.update();
                 item.draw();
 
-                // Collision check
                 const dx = item.x - player.x;
                 const dy = item.y - player.y;
                 const dist = Math.hypot(dx, dy);
@@ -409,6 +429,9 @@
                         playSound(440 + (combo * 20), 'sine', 0.1);
                         createBurst(item.x, item.y, item.color);
                         playerScale = 1.2;
+                        if (combo % 10 === 0 && combo > 0) {
+                            activateSuperBowl();
+                        }
                     } else if (item.type === 'gold') {
                         score += 5;
                         activateMagnet();
@@ -439,7 +462,6 @@
                             gameOver();
                         }
                     }
-                    
                     scoreEl.innerText = score;
                     items.splice(i, 1);
                     continue;
@@ -450,7 +472,6 @@
                 }
             }
 
-            // Update and Draw Particles
             for (let i = particles.length - 1; i >= 0; i--) {
                 particles[i].update();
                 particles[i].draw();
@@ -460,28 +481,42 @@
             }
 
             playerScale += (1 - playerScale) * 0.2;
+            if (superBowlActive) {
+                superBowlTimer--;
+                if (superBowlTimer <= 0) {
+                    superBowlActive = false;
+                    superBowlAlert.style.display = 'none';
+                }
+            }
 
             requestAnimationFrame(update);
         }
 
         function activateMagnet() {
             magnetActive = true;
-            magnetTimer = 300; // Approx 5 seconds at 60fps
+            magnetTimer = 300;
             magnetAlert.style.display = 'block';
         }
 
         function activateSlowMo() {
             slowMoActive = true;
             slowMoTimer = 300; 
-            // Add visual cue for slowmo? maybe background color shift.
             setTimeout(() => { slowMoActive = false; }, 5000);
+        }
+
+        function activateSuperBowl() {
+            superBowlActive = true;
+            superBowlTimer = 300; 
+            superBowlAlert.style.display = 'block';
+            playSound(1000, 'sine', 0.5);
+            createBurst(player.x, player.y, 'white');
         }
 
         function gameOver() {
             gameActive = false;
             if (score > highscore) {
                 highscore = score;
-                localStorage.setItem('cosmicCupcakeHighscore', highscore);
+                localStorage.setItem('cosmicCupcakeHscore', highscore);
                 highscoreEl.innerText = highscore;
                 statusText.innerText = "NY REKORD! 🎉";
             } else {
@@ -499,26 +534,18 @@
             scoreEl.innerText = '0';
             items = [];
             particles = [];
-            magnetActive = false;
-            magnetAlert.style.display = 'none';
-            shieldActive = false;
-            shieldAlert.style.display = 'none';
-            slowMoActive = false;
-            gameActive = true;
+            gameActive = false;
             overlay.style.display = 'none';
-            spawnItem();
-            update();
+            document.getElementById('start-overlay').style.display = 'flex';
         }
 
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('touchmove', (e) => {
-            handleMove(e);
-            e.preventDefault();
-        }, { passive: false });
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-overlay').style.display = 'none';
+            gameActive = true;
+            spawnItem();
+        });
 
-        // Initialize
-        spawnItem();
-        update();
+        requestAnimationFrame(update);
     </script>
 </body>
 </html>
