@@ -158,6 +158,8 @@
         const CLOUD_WIDTH = 70;
         const CLOUD_HEIGHT = 30;
         const PLAYER_SIZE = 35;
+        const STAR_SIZE = 20;
+        const STORM_CLOUD_WIDTH = 80;
 
         let player = {
             x: canvas.width / 2 - PLAYER_SIZE / 2,
@@ -175,6 +177,8 @@
         let clouds = [];
         let particles = [];
         let backgroundDecor = [];
+        let stars = [];
+        let stormClouds = [];
         let score = 0;
         let highscore = localStorage.getItem('cloudHopHighscore') || 0;
         let gameActive = false;
@@ -213,6 +217,8 @@
             clouds = [];
             particles = [];
             screenShake = 0;
+            stars = [];
+            stormClouds = [];
             
             // Background decor
             backgroundDecor = [];
@@ -242,6 +248,12 @@
                 spawnCloud(canvas.height - i * 80);
             }
             
+            // Initial stars and storm clouds
+            for (let i = 0; i < 5; i++) {
+                spawnStar(canvas.height - Math.random() * 600);
+                spawnStormCloud(canvas.height - Math.random() * 600);
+            }
+            
             scoreElement.innerText = score;
         }
 
@@ -258,6 +270,28 @@
                 color: colors[Math.floor(Math.random() * colors.length)],
                 type: type,
                 vx: type === 'moving' ? (Math.random() > 0.5 ? 1.5 : -1.5) : 0,
+                life: 1.0
+            });
+        }
+
+        function spawnStar(y) {
+            stars.push({
+                x: Math.random() * (canvas.width - STAR_SIZE),
+                y: y,
+                size: STAR_SIZE,
+                collected: false,
+                pulse: 0
+            });
+        }
+
+        function spawnStormCloud(y) {
+            stormClouds.push({
+                x: Math.random() * (canvas.width - STORM_CLOUD_WIDTH),
+                y: y,
+                width: STORM_CLOUD_WIDTH,
+                height: CLOUD_HEIGHT,
+                color: '#708090',
+                vx: (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 1 + 0.5),
                 life: 1.0
             });
         }
@@ -345,6 +379,36 @@
                 });
             }
 
+            // Collision with stars
+            stars.forEach((star, index) => {
+                if (!star.collected && 
+                    player.x < star.x + star.size && 
+                    player.x + player.width > star.x && 
+                    player.y < star.y + star.size && 
+                    player.y + player.height > star.y) {
+                    
+                    star.collected = true;
+                    score += 50;
+                    scoreElement.innerText = score;
+                    playSound(800, 'sine', 0.2);
+                    createParticles(star.x + star.size/2, star.y + star.size/2, '#ffd700');
+                }
+            });
+
+            // Collision with storm clouds
+            stormClouds.forEach(storm => {
+                if (player.x + player.width > storm.x && 
+                    player.x < storm.x + storm.width && 
+                    player.y + player.height > storm.y && 
+                    player.y + player.height < storm.y + storm.height + player.vy) {
+                    
+                    player.vy = 10; 
+                    playSound(100, 'sawtooth', 0.3);
+                    screenShake = 15;
+                    createParticles(player.x + player.width/2, player.y + player.height, '#708090');
+                }
+            });
+
             // Update clouds
             clouds.forEach(cloud => {
                 if (cloud.type === 'moving') {
@@ -355,8 +419,25 @@
                 }
             });
 
+            // Update storm clouds
+            stormClouds.forEach(storm => {
+                storm.x += storm.vx;
+                if (storm.x <= 0 || storm.x + storm.width >= canvas.width) {
+                    storm.vx *= -1;
+                }
+            });
+
             // Clean up and spawn new clouds
             clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100 && cloud.life > 0);
+            stars = stars.filter(star => star.y < cameraY + canvas.height + 100 && !star.collected);
+            stormClouds = stormClouds.filter(storm => storm.y < cameraY + canvas.height + 100);
+
+            while (stars.length < 5) {
+                spawnStar(cameraY - Math.random() * 600);
+            }
+            while (stormClouds.length < 3) {
+                spawnStormCloud(cameraY - Math.random() * 600);
+            }
             while (clouds.length < 15) {
                 const highestCloudY = clouds.length > 0 ? Math.min(...clouds.map(c => c.y)) : canvas.height;
                 spawnCloud(highestCloudY - 80);
@@ -429,6 +510,20 @@
             clouds.forEach(cloud => {
                 ctx.fillStyle = cloud.color;
                 
+                // Draw stars
+                stars.forEach(star => {
+                    if (!star.collected) {
+                        ctx.fillStyle = '#ffd700';
+                        ctx.beginPath();
+                        ctx.arc(star.x + star.size/2, star.y + star.size/2, star.size/2, 0, Math.PI * 2);
+                        ctx.fill();
+                        // Star shine
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                });
+                
                 // Cloud design based on type
                 if (cloud.type === 'spring') {
                     ctx.fillStyle = '#fff9b1';
@@ -445,6 +540,19 @@
                 ctx.fill();
                 if (cloud.type === 'spring') ctx.stroke();
                 ctx.globalAlpha = 1.0;
+            });
+
+            // Draw storm clouds
+            stormClouds.forEach(storm => {
+                ctx.fillStyle = storm.color;
+                ctx.beginPath();
+                ctx.arc(storm.x + 20, storm.y + 15, 20, 0, Math.PI * 2);
+                ctx.arc(storm.x + 40, storm.y + 10, 25, 0, Math.PI * 2);
+                ctx.arc(storm.x + 60, storm.y + 15, 20, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                ctx.fillText('⚡', storm.x + 35, storm.y + 25);
             });
 
             // Draw player
