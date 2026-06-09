@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +12,9 @@
             --text: #4a4a4a;
             --accent: #ffd700;
             --cloud: #ffffff;
+            --pastel-pink: #ffb7ce;
+            --pastel-blue: #b2e2f2;
+            --pastel-purple: #d1b3ff;
         }
         body {
             margin: 0;
@@ -47,12 +50,25 @@
             width: 100%;
             text-align: center;
             pointer-events: none;
+            z-index: 10;
         }
         #score {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: bold;
             color: white;
+            text-shadow: 3px 3px var(--primary);
+        }
+        #combo-ui {
+            font-size: 1.5rem;
+            color: var(--accent);
             text-shadow: 2px 2px var(--primary);
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            transform: scale(0.8);
+        }
+        #combo-ui.show {
+            opacity: 1;
+            transform: scale(1.1);
         }
         #overlay {
             position: absolute;
@@ -66,8 +82,9 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            z-index: 10;
+            z-index: 20;
             transition: opacity 0.3s;
+            backdrop-filter: blur(4px);
         }
         .hidden {
             display: none !important;
@@ -76,6 +93,7 @@
             color: var(--primary);
             margin-bottom: 10px;
             text-shadow: 2px 2px white;
+            font-size: 2.5rem;
         }
         .btn {
             background-color: var(--primary);
@@ -87,16 +105,31 @@
             font-size: 1.2rem;
             border: none;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background-color 0.2s;
             box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
         }
         .btn:hover {
             transform: scale(1.1);
+            background-color: #ff1493;
         }
         .controls-hint {
             margin-top: 20px;
             font-size: 0.9rem;
             color: #666;
+        }
+        .floating-text {
+            position: absolute;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 20px;
+            color: var(--primary);
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 15;
+            text-shadow: 1px 1px white;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
         }
     </style>
 </head>
@@ -105,6 +138,7 @@
     <div id="game-container">
         <div id="ui">
             <div id="score">0</div>
+            <div id="combo-ui">Combo x1 ✨</div>
         </div>
         
         <canvas id="gameCanvas"></canvas>
@@ -121,6 +155,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
+        const comboElement = document.getElementById('combo-ui');
         const overlay = document.getElementById('overlay');
         const startBtn = document.getElementById('start-btn');
         const overlayTitle = document.getElementById('overlay-title');
@@ -129,9 +164,26 @@
         canvas.width = 400;
         canvas.height = 600;
 
+        // Audio Setup
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        function playSound(freq, type, duration, volume = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
         // Game Constants
         const GRAVITY = 0.4;
         const JUMP_FORCE = -12;
+        const SPRING_JUMP_FORCE = -20;
         const CLOUD_WIDTH = 70;
         const CLOUD_HEIGHT = 30;
         const PLAYER_SIZE = 30;
@@ -143,15 +195,20 @@
             vy: 0,
             width: PLAYER_SIZE,
             height: PLAYER_SIZE,
-            color: '#ff69b4'
+            color: '#ff69b4',
+            rotation: 0,
+            scaleY: 1
         };
 
         let clouds = [];
         let particles = [];
         let score = 0;
+        let combo = 0;
+        let comboTimer = 0;
         let gameActive = false;
         let cameraY = 0;
         let keys = {};
+        let screenShake = 0;
 
         window.addEventListener('keydown', e => keys[e.code] = true);
         window.addEventListener('keyup', e => keys[e.code] = false);
@@ -161,10 +218,14 @@
             player.y = canvas.height - 100;
             player.vx = 0;
             player.vy = JUMP_FORCE;
+            player.rotation = 0;
             score = 0;
+            combo = 0;
+            comboTimer = 0;
             cameraY = 0;
             clouds = [];
             particles = [];
+            screenShake = 0;
             
             // Starting cloud
             clouds.push({
@@ -172,39 +233,66 @@
                 y: canvas.height - 50,
                 width: CLOUD_WIDTH,
                 height: CLOUD_HEIGHT,
-                color: '#ffffff'
+                type: 'normal',
+                color: '#ffffff',
+                pulse: 0
             });
 
             // Initial clouds
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 15; i++) {
                 spawnCloud(canvas.height - i * 80);
             }
             
             scoreElement.innerText = score;
+            comboElement.classList.remove('show');
         }
 
         function spawnCloud(y) {
-            const colors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5'];
+            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            let color;
+            
+            switch(type) {
+                case 'spring': color = '#ffb7ce'; break;
+                case 'gold': color = '#ffd700'; break;
+                case 'storm': color = '#a9a9a9'; break;
+                default: 
+                    const normColors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5'];
+                    color = normColors[Math.floor(Math.random() * normColors.length)];
+            }
+
             clouds.push({
                 x: Math.random() * (canvas.width - CLOUD_WIDTH),
                 y: y,
                 width: CLOUD_WIDTH,
                 height: CLOUD_HEIGHT,
-                color: colors[Math.floor(Math.random() * colors.length)]
+                type: type,
+                color: color,
+                pulse: Math.random() * Math.PI * 2
             });
         }
 
         function createParticles(x, y, color) {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 12; i++) {
                 particles.push({
                     x: x,
                     y: y,
-                    vx: (Math.random() - 0.5) * 4,
-                    vy: (Math.random() - 0.5) * 4,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
                     life: 1.0,
                     color: color
                 });
             }
+        }
+
+        function showFloatingText(text, x, y) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.getElementById('game-container').appendChild(el);
+            setTimeout(() => el.remove(), 800);
         }
 
         function update() {
@@ -219,6 +307,9 @@
             player.vy += GRAVITY;
             player.y += player.vy;
 
+            // Rotation effect based on horizontal velocity
+            player.rotation = player.vx * 0.05;
+
             // Screen wrap
             if (player.x + player.width < 0) player.x = canvas.width;
             if (player.x > canvas.width) player.x = -player.width;
@@ -226,6 +317,15 @@
             // Camera follow
             if (player.y < canvas.height / 2 + cameraY) {
                 cameraY = player.y - canvas.height / 2;
+            }
+
+            // Combo timer
+            if (comboTimer > 0) {
+                comboTimer--;
+                if (comboTimer <= 0) {
+                    combo = 0;
+                    comboElement.classList.remove('show');
+                }
             }
 
             // Collision with clouds (only when falling)
@@ -236,11 +336,42 @@
                         player.y + player.height > cloud.y && 
                         player.y + player.height < cloud.y + cloud.height + player.vy) {
                         
-                        player.vy = JUMP_FORCE;
+                        // Jump force based on cloud type
+                        if (cloud.type === 'spring') {
+                            player.vy = SPRING_JUMP_FORCE;
+                            playSound(600, 'sine', 0.2);
+                            showFloatingText("SPRING! 🚀", player.x + player.width/2, player.y);
+                        } else if (cloud.type === 'storm') {
+                            player.vy = JUMP_FORCE * 0.5;
+                            screenShake = 10;
+                            playSound(150, 'sawtooth', 0.2);
+                            showFloatingText("OUCH! ⚡", player.x + player.width/2, player.y);
+                            combo = 0;
+                            comboElement.classList.remove('show');
+                        } else {
+                            player.vy = JUMP_FORCE;
+                            playSound(400 + Math.random() * 200, 'sine', 0.1);
+                        }
+
+                        if (cloud.type === 'gold') {
+                            score += 50;
+                            playSound(880, 'square', 0.2);
+                            showFloatingText("+50 GOLD! ✨", player.x + player.width/2, player.y);
+                        }
+
                         createParticles(player.x + player.width/2, player.y + player.height, cloud.color);
                         
-                        // Update score based on height
+                        // Combo logic
+                        combo++;
+                        comboTimer = 60;
+                        if (combo > 1) {
+                            comboElement.classList.add('show');
+                            comboElement.innerText = `Combo x${combo} ✨`;
+                        }
+
+                        // Update score based on height and combo
                         let currentHeight = Math.floor(Math.abs(player.y - (canvas.height - 100)) / 10);
+                        let points = Math.max(1, Math.floor(currentHeight / 10) * combo);
                         if (currentHeight > score) {
                             score = currentHeight;
                             scoreElement.innerText = score;
@@ -251,7 +382,7 @@
 
             // Clean up and spawn new clouds
             clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100);
-            while (clouds.length < 15) {
+            while (clouds.length < 20) {
                 const highestCloudY = Math.min(...clouds.map(c => c.y));
                 spawnCloud(highestCloudY - 80);
             }
@@ -264,6 +395,9 @@
             });
             particles = particles.filter(p => p.life > 0);
 
+            // Screen shake decay
+            if (screenShake > 0) screenShake *= 0.9;
+
             // Game over
             if (player.y > cameraY + canvas.height) {
                 gameOver();
@@ -272,6 +406,7 @@
 
         function gameOver() {
             gameActive = false;
+            playSound(100, 'sawtooth', 0.5);
             overlay.classList.remove('hidden');
             overlayTitle.innerText = "Oh No! 🌸";
             overlayText.innerText = `You hopped ${score} meters high!`;
@@ -282,36 +417,67 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
+            
+            // Apply screen shake
+            if (screenShake > 0) {
+                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+            }
+            
             ctx.translate(0, -cameraY);
 
             // Draw clouds
             clouds.forEach(cloud => {
+                cloud.pulse += 0.05;
+                const pulseOffset = Math.sin(cloud.pulse) * 3;
+                
                 ctx.fillStyle = cloud.color;
-                // Draw a fluffy cloud using circles
+                
+                // Fluffy cloud drawing
                 ctx.beginPath();
-                ctx.arc(cloud.x + 15, cloud.y + 15, 15, 0, Math.PI * 2);
-                ctx.arc(cloud.x + 35, cloud.y + 10, 20, 0, Math.PI * 2);
-                ctx.arc(cloud.x + 55, cloud.y + 15, 15, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 15, cloud.y + 15 + pulseOffset, 15, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 35, cloud.y + 10 + pulseOffset, 20, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 55, cloud.y + 15 + pulseOffset, 15, 0, Math.PI * 2);
                 ctx.fill();
+
+                // Add a little detail to storm clouds
+                if (cloud.type === 'storm') {
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.beginPath();
+                    ctx.arc(cloud.x + 35, cloud.y + 20 + pulseOffset, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             });
 
-            // Draw player (cute cat/blob)
+            // Draw player (cute blob with eyes)
+            ctx.save();
+            ctx.translate(player.x + player.width/2, player.y + player.height/2);
+            ctx.rotate(player.rotation);
+            
+            // Squish and stretch effect
+            let stretch = 1;
+            if (player.vy < 0) stretch = 1.2; // stretch when jumping
+            if (player.vy > 0) stretch = 0.9; // squish when falling
+            
+            ctx.scale(1/stretch, stretch);
             ctx.fillStyle = player.color;
             ctx.beginPath();
-            ctx.roundRect(player.x, player.y, player.width, player.height, 10);
+            ctx.roundRect(-player.width/2, -player.height/2, player.width, player.height, 10);
             ctx.fill();
             
-            // Cute eyes
+            // Eyes
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(player.x + 8, player.y + 10, 3, 0, Math.PI * 2);
-            ctx.arc(player.x + 22, player.y + 10, 3, 0, Math.PI * 2);
+            ctx.arc(-8, -5, 4, 0, Math.PI * 2);
+            ctx.arc(8, -5, 4, 0, Math.PI * 2);
             ctx.fill();
+            
             ctx.fillStyle = 'black';
             ctx.beginPath();
-            ctx.arc(player.x + 8, player.y + 10, 1.5, 0, Math.PI * 2);
-            ctx.arc(player.x + 22, player.y + 10, 1.5, 0, Math.PI * 2);
+            ctx.arc(-8 + (player.vx * 0.5), -5, 2, 0, Math.PI * 2);
+            ctx.arc(8 + (player.vx * 0.5), -5, 2, 0, Math.PI * 2);
             ctx.fill();
+            
+            ctx.restore();
 
             // Draw particles
             particles.forEach(p => {
@@ -332,6 +498,7 @@
         }
 
         startBtn.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             overlay.classList.add('hidden');
             init();
             gameActive = true;
