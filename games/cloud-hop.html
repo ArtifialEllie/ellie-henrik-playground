@@ -12,6 +12,12 @@
             --primary-yellow: #fff9b1;
             --bg-top: #a1c4fd;
             --bg-bottom: #c2e9fb;
+            --bg-sunset-top: #ff7e5f;
+            --bg-sunset-bottom: #feb47b;
+            --bg-twilight-top: #6a11cb;
+            --bg-twilight-bottom: #2575fc;
+            --bg-space-top: #0f0c29;
+            --bg-space-bottom: #302b63;
             --text-color: #5d4037;
             --accent-gold: #ffd700;
         }
@@ -23,7 +29,7 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
+            background: var(--current-bg, linear-gradient(to bottom, var(--bg-top), var(--bg-bottom)));
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
             color: var(--text-color);
             overflow: hidden;
@@ -33,7 +39,7 @@
             position: relative;
             width: 400px;
             height: 600px;
-            background: linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%);
+            background: var(--game-bg, linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%));
             border: 8px solid white;
             border-radius: 30px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
@@ -183,6 +189,7 @@
         let highscore = localStorage.getItem('cloudHopHighscore') || 0;
         let gameActive = false;
         let cameraY = 0;
+        let currentTheme = 0;
         let keys = {};
         let screenShake = 0;
 
@@ -214,6 +221,7 @@
             player.vy = JUMP_FORCE;
             score = 0;
             cameraY = 0;
+            currentTheme = 0;
             clouds = [];
             particles = [];
             screenShake = 0;
@@ -316,6 +324,20 @@
             // Difficulty scaling
             const difficulty = Math.min(1, Math.abs(cameraY) / 10000);
 
+            // Theme switching based on height
+            const themes = [
+                { bg: 'linear-gradient(to bottom, var(--bg-top), var(--bg-bottom))' },
+                { bg: 'linear-gradient(to bottom, var(--bg-sunset-top), var(--bg-sunset-bottom))' },
+                { bg: 'linear-gradient(to bottom, var(--bg-twilight-top), var(--bg-twilight-bottom))' },
+                { bg: 'linear-gradient(to bottom, var(--bg-space-top), var(--bg-space-bottom))' }
+            ];
+            const themeIndex = Math.min(themes.length - 1, Math.floor(Math.abs(cameraY) / 3000));
+            if (themeIndex !== currentTheme) {
+                currentTheme = themeIndex;
+                document.documentElement.style.setProperty('--current-bg', themes[currentTheme].bg);
+                document.getElementById('game-container').style.setProperty('--game-bg', themes[currentTheme].bg);
+            }
+
             // Player movement
             if (keys['ArrowLeft'] || keys['KeyA']) {
                 player.vx = -6;
@@ -369,6 +391,8 @@
                         createParticles(player.x + player.width/2, player.y + player.height, cloud.color);
                         
                         if (cloud.type === 'disappearing') {
+                            playSound(300, 'sine', 0.1);
+                            createParticles(player.x + player.width/2, player.y + player.height, '#ddd');
                             cloud.life = 0; // Mark for removal
                         }
                         
