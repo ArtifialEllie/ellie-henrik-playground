@@ -290,14 +290,24 @@
         }
 
         function spawnCloud(y) {
-            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm'];
+            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm', 'moving', 'fragile'];
             const type = types[Math.floor(Math.random() * types.length)];
             let color;
+            let vx = 0;
+            let isFragile = false;
             
             switch(type) {
                 case 'spring': color = '#ffb7ce'; break;
                 case 'gold': color = '#ffd700'; break;
                 case 'storm': color = '#a9a9a9'; break;
+                case 'moving': 
+                    color = '#b2e2f2'; 
+                    vx = (Math.random() - 0.5) * 3; 
+                    break;
+                case 'fragile': 
+                    color = '#fdfd96'; 
+                    isFragile = true; 
+                    break;
                 default: 
                     const normColors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5'];
                     color = normColors[Math.floor(Math.random() * normColors.length)];
@@ -310,7 +320,10 @@
                 height: CLOUD_HEIGHT,
                 type: type,
                 color: color,
-                pulse: Math.random() * Math.PI * 2
+                pulse: Math.random() * Math.PI * 2,
+                vx: vx,
+                isFragile: isFragile,
+                life: 1.0
             });
         }
 
@@ -402,6 +415,11 @@
                             showFloatingText("OUCH! ⚡", player.x + player.width/2, player.y);
                             combo = 0;
                             comboElement.classList.remove('show');
+                        } else if (cloud.type === 'fragile') {
+                            player.vy = JUMP_FORCE;
+                            playSound(400, 'sine', 0.1);
+                            cloud.life = 0.5; // Start disappearing
+                            showFloatingText("CRACK! ❄️", player.x + player.width/2, player.y);
                         } else {
                             player.vy = JUMP_FORCE;
                             playSound(400 + Math.random() * 200, 'sine', 0.1);
@@ -431,7 +449,19 @@
                 });
             }
 
-            clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100);
+            clouds.forEach(cloud => {
+                if (cloud.vx) {
+                    cloud.x += cloud.vx;
+                    if (cloud.x < 0 || cloud.x + cloud.width > canvas.width) {
+                        cloud.vx *= -1;
+                    }
+                }
+                if (cloud.life < 1.0) {
+                    cloud.life -= 0.02;
+                }
+            });
+
+            clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100 && cloud.life > 0);
             while (clouds.length < 20) {
                 const highestCloudY = Math.min(...clouds.map(c => c.y));
                 spawnCloud(highestCloudY - 80);
@@ -482,6 +512,7 @@
                 cloud.pulse += 0.05;
                 const pulseOffset = Math.sin(cloud.pulse) * 3;
                 
+                ctx.globalAlpha = cloud.life !== undefined ? cloud.life : 1.0;
                 ctx.fillStyle = cloud.color;
                 
                 ctx.beginPath();
