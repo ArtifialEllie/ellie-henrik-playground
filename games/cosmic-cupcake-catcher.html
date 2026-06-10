@@ -462,6 +462,13 @@ const audioCtx = new AudioCtx();
             playerGrad.addColorStop(1, '#c2185b');
             ctx.fillStyle = playerGrad;
 
+            // Draw a cute bow on the bowl! 🎀
+            ctx.fillStyle = '#ffb7ce';
+            ctx.beginPath();
+            ctx.arc(-player.width/2, 0, 8, 0, Math.PI * 2);
+            ctx.arc(player.width/2, 0, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
             ctx.beginPath();
             ctx.arc(0, 0, player.width/2, 0, Math.PI, false);
             ctx.fill();
