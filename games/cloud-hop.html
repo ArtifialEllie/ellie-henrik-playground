@@ -291,6 +291,7 @@
         const STAR_SIZE = 20;
         const STORM_CLOUD_WIDTH = 80;
 
+        let currentSkin = localStorage.getItem('cloudHopSkin') || '#ff69b4';
         let player = {
             x: canvas.width / 2 - PLAYER_SIZE / 2,
             y: canvas.height - 100,
@@ -311,7 +312,6 @@
         let score = 0;
         let gold = 0;
         let highscore = parseInt(localStorage.getItem('cloudHopHighscore')) || 0;
-        let currentSkin = localStorage.getItem('cloudHopSkin') || '#ff69b4';
         let combo = 0;
         let comboTimer = 0;
         let gameActive = false;
@@ -639,9 +639,11 @@
                 ctx.fillStyle = cloud.color;
                 
                 ctx.beginPath();
-                ctx.arc(cloud.x + 15, cloud.y + 15 + pulseOffset, 15, 0, Math.PI * 2);
-                ctx.arc(cloud.x + 35, cloud.y + 10 + pulseOffset, 15, 0, Math.PI * 2);
-                ctx.arc(cloud.x + 55, cloud.y + 15 + pulseOffset, 15, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 10, cloud.y + 18 + pulseOffset, 15, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 25, cloud.y + 10 + pulseOffset, 18, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 40, cloud.y + 8 + pulseOffset, 20, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 55, cloud.y + 10 + pulseOffset, 18, 0, Math.PI * 2);
+                ctx.arc(cloud.x + 70, cloud.y + 18 + pulseOffset, 15, 0, Math.PI * 2);
                 ctx.fill();
             });
 
