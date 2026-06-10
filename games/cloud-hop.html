@@ -70,6 +70,15 @@
             color: white;
             text-shadow: 1px 1px var(--primary-pink);
         }
+        #gold-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            text-shadow: 1px 1px white;
+            font-weight: bold;
+        }
         #combo-ui {
             font-size: 1.5rem;
             color: var(--accent-gold);
@@ -160,6 +169,7 @@
         <div id="ui">
             <div id="score">0</div>
             <div id="highscore">Beste: 0 🏆</div>
+            <div id="gold-display">✨ 0</div>
             <div id="combo-ui">Combo x1 ✨</div>
         </div>
         
@@ -178,6 +188,7 @@
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
         const highscoreElement = document.getElementById('highscore');
+        const goldElement = document.getElementById('gold-display');
         const comboElement = document.getElementById('combo-ui');
         const overlay = document.getElementById('overlay');
         const startBtn = document.getElementById('start-btn');
@@ -230,6 +241,7 @@
         let stars = [];
         let stormClouds = [];
         let score = 0;
+        let gold = 0;
         let highscore = parseInt(localStorage.getItem('cloudHopHighscore')) || 0;
         let combo = 0;
         let comboTimer = 0;
@@ -252,6 +264,7 @@
             player.trail = [];
             player.rotation = 0;
             score = 0;
+            gold = 0;
             combo = 0;
             comboTimer = 0;
             cameraY = 0;
@@ -289,6 +302,7 @@
             }
             
             scoreElement.innerText = score;
+            goldElement.innerText = `✨ ${gold}`;
             comboElement.classList.remove('show');
         }
 
@@ -443,9 +457,10 @@
                         }
 
                         if (cloud.type === 'gold') {
-                            score += 50;
+                            gold += 50;
                             playSound(880, 'square', 0.2);
                             showFloatingText("+50 GOLD! ✨", player.x + player.width/2, player.y);
+                            goldElement.innerText = `✨ ${gold}`;
                         }
 
                         createParticles(player.x + player.width/2, player.y + player.height, cloud.color);
@@ -530,7 +545,7 @@
             
             overlay.classList.remove('hidden');
             overlayTitle.innerText = "Oh No! 🌸";
-            overlayText.innerText = `You hopped ${score} meters high!`;
+            overlayText.innerText = `You hopped ${score} meters high and collected ${gold} gold! ✨`;
             startBtn.innerText = "Try Again! ✨";
         }
 

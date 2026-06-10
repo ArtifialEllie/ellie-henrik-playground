@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ellie's Magic Memory Match ✨</title>
+    <title>Ellie's Magic Memory Palace ✨🏰</title>
     <style>
         :root {
-            --primary: #ffb6c1; /* Light Pink */
-            --secondary: #add8e6; /* Light Blue */
-            --accent: #e6e6fa; /* Lavender */
-            --bg: #fffafa; /* Snow */
+            --primary: #ffb6c1;
+            --secondary: #add8e6;
+            --accent: #e6e6fa;
+            --bg: #fffafa;
             --text: #6b5b95;
             --card-back: #ffc0cb;
             --success: #98fb98;
             --gold: #ffd700;
+            --palace-pink: #fce4ec;
+            --palace-border: #f06292;
         }
 
         body {
@@ -29,14 +31,29 @@
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
+            transition: background-color 1s ease;
+        }
+
+        .palace-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50px;
+            border: 8px double var(--palace-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            max-width: 90vw;
         }
 
         h1 {
-            font-size: 2.8rem;
+            font-size: 3rem;
             color: var(--text);
             text-shadow: 3px 3px var(--primary);
-            margin-bottom: 10px;
+            margin: 0 0 10px 0;
             animation: float 3s ease-in-out infinite;
+            text-align: center;
         }
 
         @keyframes float {
@@ -50,7 +67,7 @@
             display: flex;
             gap: 25px;
             background: white;
-            padding: 10px 20px;
+            padding: 10px 25px;
             border-radius: 50px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             border: 3px solid var(--primary);
@@ -58,11 +75,9 @@
 
         .game-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            gap: 12px;
             perspective: 1000px;
-            max-width: 500px;
-            width: 90%;
+            margin-bottom: 20px;
         }
 
         .card {
@@ -71,6 +86,12 @@
             transform-style: preserve-3d;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            width: 80px;
+            height: 80px;
+        }
+
+        @media (max-width: 600px) {
+            .card { width: 60px; height: 60px; }
         }
 
         .card:hover {
@@ -96,17 +117,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
-            border-radius: 20px;
+            font-size: 2.5rem;
+            border-radius: 15px;
             box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-            border: 5px solid white;
-            transition: background-color 0.3s;
+            border: 4px solid white;
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
 
         .card-front {
             background-color: var(--card-back);
             color: white;
-            font-size: 2.5rem;
+            font-size: 2rem;
             text-shadow: 1px 1px rgba(0,0,0,0.1);
         }
 
@@ -124,7 +145,6 @@
         }
 
         .btn {
-            margin-top: 30px;
             padding: 15px 35px;
             font-size: 1.3rem;
             background-color: var(--primary);
@@ -187,38 +207,72 @@
             0% { opacity: 1; transform: scale(0) rotate(0deg); }
             100% { opacity: 0; transform: scale(1.5) rotate(360deg); }
         }
+
+        .star-rating {
+            font-size: 2rem;
+            color: var(--gold);
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Ellie's Magic Memory Match ✨</h1>
-    
-    <div class="stats">
-        <span>Trekk: <span id="moves">0</span></span>
-        <span>Par: <span id="matches">0</span>/8</span>
+    <div class="palace-container">
+        <h1 id="game-title">Magic Memory Palace ✨</h1>
+        
+        <div class="stats">
+            <span>Level: <span id="level">1</span></span>
+            <span>Trekk: <span id="moves">0</span></span>
+            <span>Par: <span id="matches">0</span>/<span id="total-pairs">0</span></span>
+        </div>
+
+        <div class="game-container" id="grid"></div>
+
+        <button class="btn" id="reset-btn" onclick="initGame()">Start på nytt! 🌸</button>
     </div>
 
-    <div class="game-container" id="grid"></div>
-
-    <button class="btn" onclick="initGame()">Nytt Spill! 🌸</button>
-
     <div class="win-message" id="win-message">
-        <h2>Du klarte det! 🌟</h2>
+        <h2 id="win-title">Du klarte det! 🌟</h2>
+        <div class="star-rating" id="star-rating">⭐⭐⭐</div>
         <p id="final-stats">Din magiske hukommelse er fantastisk!</p>
-        <button class="btn" onclick="closeWinMessage()">Spill igjen! 🦄</button>
+        <button class="btn" id="next-btn" onclick="nextLevel()">Neste Nivå! 🦄</button>
     </div>
 
     <script>
-        const emojis = ['🌸', '🦄', '🍭', '🎀', '⭐️', '🎨', '🧁', '🐱'];
+        const levelConfigs = [
+            {
+                name: "Søte Godterier 🍭",
+                grid: 2,
+                emojis: ['🍭', '🧁', '🍩', '🍦'],
+                bg: '#fffafa',
+                accent: '#ffb6c1'
+            },
+            {
+                name: "Magisk Skog 🍄",
+                grid: 4,
+                emojis: ['🌸', '🦄', '🍄', '🧚', '🦋', '🌟', '🌙', '🌿'],
+                bg: '#f0fff0',
+                accent: '#98fb98'
+            },
+            {
+                name: "Kosmisk Drøm 🌌",
+                grid: 6,
+                emojis: ['🚀', '🪐', '🌌', '☀️', '☄️', '🛸', '🔭', '🛰️', '🌍', '🌓', '🌟', '🌑', '🌠', '🌀', '💎', '🔮', '🌈', '🎆'],
+                bg: '#f0faff',
+                accent: '#add8e6'
+            }
+        ];
+
+        let currentLevelIdx = 0;
         let cards = [];
         let flippedCards = [];
         let moves = 0;
         let matches = 0;
         let isLockBoard = false;
 
-        // Audio
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioCtx();
+
         function playSound(freq, type, duration, vol = 0.1) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -234,15 +288,26 @@
 
         function initGame() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const config = levelConfigs[currentLevelIdx];
+            document.body.style.backgroundColor = config.bg;
+            document.documentElement.style.setProperty('--accent', config.accent);
+            document.getElementById('game-title').innerText = config.name;
+            document.getElementById('level').textContent = currentLevelIdx + 1;
+            
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
-            cards = [...emojis, ...emojis];
+            grid.style.gridTemplateColumns = `repeat(${config.grid}, 1fr)`;
+            
+            cards = [...config.emojis, ...config.emojis];
             shuffle(cards);
             
             moves = 0;
             matches = 0;
             flippedCards = [];
             isLockBoard = false;
+            
+            document.getElementById('total-pairs').textContent = config.emojis.length;
             updateStats();
 
             cards.forEach((emoji, index) => {
@@ -269,6 +334,7 @@
         }
 
         function flipCard() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             if (isLockBoard) return;
             if (this === flippedCards[0]) return;
             if (this.classList.contains('matched')) return;
@@ -309,7 +375,7 @@
             updateStats();
             resetBoard();
             
-            if (matches === emojis.length) {
+            if (matches === levelConfigs[currentLevelIdx].emojis.length) {
                 showWinMessage();
             }
         }
@@ -346,18 +412,38 @@
         }
 
         function showWinMessage() {
+            const config = levelConfigs[currentLevelIdx];
+            const maxMoves = config.emojis.length * 2.5;
+            let stars = "⭐";
+            if (moves <= config.emojis.length) stars = "⭐⭐⭐";
+            else if (moves <= maxMoves) stars = "⭐⭐";
+
             setTimeout(() => {
+                document.getElementById('star-rating').innerText = stars;
                 document.getElementById('final-stats').innerText = `Du fant alle parene på ${moves} trekk! 🌟`;
                 document.getElementById('win-message').classList.add('show');
                 startConfetti();
                 playSound(523.25, 'sine', 0.5);
                 setTimeout(() => playSound(659.25, 'sine', 0.5), 150);
                 setTimeout(() => playSound(783.99, 'sine', 0.5), 300);
+                
+                if (currentLevelIdx === levelConfigs.length - 1) {
+                    document.getElementById('win-title').innerText = "Mester av Palasset! 🏰";
+                    document.getElementById('next-btn').innerText = "Spill igjen! 🦄";
+                } else {
+                    document.getElementById('win-title').innerText = "Nivå Fullført! 🌟";
+                    document.getElementById('next-btn').innerText = "Neste Nivå! 🦄";
+                }
             }, 500);
         }
 
-        function closeWinMessage() {
+        function nextLevel() {
             document.getElementById('win-message').classList.remove('show');
+            if (currentLevelIdx < levelConfigs.length - 1) {
+                currentLevelIdx++;
+            } else {
+                currentLevelIdx = 0;
+            }
             initGame();
         }
 
