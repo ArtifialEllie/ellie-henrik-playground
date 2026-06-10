@@ -205,6 +205,7 @@
         const GRAVITY = 0.4;
         const JUMP_FORCE = -12;
         const SPRING_JUMP_FORCE = -20;
+        const SUPER_JUMP_FORCE = -30;
         const CLOUD_WIDTH = 70;
         const CLOUD_HEIGHT = 30;
         const PLAYER_SIZE = 35;
@@ -229,7 +230,7 @@
         let stars = [];
         let stormClouds = [];
         let score = 0;
-        let highscore = localStorage.getItem('cloudHopHighscore') || 0;
+        let highscore = parseInt(localStorage.getItem('cloudHopHighscore')) || 0;
         let combo = 0;
         let comboTimer = 0;
         let gameActive = false;
@@ -248,6 +249,7 @@
             player.y = canvas.height - 100;
             player.vx = 0;
             player.vy = JUMP_FORCE;
+            player.trail = [];
             player.rotation = 0;
             score = 0;
             combo = 0;
@@ -260,6 +262,7 @@
             stars = [];
             stormClouds = [];
             
+            player.trail = [];
             backgroundDecor = [];
             for(let i=0; i<20; i++) {
                 backgroundDecor.push({
@@ -327,6 +330,16 @@
             });
         }
 
+        function spawnStar(y) {
+            stars.push({
+                x: Math.random() * (canvas.width - STAR_SIZE),
+                y: y,
+                size: STAR_SIZE,
+                rotation: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.1
+            });
+        }
+
         function createParticles(x, y, color) {
             for (let i = 0; i < 12; i++) {
                 particles.push({
@@ -377,6 +390,10 @@
                 player.vx *= 0.8;
                 player.rotation *= 0.8;
             }
+
+            // Update trail
+            player.trail.push({ x: player.x + player.width/2, y: player.y + player.height/2 });
+            if (player.trail.length > 10) player.trail.shift();
 
             player.x += player.vx;
             player.vy += GRAVITY;
@@ -461,6 +478,21 @@
                 }
             });
 
+            // Star collision
+            for (let i = stars.length - 1; i >= 0; i--) {
+                const star = stars[i];
+                if (player.x < star.x + star.size && 
+                    player.x + player.width > star.x && 
+                    player.y < star.y + star.size && 
+                    player.y + player.height > star.y) {
+                    player.vy = SUPER_JUMP_FORCE;
+                    playSound(880, 'sine', 0.3);
+                    showFloatingText("SUPER JUMP! 🌟", player.x + player.width/2, player.y);
+                    createParticles(star.x + star.size/2, star.y + star.size/2, '#ffd700');
+                    stars.splice(i, 1);
+                }
+            }
+
             clouds = clouds.filter(cloud => cloud.y < cameraY + canvas.height + 100 && cloud.life > 0);
             while (clouds.length < 20) {
                 const highestCloudY = Math.min(...clouds.map(c => c.y));
@@ -474,8 +506,13 @@
             });
             particles = particles.filter(p => p.life > 0);
 
-            if (screenShake > 0) screenShake *= 0.9;
+            // Spawn stars occasionally
+            if (Math.random() < 0.005) {
+                spawnStar(cameraY - 100);
+            }
 
+            if (screenShake > 0) screenShake *= 0.9;
+            
             if (player.y > cameraY + canvas.height) {
                 gameOver();
             }
@@ -549,6 +586,36 @@
             ctx.fill();
             
             ctx.restore();
+
+            // Draw trail
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255, 183, 206, 0.5)';
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            player.trail.forEach((p, i) => {
+                const tx = p.x;
+                const ty = p.y - cameraY;
+                if (i === 0) ctx.moveTo(tx, ty);
+                else ctx.lineTo(tx, ty);
+            });
+            ctx.stroke();
+
+            // Draw stars
+            stars.forEach(star => {
+                star.rotation += star.rotSpeed;
+                ctx.save();
+                ctx.translate(star.x + star.size/2, star.y - cameraY + star.size/2);
+                ctx.rotate(star.rotation);
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                for(let i=0; i<5; i++) {
+                    ctx.lineTo(Math.cos((18+i*72)*Math.PI/180)*star.size/2, Math.sin((18+i*72)*Math.PI/180)*star.size/2);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            });
 
             particles.forEach(p => {
                 ctx.globalAlpha = p.life;
