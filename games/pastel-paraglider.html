@@ -195,21 +195,21 @@
     </div>
     <div id="combo-ui">COMBO x<span id="combo-val">0</span> ✨</div>
     
-    <div id="overlay">
-        <h1 id="status-text">Oi da! 🌸</h1>
-        <p id="final-score">Du samlet 0 gledesgnister!</p>
-        <div class="instructions">Hold musen nede eller trykk på skjermen for å fly opp! 🎈</div>
-        <button class="btn" onclick="resetGame()">Fly igjen! ✨</button>
-    </div>
+        <div id="overlay">
+            <h1 id="status-text">Oi da! 🌸</h1>
+            <p id="final-score">Du samlet 0 gledesgnister!</p>
+            <div class="instructions">Hold musen nede eller trykk på skjermen for å fly opp! 🎈</div>
+            <button class="btn" onclick="resetGame()">Fly igjen! ✨</button>
+            <button class="btn" onclick="openShop()" style="background-color: var(--primary-purple); box-shadow: 0 6px 0 #9b7bc4;">Ellie's Boutique 🎀</button>
+        </div>
     
     <canvas id="gameCanvas"></canvas>
     
-    <div id="shop-overlay">
+    <div id="shop-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 30; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); font-family: inherit;">
         <div class="shop-header">Ellie's Boutique 🎀</div>
         <div class="shop-grid" id="shop-grid"></div>
         <button class="btn" onclick="closeShop()">Back to Flight! ✨</button>
     </div>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -235,11 +235,64 @@
         let canvasWidth, canvasHeight;
         let isPressing = false;
         let screenShake = 0;
+        let currentSkin = localStorage.getItem('paragliderSkin') || '#ff80ab';
         let frameCount = 0;
     
         highscoreEl.innerText = highscore;
         totalGledeEl.innerText = totalGlede;
     
+        const skins = [
+            { color: '#ff80ab', name: 'Pastel Pink', cost: 0 },
+            { color: '#ce93d8', name: 'Lavender', cost: 50 },
+            { color: '#fff59d', name: 'Lemon Drop', cost: 100 },
+            { color: '#b2ebf2', name: 'Sky Blue', cost: 150 },
+            { color: '#ffccbc', name: 'Peach Puff', cost: 200 },
+            { color: '#ffffff', name: 'Pure White', cost: 500 },
+        ];
+    
+        function initShop() {
+            shopGrid.innerHTML = '';
+            skins.forEach(skin => {
+                const item = document.createElement('div');
+                item.className = `shop-item ${currentSkin === skin.color ? 'selected' : ''}`;
+                item.innerHTML = `
+                    <div class="item-preview" style="background-color: ${skin.color}"></div>
+                    <div class="item-name">${skin.name}</div>
+                    <div class="item-cost">${skin.cost} ✨</div>
+                `;
+                item.onclick = () => buySkin(skin);
+                shopGrid.appendChild(item);
+            });
+        }
+    
+        function buySkin(skin) {
+            if (currentSkin === skin.color) return;
+            if (totalGlede >= skin.cost) {
+                totalGlede -= skin.cost;
+                currentSkin = skin.color;
+                localStorage.setItem('paragliderTotalGlede', totalGlede);
+                localStorage.setItem('paragliderSkin', currentSkin);
+                totalGledeEl.innerText = totalGlede;
+                playSound(600, 'sine', 0.2);
+                initShop();
+            } else {
+                playSound(200, 'sawtooth', 0.2);
+                showFloatingText("Not enough ✨", window.innerWidth / 2, window.innerHeight / 2);
+            }
+        }
+    
+        function openShop() {
+            shopOverlay.style.display = 'flex';
+            initShop();
+        }
+    
+        function closeShop() {
+            shopOverlay.style.display = 'none';
+        }
+    
+        // Initialize shop
+        initShop();
+
         // Audio Setup
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioCtx();
@@ -272,6 +325,7 @@
             reset() {
                 this.x = 100;
                 this.y = canvasHeight / 2;
+                this.color = currentSkin;
                 this.radius = 20;
                 this.velocity = 0;
                 this.gravity = 0.25;
@@ -306,16 +360,16 @@
                 }
             }
             draw() {
-                // Draw trail
-                ctx.beginPath();
-                ctx.moveTo(this.trail[0]?.x, this.trail[0]?.y);
-                for(let i=1; i<this.trail.length; i++) {
-                    ctx.lineTo(this.trail[i].x, this.trail[i].y);
-                }
-                ctx.strokeStyle = 'rgba(255, 128, 171, 0.3)';
-                ctx.lineWidth = 5;
-                ctx.lineCap = 'round';
-                ctx.stroke();
+        // Draw trail
+        ctx.beginPath();
+        ctx.moveTo(this.trail[0]?.x, this.trail[0]?.y);
+        for(let i=1; i<this.trail.length; i++) {
+            ctx.lineTo(this.trail[i].x, this.trail[i].y);
+        }
+        ctx.strokeStyle = this.color + '66'; // Semi-transparent version of current skin
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.stroke();
 
                 ctx.save();
                 if (this.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) {
@@ -327,7 +381,7 @@
                 // Canopy
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius * 1.5, Math.PI, 0);
-                ctx.fillStyle = '#ff80ab';
+                ctx.fillStyle = this.color;
                 ctx.fill();
                 ctx.strokeStyle = 'white';
                 ctx.lineWidth = 2;
@@ -344,7 +398,7 @@
                 // Ellie
                 ctx.beginPath();
                 ctx.arc(0, this.radius, 10, 0, Math.PI * 2);
-                ctx.fillStyle = '#fff';
+                ctx.fillStyle = this.color === '#ffffff' ? '#f0f0f0' : '#fff';
                 ctx.fill();
                 ctx.strokeStyle = '#ff80ab';
                 ctx.stroke();
@@ -519,24 +573,28 @@
                     if (obs.type === 'cloud') {
                         takeDamage();
                         obstacles.splice(i, 1);
-                    } else if (obs.type === 'sparkle') {
-                        combo++;
-                        comboTimer = 60;
-                        const points = 1 + Math.floor(combo / 5);
-                        score += points;
-                        scoreEl.innerText = score;
-                        
-                        playSound(440 + combo * 20, 'sine', 0.1);
-                        createExplosion(obs.x, obs.y, '#fff59d');
-                        showFloatingText(`+${points} ✨`, obs.x, obs.y);
-                        
-                        if (combo > 1) {
-                            comboUi.classList.add('show');
-                            comboValEl.innerText = combo;
-                        }
-                        
-                        obstacles.splice(i, 1);
-                    } else if (obs.type === 'heart') {
+        // In the game loop, we need to award totalGlede
+        if (obs.type === 'sparkle') {
+            combo++;
+            comboTimer = 60;
+            const points = 1 + Math.floor(combo / 5);
+            score += points;
+            totalGlede += points; // Add to total currency
+            localStorage.setItem('paragliderTotalGlede', totalGlede);
+            totalGledeEl.innerText = totalGlede;
+            scoreEl.innerText = score;
+            
+            playSound(440 + combo * 20, 'sine', 0.1);
+            createExplosion(obs.x, obs.y, '#fff59d');
+            showFloatingText(`+${points} ✨`, obs.x, obs.y);
+            
+            if (combo > 1) {
+                comboUi.classList.add('show');
+                comboValEl.innerText = combo;
+            }
+            
+            obstacles.splice(i, 1);
+        } else if (obs.type === 'heart') {
                         lives = Math.min(5, lives + 1);
                         livesEl.innerText = lives;
                         playSound(600, 'sine', 0.3);
