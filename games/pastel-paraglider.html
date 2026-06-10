@@ -234,6 +234,9 @@
         let gameActive = false;
         let canvasWidth, canvasHeight;
         let isPressing = false;
+        let isFeverMode = false;
+        let feverTimer = 0;
+        let currentThemeIndex = 0;
         let screenShake = 0;
         let frameCount = 0;
         let currentSkin = localStorage.getItem('paragliderSkin') || '#ff80ab';
@@ -443,12 +446,19 @@
         for(let i=0; i<20; i++) backgroundElements.push(new BackgroundElement(1));
         for(let i=0; i<15; i++) backgroundElements.push(new BackgroundElement(2));
         for(let i=0; i<10; i++) backgroundElements.push(new BackgroundElement(3));
+        }
 
         function spawnObstacle() {
-            const rand = Math.random();
             let type = 'cloud';
-            if (rand > 0.9) type = 'heart';
-            else if (rand > 0.6) type = 'sparkle';
+            if (isFeverMode) {
+                const rand = Math.random();
+                if (rand > 0.8) type = 'heart';
+                else type = 'sparkle';
+            } else {
+                const rand = Math.random();
+                if (rand > 0.9) type = 'heart';
+                else if (rand > 0.6) type = 'sparkle';
+            }
             obstacles.push(new Obstacle(type));
         }
 
@@ -487,6 +497,26 @@
 
         function update() {
             if (!gameActive) return;
+
+            // Theme Management
+            const themes = [
+                { top: '#e0f7fa', bottom: '#b2ebf2' },
+                { top: '#ff7e5f', bottom: '#feb47b' },
+                { top: '#6a11cb', bottom: '#2575fc' },
+                { top: '#0f0c29', bottom: '#302b63' }
+            ];
+            const themeIndex = Math.min(themes.length - 1, Math.floor(score / 1000));
+            if (themeIndex !== currentThemeIndex) {
+                currentThemeIndex = themeIndex;
+                document.documentElement.style.setProperty('--bg-sky', themes[themeIndex].top);
+                document.documentElement.style.setProperty('--sky-bottom', themes[themeIndex].bottom);
+            }
+
+            // Fever Mode Logic
+            if (isFeverMode) {
+                feverTimer--;
+                if (feverTimer <= 0) isFeverMode = false;
+            }
 
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             frameCount++;
@@ -534,6 +564,14 @@
                         if (combo > 1) {
                             comboUi.classList.add('show');
                             comboValEl.innerText = combo;
+                        }
+                        
+                        if (combo >= 15 && !isFeverMode) {
+                            isFeverMode = true;
+                            feverTimer = 300; 
+                            playSound(880, 'sine', 0.3);
+                            setTimeout(() => playSound(1100, 'sine', 0.3), 100);
+                            showFloatingText("FEVER MODE! ✨", canvasWidth / 2, canvasHeight / 2);
                         }
                         
                         obstacles.splice(i, 1);
