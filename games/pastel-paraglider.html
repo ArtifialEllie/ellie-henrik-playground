@@ -14,6 +14,7 @@
             --text-color: #006064;
             --cloud-gray: #bdbdbd;
             --accent-gold: #ffd700;
+            --heart-red: #ff5252;
         }
         body {
             margin: 0;
@@ -113,7 +114,7 @@
         }
         @keyframes floatUp {
             0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(-60px); opacity: 0; }
         }
     </style>
 </head>
@@ -121,6 +122,7 @@
     <div id="game-ui">
         <div>Glede: <span id="score">0</span> ✨</div>
         <div>Beste: <span id="highscore">0</span> 🏆</div>
+        <div>Liv: <span id="lives">3</span> ❤️</div>
     </div>
     <div id="combo-ui">COMBO x<span id="combo-val">0</span> ✨</div>
     
@@ -138,6 +140,7 @@
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const highscoreEl = document.getElementById('highscore');
+        const livesEl = document.getElementById('lives');
         const comboUi = document.getElementById('combo-ui');
         const comboValEl = document.getElementById('combo-val');
         const overlay = document.getElementById('overlay');
@@ -147,6 +150,7 @@
         let score = 0;
         let combo = 0;
         let comboTimer = 0;
+        let lives = 3;
         let highscore = localStorage.getItem('paragliderHighscore') || 0;
         let gameActive = false;
         let canvasWidth, canvasHeight;
@@ -194,6 +198,7 @@
                 this.lift = -0.6;
                 this.angle = 0;
                 this.trail = [];
+                this.invincible = 0;
             }
             update() {
                 if (isPressing) {
@@ -206,6 +211,8 @@
                 this.y += this.velocity;
                 this.angle = this.velocity * 0.05;
 
+                if (this.invincible > 0) this.invincible--;
+
                 // Trail logic
                 this.trail.push({x: this.x, y: this.y});
                 if (this.trail.length > 20) this.trail.shift();
@@ -215,7 +222,7 @@
                     this.velocity = 0;
                 }
                 if (this.y > canvasHeight) {
-                    gameOver();
+                    takeDamage();
                 }
             }
             draw() {
@@ -231,6 +238,9 @@
                 ctx.stroke();
 
                 ctx.save();
+                if (this.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) {
+                    ctx.globalAlpha = 0.5;
+                }
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
                 
@@ -276,9 +286,10 @@
                 this.x = canvasWidth + 100;
                 this.y = Math.random() * (canvasHeight - 100) + 50;
                 this.radius = type === 'cloud' ? Math.random() * 40 + 30 : 15;
-                this.speed = (Math.random() * 2 + 3) * (1 + score * 0.01);
+                this.speed = (Math.random() * 2 + 3) * (1 + score * 0.001);
                 this.color = type === 'cloud' ? '#bdbdbd' : '#fff59d';
                 this.emoji = type === 'cloud' ? '☁️' : '✨';
+                if (type === 'heart') this.emoji = '❤️';
             }
             update() {
                 this.x -= this.speed;
@@ -292,17 +303,18 @@
         }
 
         class BackgroundElement {
-            constructor() {
+            constructor(layer) {
+                this.layer = layer; // 1 = far, 2 = mid, 3 = near
                 this.reset();
                 this.x = Math.random() * canvasWidth;
             }
             reset() {
                 this.x = canvasWidth + 100;
                 this.y = Math.random() * canvasHeight;
-                this.size = Math.random() * 20 + 10;
-                this.speed = Math.random() * 1 + 0.5;
+                this.size = (Math.random() * 20 + 10) * (this.layer * 0.5);
+                this.speed = (Math.random() * 1 + 0.5) * (this.layer * 0.3);
                 this.emoji = ['🌸', '⭐', '☁️', '💖'][Math.floor(Math.random() * 4)];
-                this.opacity = Math.random() * 0.5 + 0.2;
+                this.opacity = (Math.random() * 0.5 + 0.2) / this.layer;
             }
             update() {
                 this.x -= this.speed;
@@ -345,10 +357,17 @@
         let obstacles = [];
         let backgroundElements = [];
         let particles = [];
-        for(let i=0; i<15; i++) backgroundElements.push(new BackgroundElement());
+        
+        // Initialize parallax layers
+        for(let i=0; i<20; i++) backgroundElements.push(new BackgroundElement(1));
+        for(let i=0; i<15; i++) backgroundElements.push(new BackgroundElement(2));
+        for(let i=0; i<10; i++) backgroundElements.push(new BackgroundElement(3));
 
         function spawnObstacle() {
-            const type = Math.random() > 0.3 ? 'cloud' : 'sparkle';
+            const rand = Math.random();
+            let type = 'cloud';
+            if (rand > 0.9) type = 'heart';
+            else if (rand > 0.6) type = 'sparkle';
             obstacles.push(new Obstacle(type));
         }
 
@@ -366,6 +385,23 @@
             el.style.top = y + 'px';
             document.body.appendChild(el);
             setTimeout(() => el.remove(), 800);
+        }
+
+        function takeDamage() {
+            if (player.invincible > 0) return;
+            
+            lives--;
+            livesEl.innerText = lives;
+            screenShake = 20;
+            playSound(150, 'sawtooth', 0.5);
+            createExplosion(player.x, player.y, '#ff80ab');
+            
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                player.invincible = 120; // 2 seconds at 60fps
+                player.velocity = -5; // Bounce up
+            }
         }
 
         function update() {
@@ -401,8 +437,9 @@
                 const dist = Math.hypot(player.x - obs.x, player.y - obs.y);
                 if (dist < player.radius + obs.radius * 0.7) {
                     if (obs.type === 'cloud') {
-                        gameOver();
-                    } else {
+                        takeDamage();
+                        if (obs.type === 'cloud') obstacles.splice(i, 1);
+                    } else if (obs.type === 'sparkle') {
                         combo++;
                         comboTimer = 60;
                         const points = 1 + Math.floor(combo / 5);
@@ -418,6 +455,13 @@
                             comboValEl.innerText = combo;
                         }
                         
+                        obstacles.splice(i, 1);
+                    } else if (obs.type === 'heart') {
+                        lives = Math.min(5, lives + 1);
+                        livesEl.innerText = lives;
+                        playSound(600, 'sine', 0.3);
+                        createExplosion(obs.x, obs.y, '#ff5252');
+                        showFloatingText("+1 ❤️", obs.x, obs.y);
                         obstacles.splice(i, 1);
                     }
                 }
@@ -449,7 +493,6 @@
 
         function gameOver() {
             gameActive = false;
-            screenShake = 20;
             playSound(150, 'sawtooth', 0.5);
             createExplosion(player.x, player.y, '#ff80ab');
             
@@ -470,7 +513,9 @@
             score = 0;
             combo = 0;
             comboTimer = 0;
+            lives = 3;
             scoreEl.innerText = '0';
+            livesEl.innerText = '3';
             comboUi.classList.remove('show');
             obstacles = [];
             particles = [];
