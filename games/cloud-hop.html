@@ -585,15 +585,22 @@
                         player.y + player.height > cloud.y && 
                         player.y + player.height < cloud.y + cloud.height + player.vy) {
                         
+                        // Perfect Jump Logic
+                        const cloudCenterX = cloud.x + cloud.width / 2;
+                        const playerCenterX = player.x + player.width / 2;
+                        const distFromCenter = Math.abs(cloudCenterX - playerCenterX);
+                        const isPerfect = distFromCenter < 15;
+
                         if (cloud.type === 'spring') {
-                            player.vy = SPRING_JUMP_FORCE;
-                            playSound(600, 'sine', 0.2);
-                            showFloatingText("SPRING! 🚀", player.x + player.width/2, player.y);
+                            player.vy = isPerfect ? SUPER_JUMP_FORCE : SPRING_JUMP_FORCE;
+                            playSound(isPerfect ? 800 : 600, 'sine', 0.2);
+                            showFloatingText(isPerfect ? "PERFECT SPRING! 🚀✨" : "SPRING! 🚀", player.x + player.width/2, player.y);
                         } else if (cloud.type === 'rainbow') {
-                            player.vy = SUPER_JUMP_FORCE;
-                            gold += 200;
+                            player.vy = isPerfect ? SUPER_JUMP_FORCE * 1.2 : SUPER_JUMP_FORCE;
+                            const rainbowBonus = isPerfect ? 400 : 200;
+                            gold += rainbowBonus;
                             playSound(880, 'sine', 0.3);
-                            showFloatingText("RAINBOW BOOST! 🌈✨", player.x + player.width/2, player.y);
+                            showFloatingText(isPerfect ? `PERFECT RAINBOW! 🌈✨ +${rainbowBonus}` : `RAINBOW BOOST! 🌈✨ +${rainbowBonus}`, player.x + player.width/2, player.y);
                             goldElement.innerText = `✨ ${gold}`;
                             localStorage.setItem('cloudHopGold', gold);
                         } else if (cloud.type === 'storm') {
@@ -604,24 +611,46 @@
                             combo = 0;
                             comboElement.classList.remove('show');
                         } else if (cloud.type === 'fragile') {
-                            player.vy = JUMP_FORCE;
+                            player.vy = isPerfect ? JUMP_FORCE * 1.2 : JUMP_FORCE;
                             playSound(400, 'sine', 0.1);
                             cloud.life = 0.5; // Start disappearing
-                            showFloatingText("CRACK! ❄️", player.x + player.width/2, player.y);
+                            showFloatingText(isPerfect ? "PERFECT CRACK! ❄️✨" : "CRACK! ❄️", player.x + player.width/2, player.y);
                         } else {
-                            player.vy = JUMP_FORCE;
-                            playSound(400 + Math.random() * 200, 'sine', 0.1);
+                            player.vy = isPerfect ? JUMP_FORCE * 1.2 : JUMP_FORCE;
+                            playSound(isPerfect ? 600 : 400 + Math.random() * 200, 'sine', 0.1);
+                            if (isPerfect) {
+                                showFloatingText("PERFECT! ✨", player.x + player.width/2, player.y);
+                                gold += 10;
+                                goldElement.innerText = `✨ ${gold}`;
+                                localStorage.setItem('cloudHopGold', gold);
+                            }
                         }
 
                         if (cloud.type === 'gold') {
-                            gold += 50;
+                            const goldGain = isPerfect ? 100 : 50;
+                            gold += goldGain;
                             playSound(880, 'square', 0.2);
-                            showFloatingText("+50 GOLD! ✨", player.x + player.width/2, player.y);
+                            showFloatingText(isPerfect ? `PERFECT GOLD! ✨ +${goldGain}` : `+${goldGain} GOLD! ✨`, player.x + player.width/2, player.y);
                             goldElement.innerText = `✨ ${gold}`;
                             localStorage.setItem('cloudHopGold', gold);
                         }
 
-                        createParticles(player.x + player.width/2, player.y + player.height, cloud.color);
+                        screenShake = isPerfect ? 5 : 2;
+                        const particleColor = isPerfect ? '#ffd700' : cloud.color;
+                        createParticles(player.x + player.width/2, player.y + player.height, particleColor);
+                        if (isPerfect) {
+                            for(let i=0; i<5; i++) {
+                                particles.push({
+                                    x: player.x + player.width/2,
+                                    y: player.y + player.height,
+                                    vx: (Math.random() - 0.5) * 10,
+                                    vy: (Math.random() - 0.5) * 10,
+                                    life: 1.0,
+                                    color: '#fff',
+                                    size: Math.random() * 6 + 2
+                                });
+                            }
+                        }
                         
                         combo++;
                         comboTimer = 60;
