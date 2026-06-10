@@ -236,6 +236,7 @@
         let isPressing = false;
         let screenShake = 0;
         let frameCount = 0;
+        let currentSkin = localStorage.getItem('paragliderSkin') || '#ff80ab';
     
         highscoreEl.innerText = highscore;
         totalGledeEl.innerText = totalGlede;
@@ -327,7 +328,7 @@
                 // Canopy
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius * 1.5, Math.PI, 0);
-                ctx.fillStyle = '#ff80ab';
+                ctx.fillStyle = currentSkin;
                 ctx.fill();
                 ctx.strokeStyle = 'white';
                 ctx.lineWidth = 2;
@@ -346,7 +347,7 @@
                 ctx.arc(0, this.radius, 10, 0, Math.PI * 2);
                 ctx.fillStyle = '#fff';
                 ctx.fill();
-                ctx.strokeStyle = '#ff80ab';
+                ctx.strokeStyle = currentSkin;
                 ctx.stroke();
                 
                 // Blushing cheeks
@@ -605,7 +606,149 @@
             overlay.style.display = 'none';
             update();
         }
+        
+        // Add a button to the overlay to open the shop
+        function setupOverlay() {
+            const shopBtn = document.createElement('button');
+            shopBtn.className = 'btn';
+            shopBtn.innerText = 'Skin Shop! 🎀';
+            shopBtn.style.marginLeft = '10px';
+            shopBtn.style.backgroundColor = 'var(--primary-purple)';
+            shopBtn.style.boxShadow = '0 6px 0 #9b7bc4';
+            shopBtn.onclick = openShop;
+            overlay.appendChild(shopBtn);
+        }
+        setupOverlay();
 
+        function openShop() {
+            shopOverlay.style.display = 'flex';
+        }
+
+        function closeShop() {
+            shopOverlay.style.display = 'none';
+        }
+
+        const skins = [
+            { color: '#ff80ab', name: 'Classic Pink', cost: 0 },
+            { color: '#b2ebf2', name: 'Sky Blue', cost: 200 },
+            { color: '#ce93d8', name: 'Lavender', cost: 500 },
+            { color: '#fff59d', name: 'Sunshine', cost: 1000 },
+            { color: '#ff7e5f', name: 'Sunset', cost: 2000 },
+            { color: '#6a11cb', name: 'Midnight', cost: 5000 },
+            { color: '#ffffff', name: 'Pure Cloud', cost: 10000 },
+            { color: 'rainbow', name: 'Rainbow', cost: 25000 },
+            { color: 'diamond', name: 'Diamond', cost: 50000 },
+        ];
+        
+        function renderShop() {
+            shopGrid.innerHTML = '';
+            skins.forEach(skin => {
+                const isSelected = currentSkin === skin.color;
+                const canAfford = totalGlede >= skin.cost;
+                const isOwned = localStorage.getItem(`paragliderSkin_${skin.color}`) === 'true' || skin.cost === 0;
+                
+                const item = document.createElement('div');
+                item.className = `shop-item ${isSelected ? 'selected' : ''}`;
+                item.innerHTML = `
+                    <div class="item-preview" style="background: ${skin.color === 'rainbow' ? 'linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)' : (skin.color === 'diamond' ? '#b9f2ff' : skin.color)}"></div>
+                    <div style="font-size: 0.9rem; font-weight: bold;">${skin.name}</div>
+                    <div class="item-cost">${isOwned ? 'Owned' : '✨ ' + skin.cost}</div>
+                `;
+                
+                item.onclick = () => {
+                    if (isOwned) {
+                        currentSkin = skin.color;
+                        localStorage.setItem('paragliderSkin', currentSkin);
+                        renderShop();
+                        playSound(600, 'sine', 0.1);
+                    } else if (canAfford) {
+                        totalGlede -= skin.cost;
+                        localStorage.setItem('paragliderTotalGlede', totalGlede);
+                        totalGledeEl.innerText = totalGlede;
+                        localStorage.setItem(`paragliderSkin_${skin.color}`, 'true');
+                        currentSkin = skin.color;
+                        localStorage.setItem('paragliderSkin', currentSkin);
+                        renderShop();
+                        playSound(880, 'sine', 0.2);
+                    } else {
+                        playSound(200, 'sawtooth', 0.1);
+                    }
+                };
+                shopGrid.appendChild(item);
+            });
+        }
+
+        function getSkinColor() {
+            if (currentSkin === 'rainbow') {
+                return `hsl(${Date.now() / 10 % 360}, 70%, 70%)`;
+            }
+            if (currentSkin === 'diamond') {
+                return Math.random() > 0.9 ? '#fff' : '#b9f2ff';
+            }
+            return currentSkin;
+        }
+
+        // Modify Player.draw to use getSkinColor()
+        const originalDraw = Player.prototype.draw;
+        Player.prototype.draw = function() {
+            const activeColor = getSkinColor();
+            
+            // Draw trail
+            ctx.beginPath();
+            ctx.moveTo(this.trail[0]?.x, this.trail[0]?.y);
+            for(let i=1; i<this.trail.length; i++) {
+                ctx.lineTo(this.trail[i].x, this.trail[i].y);
+            }
+            ctx.strokeStyle = 'rgba(255, 128, 171, 0.3)';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            
+            ctx.save();
+            if (this.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) {
+                ctx.globalAlpha = 0.5;
+            }
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            
+            // Canopy
+            ctx.beginPath();
+            ctx.arc(0, 0, this.radius * 1.5, Math.PI, 0);
+            ctx.fillStyle = activeColor;
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Lines
+            ctx.beginPath();
+            ctx.moveTo(-this.radius * 1.5, 0);
+            ctx.lineTo(0, this.radius);
+            ctx.lineTo(this.radius * 1.5, 0);
+            ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+            ctx.stroke();
+            
+            // Ellie
+            ctx.beginPath();
+            ctx.arc(0, this.radius, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.strokeStyle = activeColor;
+            ctx.stroke();
+            
+            // Blushing cheeks
+            ctx.beginPath();
+            ctx.arc(-4, this.radius + 2, 2, 0, Math.PI * 2);
+            ctx.arc(4, this.radius + 2, 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffc1e3';
+            ctx.fill();
+            
+            ctx.restore();
+        };
+
+        renderShop();
+        openShop(); // Initial view if needed or just keep hidden
+        shopOverlay.style.display = 'none';
         const handleStart = (e) => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             if (!gameActive && overlay.style.display === 'none') {
