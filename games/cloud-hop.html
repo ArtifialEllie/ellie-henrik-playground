@@ -87,10 +87,14 @@
             opacity: 0;
             transition: opacity 0.2s, transform 0.2s;
             transform: scale(0.8);
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.8);
         }
         #combo-ui.show {
             opacity: 1;
-            transform: scale(1.1);
+            transform: translateX(-50%) scale(1.1);
         }
         #overlay {
             position: absolute;
@@ -150,6 +154,20 @@
         @keyframes fever-pulse {
             from { transform: translate(-50%, -50%) scale(1); }
             to { transform: translate(-50%, -50%) scale(1.2); }
+        }
+        #wind-indicator {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: white;
+            text-shadow: 1px 1px var(--primary-pink);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 10;
         }
         .btn:hover {
             transform: scale(1.1);
@@ -244,8 +262,9 @@
             <div id="score">0</div>
             <div id="highscore">Beste: 0 🏆</div>
             <div id="gold-display">✨ 0</div>
+            <div id="wind-indicator">💨 Wind: None</div>
             <div id="combo-ui">Combo x1 ✨</div>
-        </div>
+        }
         
         <canvas id="gameCanvas"></canvas>
 
@@ -272,6 +291,7 @@
         const goldElement = document.getElementById('gold-display');
         const comboElement = document.getElementById('combo-ui');
         const overlay = document.getElementById('overlay');
+        const windIndicator = document.getElementById('wind-indicator');
         const startBtn = document.getElementById('start-btn');
         const shopBtn = document.getElementById('shop-btn');
         const closeShopBtn = document.getElementById('close-shop-btn');
@@ -337,8 +357,10 @@
             let cameraY = 0;
             let currentTheme = 0;
             let keys = {};
+            let windForce = 0;
+            let windTimer = 0;
         let screenShake = 0;
-
+            
         highscoreElement.innerText = `Beste: ${highscore} 🏆`;
 
         window.addEventListener('keydown', e => keys[e.code] = true);
@@ -471,6 +493,20 @@
 
         function update() {
             if (!gameActive) return;
+    
+            // Wind logic
+            if (windTimer > 0) {
+                windTimer--;
+                player.vx += windForce;
+                windIndicator.style.opacity = 1;
+                windIndicator.innerText = windForce > 0 ? '💨 Wind blowing Right! ➡️' : '💨 Wind blowing Left! ⬅️';
+            } else if (Math.random() < 0.002) {
+                windForce = (Math.random() - 0.5) * 0.2;
+                windTimer = 200 + Math.random() * 300;
+                if (Math.abs(windForce) < 0.05) windForce = 0;
+            } else {
+                windIndicator.style.opacity = 0;
+            }
 
             const themes = [
                 { bg: 'linear-gradient(to bottom, var(--bg-top), var(--bg-bottom))' },
@@ -572,6 +608,16 @@
                         if (currentHeight > score) {
                             score = currentHeight;
                             scoreElement.innerText = score;
+                        }
+
+                        // Achievement Unlocks
+                        if (score >= 1000 && !localStorage.getItem('cloudHopSkin_#ffffff')) {
+                            localStorage.setItem('cloudHopSkin_#ffffff', 'true');
+                            showFloatingText("ACHIEVEMENT: Pure Cloud Unlocked! ☁️", player.x, player.y);
+                        }
+                        if (score >= 2000 && !localStorage.getItem('cloudHopSkin_diamond')) {
+                            localStorage.setItem('cloudHopSkin_diamond', 'true');
+                            showFloatingText("ACHIEVEMENT: Diamond Unlocked! 💎", player.x, player.y);
                         }
                     }
                 });
