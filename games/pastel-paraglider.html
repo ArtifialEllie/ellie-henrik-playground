@@ -13,6 +13,12 @@
             --primary-yellow: #fff59d;
             --text-color: #006064;
             --cloud-gray: #bdbdbd;
+            --bg-sunset-top: #ff7e5f;
+            --bg-sunset-bottom: #feb47b;
+            --bg-twilight-top: #6a11cb;
+            --bg-twilight-bottom: #2575fc;
+            --bg-space-top: #0f0c29;
+            --bg-space-bottom: #302b63;
             --accent-gold: #ffd700;
             --heart-red: #ff5252;
         }
@@ -40,6 +46,10 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
+        }
+        #gold-display {
+            font-size: 20px;
+            color: var(--accent-gold);
         }
         #combo-ui {
             position: absolute;
@@ -116,6 +126,64 @@
             0% { transform: translateY(0); opacity: 1; }
             100% { transform: translateY(-60px); opacity: 0; }
         }
+        #shop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 30;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            font-family: inherit;
+        }
+        .shop-header {
+            font-size: 2.5rem;
+            color: var(--primary-pink);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px white;
+        }
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .shop-item {
+            background: white;
+            border: 4px solid var(--primary-pink);
+            border-radius: 20px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .shop-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 128, 171, 0.4);
+        }
+        .shop-item.selected {
+            background: var(--primary-pink);
+            color: white;
+        }
+        .item-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-bottom: 5px;
+        }
+        .item-cost {
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -123,6 +191,7 @@
         <div>Glede: <span id="score">0</span> ✨</div>
         <div>Beste: <span id="highscore">0</span> 🏆</div>
         <div>Liv: <span id="lives">3</span> ❤️</div>
+        <div id="gold-display">✨ <span id="total-glede">0</span></div>
     </div>
     <div id="combo-ui">COMBO x<span id="combo-val">0</span> ✨</div>
     
@@ -135,6 +204,12 @@
     
     <canvas id="gameCanvas"></canvas>
     
+    <div id="shop-overlay">
+        <div class="shop-header">Ellie's Boutique 🎀</div>
+        <div class="shop-grid" id="shop-grid"></div>
+        <button class="btn" onclick="closeShop()">Back to Flight! ✨</button>
+    </div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -143,11 +218,15 @@
         const livesEl = document.getElementById('lives');
         const comboUi = document.getElementById('combo-ui');
         const comboValEl = document.getElementById('combo-val');
+        const totalGledeEl = document.getElementById('total-glede');
+        const shopOverlay = document.getElementById('shop-overlay');
+        const shopGrid = document.getElementById('shop-grid');
         const overlay = document.getElementById('overlay');
         const statusText = document.getElementById('status-text');
         const finalScoreEl = document.getElementById('final-score');
-
+    
         let score = 0;
+        let totalGlede = parseInt(localStorage.getItem('paragliderTotalGlede')) || 0;
         let combo = 0;
         let comboTimer = 0;
         let lives = 3;
@@ -157,9 +236,10 @@
         let isPressing = false;
         let screenShake = 0;
         let frameCount = 0;
-
+    
         highscoreEl.innerText = highscore;
-
+        totalGledeEl.innerText = totalGlede;
+    
         // Audio Setup
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioCtx();

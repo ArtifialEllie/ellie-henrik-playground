@@ -149,7 +149,15 @@
             text-shadow: 0 0 20px var(--primary-pink);
             z-index: 15;
             pointer-events: none;
-            animation: fever-pulse 0.5s infinite alternate;
+            animation: fever-pulse 0.5s infinite alternate, rainbow-text 2s linear infinite;
+        }
+        @keyframes rainbow-text {
+            0% { color: #ffb7ce; }
+            20% { color: #b2e2f2; }
+            40% { color: #d1b3ff; }
+            60% { color: #fff9b1; }
+            80% { color: #ff7e5f; }
+            100% { color: #ffb7ce; }
         }
         @keyframes fever-pulse {
             from { transform: translate(-50%, -50%) scale(1); }
@@ -345,6 +353,7 @@
         let particles = [];
         let backgroundDecor = [];
         let stars = [];
+        let windParticles = [];
         let stormClouds = [];
         let score = 0;
         let gold = 0;
@@ -385,6 +394,7 @@
             clouds = [];
             particles = [];
             screenShake = 0;
+            windParticles = [];
             stars = [];
             stormClouds = [];
             
@@ -498,6 +508,18 @@
             if (windTimer > 0) {
                 windTimer--;
                 player.vx += windForce;
+                if (Math.random() < 0.3) {
+                    windParticles.push({
+                        x: windForce > 0 ? -20 : canvas.width + 20,
+                        y: Math.random() * canvas.height + cameraY,
+                        vx: windForce * 50 + (Math.random() * 2),
+                        vy: (Math.random() - 0.5) * 1,
+                        life: 1.0,
+                        size: Math.random() * 5 + 2
+                    });
+                }
+            }
+
                 windIndicator.style.opacity = 1;
                 windIndicator.innerText = windForce > 0 ? '💨 Wind blowing Right! ➡️' : '💨 Wind blowing Left! ⬅️';
             } else if (Math.random() < 0.002) {
@@ -674,8 +696,16 @@
                 gameOver();
             }
 
+            windParticles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+            });
+            windParticles = windParticles.filter(p => p.life > 0);
+
             if (isFeverMode) {
                 feverTimer--;
+                if (feverTimer <= 0) {
                 if (feverTimer <= 0) {
                     isFeverMode = false;
                     document.getElementById('fever-msg')?.remove();
@@ -722,6 +752,15 @@
             
             ctx.translate(0, -cameraY);
 
+            windParticles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
             clouds.forEach(cloud => {
                 cloud.pulse += 0.05;
                 const pulseOffset = Math.sin(cloud.pulse) * 3;
@@ -747,9 +786,8 @@
                 ctx.shadowColor = 'gold';
             }
             
-            let stretch = 1;
-            if (player.vy < 0) stretch = 1.2; 
-            if (player.vy > 0) stretch = 0.9; 
+            let stretch = 1 + Math.abs(player.vy) * 0.02;
+            if (player.vy > 0) stretch = 1 - Math.abs(player.vy) * 0.01;
             
             ctx.scale(1/stretch, stretch);
             ctx.fillStyle = player.color;
