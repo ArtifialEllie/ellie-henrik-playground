@@ -351,7 +351,7 @@
 
         let clouds = [];
         let particles = [];
-        let particles = [];
+        let windParticles = [];
         let backgroundDecor = [];
         let stars = [];
         let score = 0;
@@ -391,10 +391,8 @@
             feverTimer = 0;
             currentTheme = 0;
             clouds = [];
-            clouds = [];
             particles = [];
             screenShake = 0;
-            windParticles = [];
             stars = [];
             
             player.trail = [];
@@ -429,7 +427,7 @@
         }
 
         function spawnCloud(y) {
-            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm', 'moving', 'fragile'];
+            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm', 'moving', 'fragile', 'rainbow'];
             const type = types[Math.floor(Math.random() * types.length)];
             let color;
             let vx = 0;
@@ -446,6 +444,9 @@
                 case 'fragile': 
                     color = '#fdfd96'; 
                     isFragile = true; 
+                    break;
+                case 'rainbow':
+                    color = 'rainbow';
                     break;
                 default: 
                     const normColors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5'];
@@ -519,6 +520,7 @@
                 }
             }
 
+            if (windTimer > 0) {
                 windIndicator.style.opacity = 1;
                 windIndicator.innerText = windForce > 0 ? '💨 Wind blowing Right! ➡️' : '💨 Wind blowing Left! ⬅️';
             } else if (Math.random() < 0.002) {
@@ -587,6 +589,13 @@
                             player.vy = SPRING_JUMP_FORCE;
                             playSound(600, 'sine', 0.2);
                             showFloatingText("SPRING! 🚀", player.x + player.width/2, player.y);
+                        } else if (cloud.type === 'rainbow') {
+                            player.vy = SUPER_JUMP_FORCE;
+                            gold += 200;
+                            playSound(880, 'sine', 0.3);
+                            showFloatingText("RAINBOW BOOST! 🌈✨", player.x + player.width/2, player.y);
+                            goldElement.innerText = `✨ ${gold}`;
+                            localStorage.setItem('cloudHopGold', gold);
                         } else if (cloud.type === 'storm') {
                             player.vy = JUMP_FORCE * 0.5;
                             screenShake = 10;
