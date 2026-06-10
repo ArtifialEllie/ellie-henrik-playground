@@ -13,6 +13,7 @@
             --primary-yellow: #fff59d;
             --text-color: #006064;
             --cloud-gray: #bdbdbd;
+            --accent-gold: #ffd700;
         }
         body {
             margin: 0;
@@ -35,6 +36,26 @@
             z-index: 10;
             pointer-events: none;
             text-shadow: 2px 2px white;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #combo-ui {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary-pink);
+            z-index: 10;
+            text-shadow: 2px 2px white;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: scale(0.8);
+        }
+        #combo-ui.show {
+            opacity: 1;
+            transform: scale(1.1);
         }
         canvas {
             display: block;
@@ -54,6 +75,7 @@
             z-index: 20;
             display: none;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
         }
         .btn {
             background-color: var(--primary-pink);
@@ -66,13 +88,33 @@
             font-family: inherit;
             transition: transform 0.2s, background-color 0.2s;
             margin-top: 20px;
+            box-shadow: 0 6px 0 #f06292;
+            font-weight: bold;
         }
         .btn:hover { 
             transform: scale(1.1); 
             background-color: #f06292;
         }
-        h1 { color: var(--primary-pink); margin-top: 0; }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #f06292;
+        }
+        h1 { color: var(--primary-pink); margin-top: 0; text-shadow: 2px 2px white; }
         .instructions { font-size: 18px; color: #666; margin-bottom: 20px; }
+        .floating-text {
+            position: absolute;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--primary-pink);
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 15;
+            text-shadow: 2px 2px white;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -80,6 +122,7 @@
         <div>Glede: <span id="score">0</span> ✨</div>
         <div>Beste: <span id="highscore">0</span> 🏆</div>
     </div>
+    <div id="combo-ui">COMBO x<span id="combo-val">0</span> ✨</div>
     
     <div id="overlay">
         <h1 id="status-text">Oi da! 🌸</h1>
@@ -87,25 +130,47 @@
         <div class="instructions">Hold musen nede eller trykk på skjermen for å fly opp! 🎈</div>
         <button class="btn" onclick="resetGame()">Fly igjen! ✨</button>
     </div>
-
+    
     <canvas id="gameCanvas"></canvas>
-
+    
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const highscoreEl = document.getElementById('highscore');
+        const comboUi = document.getElementById('combo-ui');
+        const comboValEl = document.getElementById('combo-val');
         const overlay = document.getElementById('overlay');
         const statusText = document.getElementById('status-text');
         const finalScoreEl = document.getElementById('final-score');
 
         let score = 0;
+        let combo = 0;
+        let comboTimer = 0;
         let highscore = localStorage.getItem('paragliderHighscore') || 0;
         let gameActive = false;
         let canvasWidth, canvasHeight;
         let isPressing = false;
+        let screenShake = 0;
+        let frameCount = 0;
 
         highscoreEl.innerText = highscore;
+
+        // Audio Setup
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        function playSound(freq, type, duration, vol = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
 
         function resize() {
             canvasWidth = window.innerWidth;
@@ -128,6 +193,7 @@
                 this.gravity = 0.25;
                 this.lift = -0.6;
                 this.angle = 0;
+                this.trail = [];
             }
             update() {
                 if (isPressing) {
@@ -136,13 +202,14 @@
                     this.velocity += this.gravity;
                 }
                 
-                this.velocity *= 0.98; // Air resistance
+                this.velocity *= 0.98;
                 this.y += this.velocity;
-                
-                // Rotation based on velocity
                 this.angle = this.velocity * 0.05;
 
-                // Boundary checks
+                // Trail logic
+                this.trail.push({x: this.x, y: this.y});
+                if (this.trail.length > 20) this.trail.shift();
+
                 if (this.y < 0) {
                     this.y = 0;
                     this.velocity = 0;
@@ -152,11 +219,22 @@
                 }
             }
             draw() {
+                // Draw trail
+                ctx.beginPath();
+                ctx.moveTo(this.trail[0]?.x, this.trail[0]?.y);
+                for(let i=1; i<this.trail.length; i++) {
+                    ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                }
+                ctx.strokeStyle = 'rgba(255, 128, 171, 0.3)';
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
                 
-                // Draw Paraglider Canopy
+                // Canopy
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius * 1.5, Math.PI, 0);
                 ctx.fillStyle = '#ff80ab';
@@ -165,7 +243,7 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // Draw Lines
+                // Lines
                 ctx.beginPath();
                 ctx.moveTo(-this.radius * 1.5, 0);
                 ctx.lineTo(0, this.radius);
@@ -173,7 +251,7 @@
                 ctx.strokeStyle = 'rgba(255,255,255,0.8)';
                 ctx.stroke();
                 
-                // Draw Ellie (small circle)
+                // Ellie
                 ctx.beginPath();
                 ctx.arc(0, this.radius, 10, 0, Math.PI * 2);
                 ctx.fillStyle = '#fff';
@@ -187,18 +265,18 @@
                 ctx.arc(4, this.radius + 2, 2, 0, Math.PI * 2);
                 ctx.fillStyle = '#ffc1e3';
                 ctx.fill();
-
+                
                 ctx.restore();
             }
         }
 
         class Obstacle {
             constructor(type) {
-                this.type = type; // 'cloud' or 'sparkle'
-                this.x = canvasWidth + 50;
+                this.type = type; 
+                this.x = canvasWidth + 100;
                 this.y = Math.random() * (canvasHeight - 100) + 50;
                 this.radius = type === 'cloud' ? Math.random() * 40 + 30 : 15;
-                this.speed = Math.random() * 2 + 3;
+                this.speed = (Math.random() * 2 + 3) * (1 + score * 0.01);
                 this.color = type === 'cloud' ? '#bdbdbd' : '#fff59d';
                 this.emoji = type === 'cloud' ? '☁️' : '✨';
             }
@@ -210,6 +288,31 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(this.emoji, this.x, this.y);
+            }
+        }
+
+        class BackgroundElement {
+            constructor() {
+                this.reset();
+                this.x = Math.random() * canvasWidth;
+            }
+            reset() {
+                this.x = canvasWidth + 100;
+                this.y = Math.random() * canvasHeight;
+                this.size = Math.random() * 20 + 10;
+                this.speed = Math.random() * 1 + 0.5;
+                this.emoji = ['🌸', '⭐', '☁️', '💖'][Math.floor(Math.random() * 4)];
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.x -= this.speed;
+                if (this.x < -100) this.reset();
+            }
+            draw() {
+                ctx.globalAlpha = this.opacity;
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillText(this.emoji, this.x, this.y);
+                ctx.globalAlpha = 1.0;
             }
         }
 
@@ -240,8 +343,9 @@
 
         const player = new Player();
         let obstacles = [];
+        let backgroundElements = [];
         let particles = [];
-        let frameCount = 0;
+        for(let i=0; i<15; i++) backgroundElements.push(new BackgroundElement());
 
         function spawnObstacle() {
             const type = Math.random() > 0.3 ? 'cloud' : 'sparkle';
@@ -254,11 +358,33 @@
             }
         }
 
+        function showFloatingText(text, x, y) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
         function update() {
             if (!gameActive) return;
 
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             frameCount++;
+
+            if (screenShake > 0) {
+                ctx.save();
+                ctx.translate((Math.random()-0.5)*screenShake, (Math.random()-0.5)*screenShake);
+                screenShake *= 0.9;
+                if (screenShake < 0.1) screenShake = 0;
+            }
+
+            backgroundElements.forEach(be => {
+                be.update();
+                be.draw();
+            });
 
             if (frameCount % 60 === 0) {
                 spawnObstacle();
@@ -272,21 +398,40 @@
                 obs.update();
                 obs.draw();
 
-                // Collision detection
                 const dist = Math.hypot(player.x - obs.x, player.y - obs.y);
                 if (dist < player.radius + obs.radius * 0.7) {
                     if (obs.type === 'cloud') {
                         gameOver();
                     } else {
-                        score++;
+                        combo++;
+                        comboTimer = 60;
+                        const points = 1 + Math.floor(combo / 5);
+                        score += points;
                         scoreEl.innerText = score;
+                        
+                        playSound(440 + combo * 20, 'sine', 0.1);
                         createExplosion(obs.x, obs.y, '#fff59d');
+                        showFloatingText(`+${points} ✨`, obs.x, obs.y);
+                        
+                        if (combo > 1) {
+                            comboUi.classList.add('show');
+                            comboValEl.innerText = combo;
+                        }
+                        
                         obstacles.splice(i, 1);
                     }
                 }
 
                 if (obs.x < -100) {
                     obstacles.splice(i, 1);
+                }
+            }
+
+            if (comboTimer > 0) {
+                comboTimer--;
+                if (comboTimer <= 0) {
+                    combo = 0;
+                    comboUi.classList.remove('show');
                 }
             }
 
@@ -298,11 +443,14 @@
                 }
             }
 
+            if (screenShake > 0) ctx.restore();
             requestAnimationFrame(update);
         }
 
         function gameOver() {
             gameActive = false;
+            screenShake = 20;
+            playSound(150, 'sawtooth', 0.5);
             createExplosion(player.x, player.y, '#ff80ab');
             
             if (score > highscore) {
@@ -320,7 +468,10 @@
 
         function resetGame() {
             score = 0;
+            combo = 0;
+            comboTimer = 0;
             scoreEl.innerText = '0';
+            comboUi.classList.remove('show');
             obstacles = [];
             particles = [];
             frameCount = 0;
@@ -330,10 +481,9 @@
             update();
         }
 
-        // Input handling
         const handleStart = (e) => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             if (!gameActive && overlay.style.display === 'none') {
-                // Initial start
                 gameActive = true;
                 update();
             }
@@ -349,7 +499,6 @@
         window.addEventListener('touchstart', handleStart, { passive: false });
         window.addEventListener('touchend', handleEnd);
 
-        // Show initial overlay
         overlay.style.display = 'block';
         statusText.innerText = "Ellie's Pastel Paraglider 🪂";
         finalScoreEl.innerText = "Klar for en magisk flytur?";
