@@ -351,10 +351,9 @@
 
         let clouds = [];
         let particles = [];
+        let particles = [];
         let backgroundDecor = [];
         let stars = [];
-        let windParticles = [];
-        let stormClouds = [];
         let score = 0;
         let gold = 0;
         let highscore = parseInt(localStorage.getItem('cloudHopHighscore')) || 0;
@@ -392,11 +391,11 @@
             feverTimer = 0;
             currentTheme = 0;
             clouds = [];
+            clouds = [];
             particles = [];
             screenShake = 0;
             windParticles = [];
             stars = [];
-            stormClouds = [];
             
             player.trail = [];
             backgroundDecor = [];
@@ -751,6 +750,18 @@
             }
             
             ctx.translate(0, -cameraY);
+
+            backgroundDecor.forEach(dec => {
+                ctx.globalAlpha = 0.4;
+                ctx.font = `${dec.size * 2}px Arial`;
+                ctx.fillText(dec.type, dec.x, dec.y - cameraY);
+                dec.y += dec.speed;
+                if (dec.y - cameraY > canvas.height) {
+                    dec.y = cameraY - 20;
+                    dec.x = Math.random() * canvas.width;
+                }
+                ctx.globalAlpha = 1.0;
+            });
 
             windParticles.forEach(p => {
                 ctx.globalAlpha = p.life;
