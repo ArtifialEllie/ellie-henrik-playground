@@ -399,6 +399,8 @@
             let windForce = 0;
             let windTimer = 0;
         let screenShake = 0;
+            let isMirrorWorld = false;
+            let mirrorWorldTimer = 0;
             
         highscoreElement.innerText = `Beste: ${highscore} 🏆`;
 
@@ -425,6 +427,7 @@
             clouds = [];
             particles = [];
             screenShake = 0;
+            isMirrorWorld = false;
             stars = [];
             
             player.trail = [];
@@ -459,7 +462,7 @@
         }
 
         function spawnCloud(y) {
-            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm', 'moving', 'fragile', 'rainbow', 'shield'];
+            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm', 'moving', 'fragile', 'rainbow', 'shield', 'vortex'];
             const type = types[Math.floor(Math.random() * types.length)];
             let color;
             let vx = 0;
@@ -484,9 +487,12 @@
                     color = '#b2e2f2';
                     break;
                 default: 
+                    if (type === 'vortex') {
+                        color = '#d1b3ff'; 
+                    } else {
                     const normColors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5'];
                     color = normColors[Math.floor(Math.random() * normColors.length)];
-            }
+                    }
    
             clouds.push({
                 x: Math.random() * (canvas.width - CLOUD_WIDTH),
@@ -540,9 +546,26 @@
             if (!gameActive) return;
     
             // Wind logic
+            if (mirrorWorldTimer > 0) {
+                mirrorWorldTimer--;
+                if (mirrorWorldTimer <= 0) {
+                    isMirrorWorld = false;
+                    document.documentElement.style.setProperty('--current-bg', 'linear-gradient(to bottom, var(--bg-top), var(--bg-bottom))');
+                    showFloatingText("Mirror World Over! ✨", canvas.width/2, canvas.height/2);
+                }
+            } else if (Math.random() < 0.0005 && score > 500) {
+                isMirrorWorld = true;
+                mirrorWorldTimer = 600;
+                playSound(600, 'sine', 0.5);
+                showFloatingText("MIRROR WORLD! 🪞✨", canvas.width/2, canvas.height/2);
+                document.documentElement.style.setProperty('--current-bg', 'linear-gradient(to top, var(--bg-top), var(--bg-bottom))');
+            }
+
+            const currentVxMultiplier = isMirrorWorld ? -1 : 1;
+
             if (windTimer > 0) {
                 windTimer--;
-                player.vx += windForce;
+                player.vx += windForce * currentVxMultiplier;
                 if (Math.random() < 0.3) {
                     windParticles.push({
                         x: windForce > 0 ? -20 : canvas.width + 20,
@@ -578,12 +601,12 @@
                 document.documentElement.style.setProperty('--current-bg', themes[currentTheme].bg);
                 document.getElementById('game-container').style.setProperty('--game-bg', themes[currentTheme].bg);
             }
-
+  
             if (keys['ArrowLeft'] || keys['KeyA']) {
-                player.vx = -6;
+                player.vx = -6 * currentVxMultiplier;
                 player.rotation = -0.1;
             } else if (keys['ArrowRight'] || keys['KeyD']) {
-                player.vx = 6;
+                player.vx = 6 * currentVxMultiplier;
                 player.rotation = 0.1;
             } else {
                 player.vx *= 0.8;
@@ -641,12 +664,20 @@
                         } else if (cloud.type === 'shield') {
                             player.hasShield = true;
                             playSound(600, 'sine', 0.3);
-                            showFloatingText("SHIELD ACTIVATED! 🛡️✨", player.x + player.width/2, player.y);
-                            createParticles(player.x + player.width/2, player.y + player.height, '#b2e2f2');
+                           showFloatingText("SHIELD ACTIVATED! 🛡️✨", player.x + player.width/2, player.y);
+                           createParticles(player.x + player.width/2, player.y + player.height, '#b2e2f2');
+                       } else if (cloud.type === 'storm') {
+                        } else if (cloud.type === 'vortex') {
+                            player.rotation += 0.5;
+                            player.vx += (Math.random() - 0.5) * 10;
+                            playSound(400, 'sine', 0.1);
+                            createParticles(player.x + player.width/2, player.y + player.height, '#d1b3ff');
+                            showFloatingText("VORTEX! 🌪️✨", player.x + player.width/2, player.y);
+                            player.vy = JUMP_FORCE * 0.8;
                         } else if (cloud.type === 'storm') {
-                            if (player.hasShield) {
-                                player.hasShield = false;
-                                playSound(300, 'square', 0.3);
+                           if (player.hasShield) {
+                               player.hasShield = false;
+                               playSound(300, 'square', 0.3);
                                 showFloatingText("SHIELD BROKE! 🛡️💥", player.x + player.width/2, player.y);
                                 player.vy = JUMP_FORCE;
                             } else {
