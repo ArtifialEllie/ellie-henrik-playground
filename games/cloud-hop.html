@@ -546,19 +546,31 @@
             if (!gameActive) return;
     
             // Wind logic
+            const currentThemeColors = [
+                ['var(--bg-top)', 'var(--bg-bottom)'],
+                ['var(--bg-sunset-top)', 'var(--bg-sunset-bottom)'],
+                ['var(--bg-twilight-top)', 'var(--bg-twilight-bottom)'],
+                ['var(--bg-space-top)', 'var(--bg-space-bottom)']
+            ];
+            const colors = currentThemeColors[currentTheme];
+            const direction = isMirrorWorld ? 'to top' : 'to bottom';
+            const dynamicBg = `linear-gradient(${direction}, ${colors[0]}, ${colors[1]})`;
+            document.documentElement.style.setProperty('--current-bg', dynamicBg);
+            document.getElementById('game-container').style.setProperty('--game-bg', dynamicBg);
+
             if (mirrorWorldTimer > 0) {
                 mirrorWorldTimer--;
                 if (mirrorWorldTimer <= 0) {
                     isMirrorWorld = false;
-                    document.documentElement.style.setProperty('--current-bg', 'linear-gradient(to bottom, var(--bg-top), var(--bg-bottom))');
+                    screenShake = 15;
                     showFloatingText("Mirror World Over! ✨", canvas.width/2, canvas.height/2);
                 }
             } else if (Math.random() < 0.0005 && score > 500) {
                 isMirrorWorld = true;
                 mirrorWorldTimer = 600;
+                screenShake = 20;
                 playSound(600, 'sine', 0.5);
                 showFloatingText("MIRROR WORLD! 🪞✨", canvas.width/2, canvas.height/2);
-                document.documentElement.style.setProperty('--current-bg', 'linear-gradient(to top, var(--bg-top), var(--bg-bottom))');
             }
 
             const currentVxMultiplier = isMirrorWorld ? -1 : 1;
@@ -588,19 +600,13 @@
             } else {
                 windIndicator.style.opacity = 0;
             }
-
+    
             const themes = [
                 { bg: 'linear-gradient(to bottom, var(--bg-top), var(--bg-bottom))' },
                 { bg: 'linear-gradient(to bottom, var(--bg-sunset-top), var(--bg-sunset-bottom))' },
                 { bg: 'linear-gradient(to bottom, var(--bg-twilight-top), var(--bg-twilight-bottom))' },
                 { bg: 'linear-gradient(to bottom, var(--bg-space-top), var(--bg-space-bottom))' }
             ];
-            const themeIndex = Math.min(themes.length - 1, Math.floor(Math.abs(cameraY) / 3000));
-            if (themeIndex !== currentTheme) {
-                currentTheme = themeIndex;
-                document.documentElement.style.setProperty('--current-bg', themes[currentTheme].bg);
-                document.getElementById('game-container').style.setProperty('--game-bg', themes[currentTheme].bg);
-            }
   
             if (keys['ArrowLeft'] || keys['KeyA']) {
                 player.vx = -6 * currentVxMultiplier;
@@ -665,10 +671,10 @@
                             player.hasShield = true;
                             playSound(600, 'sine', 0.3);
                            showFloatingText("SHIELD ACTIVATED! 🛡️✨", player.x + player.width/2, player.y);
+                           showFloatingText("SHIELD ACTIVATED! 🛡️✨", player.x + player.width/2, player.y);
                            createParticles(player.x + player.width/2, player.y + player.height, '#b2e2f2');
-                       } else if (cloud.type === 'storm') {
-                        } else if (cloud.type === 'vortex') {
-                            player.rotation += 0.5;
+                       } else if (cloud.type === 'vortex') {
+                            player.rotation += 2.0;
                             player.vx += (Math.random() - 0.5) * 10;
                             playSound(400, 'sine', 0.1);
                             createParticles(player.x + player.width/2, player.y + player.height, '#d1b3ff');
