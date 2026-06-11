@@ -456,20 +456,69 @@
             update() {
                 this.x -= this.speed;
                 if (this.x < -100) this.reset();
+        }
+   
+        class WindCurrent {
+            constructor() {
+                this.reset();
+                this.x = Math.random() * canvasWidth;
+            }
+            reset() {
+                this.x = canvasWidth + 100;
+                this.y = Math.random() * (canvasHeight - 200) + 100;
+                this.width = 60;
+                this.height = 150;
+                this.strength = (Math.random() * 0.5 + 0.3) * (Math.random() > 0.5 ? 1 : -1);
+                this.speed = Math.random() * 2 + 2;
+            }
+            update() {
+                this.x -= this.speed;
+                if (this.x < -100) this.reset();
             }
             draw() {
-                ctx.globalAlpha = this.opacity;
-                ctx.font = `${this.size}px Arial`;
-                ctx.fillText(this.emoji, this.x, this.y);
-                ctx.globalAlpha = 1.0;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.setLineDash([10, 10]);
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width/2, this.y);
+                ctx.lineTo(this.x + this.width/2, this.y + this.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
             }
         }
+        
+        class Ring {
+            constructor() {
+                this.x = canvasWidth + 100;
+                this.y = Math.random() * (canvasHeight - 150) + 75;
+                this.radius = 40;
+                this.speed = (Math.random() * 2 + 3) * (1 + score * 0.001);
+                this.color = `hsl(${Math.random() * 360}, 80%, 80%)`;
+                this.collected = false;
+            }
+            update() {
+                this.x -= this.speed;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 8;
+                ctx.stroke();
+                // Inner glow
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius - 4, 0, Math.PI * 2);
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+   
+        class Player {
+            constructor() {
+                this.reset();
+            }
 
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
                 this.vx = (Math.random() - 0.5) * 10;
                 this.vy = (Math.random() - 0.5) * 10;
                 this.life = 1.0;

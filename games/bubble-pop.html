@@ -70,8 +70,48 @@
         }
         canvas {
             display: block;
+    <div id="start-overlay">
+        <h1>Ellie's Bubble Pop! 🫧✨</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 20px;">Popp bobler for poeng! Pass deg for stink-bobler! 💨</p>
+        <button class="btn" id="start-btn">Start Spill! 🚀</button>
+        <div id="countdown">3</div>
+    </div>
+
             background: linear-gradient(to top, #b2ebf2, #e0f7fa);
             cursor: crosshair;
+        }
+        #start-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(224, 247, 250, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        #countdown {
+            font-size: 8rem;
+            color: var(--primary-pink);
+            font-weight: bold;
+            display: none;
+            text-shadow: 4px 4px white;
+            animation: popScale 0.5s ease-out;
+        }
+        @keyframes popScale {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .bg-sparkle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.3;
+            animation: floatUp 10s linear infinite;
         }
         #overlay {
             position: absolute;
@@ -116,6 +156,39 @@
             margin-top: 0;
             text-shadow: 3px 3px white;
         }
+        #start-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(224, 247, 250, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        #countdown {
+            font-size: 8rem;
+            color: var(--primary-pink);
+            font-weight: bold;
+            display: none;
+            text-shadow: 4px 4px white;
+            animation: popScale 0.5s ease-out;
+        }
+        @keyframes popScale {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .bg-sparkle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.3;
+            animation: floatUp 10s linear infinite;
+        }
         #frenzy-alert {
             position: absolute;
             top: 50%;
@@ -151,7 +224,14 @@
         <div>Tid: <span id="timer">30</span>s ⏰</div>
         <div>Beste: <span id="highscore">0</span> 🏆</div>
     </div>
-    
+   
+    <div id="start-overlay">
+        <h1>Ellie's Bubble Pop! 🫧✨</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 20px;">Popp bobler for poeng! Pass deg for stink-bobler! 💨</p>
+        <button class="btn" id="start-btn">Start Spill! 🚀</button>
+        <div id="countdown">3</div>
+    </div>
+
     <div id="combo-container">
         <div id="combo-bar"></div>
         <div id="combo-text"></div>
@@ -183,14 +263,15 @@
         let score = 0;
         let timeLeft = 30;
         let highscore = localStorage.getItem('bubblePopHighscore') || 0;
-        let gameActive = true;
+        let gameActive = false;
         let canvasWidth, canvasHeight;
         let timerInterval;
         let spawnTimeout;
         let combo = 0;
+        let isStarting = true;
         let comboTimer;
         let isFrenzy = false;
-
+        
         highscoreEl.innerText = highscore;
 
         const colors = ['#ff80ab', '#81d4fa', '#ce93d8', '#b39ddb', '#fff59d', '#a5d6a7'];
@@ -536,11 +617,31 @@
             handlePop(e);
             e.preventDefault();
         }, { passive: false });
+        
+        const startBtn = document.getElementById('start-btn');
+        const startOverlay = document.getElementById('start-overlay');
+        const countdownEl = document.getElementById('countdown');
 
-        // Initialize
-        spawnBubble();
-        startTimer();
+        startBtn.addEventListener('click', () => {
+            startBtn.style.display = 'none';
+            let count = 3;
+            countdownEl.style.display = 'block';
+            countdownEl.innerText = count;
+            
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownEl.innerText = count;
+                } else {
+                    clearInterval(timer);
+                    startOverlay.style.display = 'none';
+                    gameActive = true;
+                    spawnBubble();
+                    startTimer();
+                }
+            }, 1000);
+        });
+
         update();
-    </script>
-</body>
+        requestAnimationFrame(update);
 </html>
