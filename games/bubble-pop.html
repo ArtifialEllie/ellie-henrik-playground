@@ -338,7 +338,6 @@
         highscoreEl.innerText = highscore;
         totalGoldEl.innerText = totalGold;
         const colors = ['#ff80ab', '#81d4fa', '#ce93d8', '#b39ddb', '#fff59d', '#a5d6a7'];
-        const colors = ['#ff80ab', '#81d4fa', '#ce93d8', '#b39ddb', '#fff59d', '#a5d6a7'];
 
         // Audio Setup
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -365,16 +364,6 @@
                 playSound(400 + Math.random() * 400, 'sine', 0.1);
         }
         
-        function playPopSound(isGold = false, isStinky = false) {
-            if (isGold) {
-                playSound(600, 'sine', 0.2);
-                setTimeout(() => playSound(800, 'sine', 0.2), 100);
-            } else if (isStinky) {
-                playSound(150, 'sawtooth', 0.3);
-            } else {
-                playSound(400 + Math.random() * 400, 'sine', 0.1);
-            }
-        }
 
         const skins = [
             { color: '#ff80ab', name: 'Pastel Pink', cost: 0 },
