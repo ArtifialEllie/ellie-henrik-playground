@@ -151,6 +151,19 @@
             pointer-events: none;
             animation: fever-pulse 0.5s infinite alternate, rainbow-text 2s linear infinite;
         }
+        .shield-aura {
+            position: absolute;
+            border: 4px solid white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 14;
+            animation: shield-pulse 1s infinite alternate;
+            box-shadow: 0 0 15px var(--primary-blue);
+        }
+        @keyframes shield-pulse {
+            from { transform: scale(1); opacity: 0.6; }
+            to { transform: scale(1.2); opacity: 0.3; }
+        }
         @keyframes rainbow-text {
             0% { color: #ffb7ce; }
             20% { color: #b2e2f2; }
@@ -346,7 +359,8 @@
             height: PLAYER_SIZE,
             color: currentSkin,
             rotation: 0,
-            scaleY: 1
+            scaleY: 1,
+            hasShield: false
         };
 
         let clouds = [];
@@ -382,6 +396,7 @@
             player.color = currentSkin;
             player.trail = [];
             player.rotation = 0;
+            player.hasShield = false;
             score = 0;
             gold = parseInt(localStorage.getItem('cloudHopGold')) || 0;
             combo = 0;
@@ -427,7 +442,7 @@
         }
 
         function spawnCloud(y) {
-            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm', 'moving', 'fragile', 'rainbow'];
+            const types = ['normal', 'normal', 'normal', 'spring', 'gold', 'storm', 'moving', 'fragile', 'rainbow', 'shield'];
             const type = types[Math.floor(Math.random() * types.length)];
             let color;
             let vx = 0;
@@ -448,11 +463,14 @@
                 case 'rainbow':
                     color = 'rainbow';
                     break;
+                case 'shield':
+                    color = '#b2e2f2';
+                    break;
                 default: 
                     const normColors = ['#ffffff', '#f0fff0', '#e6e6fa', '#fff0f5'];
                     color = normColors[Math.floor(Math.random() * normColors.length)];
             }
-
+   
             clouds.push({
                 x: Math.random() * (canvas.width - CLOUD_WIDTH),
                 y: y,
@@ -603,13 +621,25 @@
                             showFloatingText(isPerfect ? `PERFECT RAINBOW! 🌈✨ +${rainbowBonus}` : `RAINBOW BOOST! 🌈✨ +${rainbowBonus}`, player.x + player.width/2, player.y);
                             goldElement.innerText = `✨ ${gold}`;
                             localStorage.setItem('cloudHopGold', gold);
+                        } else if (cloud.type === 'shield') {
+                            player.hasShield = true;
+                            playSound(600, 'sine', 0.3);
+                            showFloatingText("SHIELD ACTIVATED! 🛡️✨", player.x + player.width/2, player.y);
+                            createParticles(player.x + player.width/2, player.y + player.height, '#b2e2f2');
                         } else if (cloud.type === 'storm') {
-                            player.vy = JUMP_FORCE * 0.5;
-                            screenShake = 10;
-                            playSound(150, 'sawtooth', 0.2);
-                            showFloatingText("OUCH! ⚡", player.x + player.width/2, player.y);
-                            combo = 0;
-                            comboElement.classList.remove('show');
+                            if (player.hasShield) {
+                                player.hasShield = false;
+                                playSound(300, 'square', 0.3);
+                                showFloatingText("SHIELD BROKE! 🛡️💥", player.x + player.width/2, player.y);
+                                player.vy = JUMP_FORCE;
+                            } else {
+                                player.vy = JUMP_FORCE * 0.5;
+                                screenShake = 10;
+                                playSound(150, 'sawtooth', 0.2);
+                                showFloatingText("OUCH! ⚡", player.x + player.width/2, player.y);
+                                combo = 0;
+                                comboElement.classList.remove('show');
+                            }
                         } else if (cloud.type === 'fragile') {
                             player.vy = isPerfect ? JUMP_FORCE * 1.2 : JUMP_FORCE;
                             playSound(400, 'sine', 0.1);
@@ -787,7 +817,7 @@
             }
             
             ctx.translate(0, -cameraY);
-
+   
             backgroundDecor.forEach(dec => {
                 ctx.globalAlpha = 0.4;
                 ctx.font = `${dec.size * 2}px Arial`;
@@ -799,7 +829,26 @@
                 }
                 ctx.globalAlpha = 1.0;
             });
-
+   
+            // Shield Aura Effect
+            if (player.hasShield) {
+                const shieldX = player.x + player.width/2;
+                const shieldY = player.y + player.height/2 - cameraY;
+                const size = player.width * 1.5;
+                
+                ctx.beginPath();
+                ctx.arc(shieldX, shieldY, size/2, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(178, 226, 242, 0.8)';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(shieldX, shieldY, size/2 + Math.sin(Date.now()/200)*5, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(178, 226, 242, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+   
             windParticles.forEach(p => {
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
