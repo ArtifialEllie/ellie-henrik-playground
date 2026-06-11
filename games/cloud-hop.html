@@ -600,22 +600,15 @@
             } else {
                 windIndicator.style.opacity = 0;
             }
-    
-            const themes = [
-                { bg: 'linear-gradient(to bottom, var(--bg-top), var(--bg-bottom))' },
-                { bg: 'linear-gradient(to bottom, var(--bg-sunset-top), var(--bg-sunset-bottom))' },
-                { bg: 'linear-gradient(to bottom, var(--bg-twilight-top), var(--bg-twilight-bottom))' },
-                { bg: 'linear-gradient(to bottom, var(--bg-space-top), var(--bg-space-bottom))' }
-            ];
+
+            // Theme update logic
+            const themeIndex = Math.min(3, Math.floor(Math.abs(cameraY) / 3000));
+            if (themeIndex !== currentTheme) {
+                currentTheme = themeIndex;
+            }
   
             if (keys['ArrowLeft'] || keys['KeyA']) {
                 player.vx = -6 * currentVxMultiplier;
-                player.rotation = -0.1;
-            } else if (keys['ArrowRight'] || keys['KeyD']) {
-                player.vx = 6 * currentVxMultiplier;
-                player.rotation = 0.1;
-            } else {
-                player.vx *= 0.8;
                 player.rotation *= 0.8;
             }
 
@@ -670,7 +663,6 @@
                         } else if (cloud.type === 'shield') {
                             player.hasShield = true;
                             playSound(600, 'sine', 0.3);
-                           showFloatingText("SHIELD ACTIVATED! 🛡️✨", player.x + player.width/2, player.y);
                            showFloatingText("SHIELD ACTIVATED! 🛡️✨", player.x + player.width/2, player.y);
                            createParticles(player.x + player.width/2, player.y + player.height, '#b2e2f2');
                        } else if (cloud.type === 'vortex') {
