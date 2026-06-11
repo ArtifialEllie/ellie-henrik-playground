@@ -203,6 +203,22 @@
             font-size: 0.9rem;
             color: #666;
         }
+        
+        .perfect-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+        @keyframes flash-anim {
+            0% { opacity: 0.6; }
+            100% { opacity: 0; }
+        }
         #shop-overlay {
             position: absolute;
             top: 0;
@@ -287,6 +303,7 @@
             <div id="combo-ui">Combo x1 ✨</div>
         }
         
+        <div id="perfect-flash" class="perfect-flash"></div>
         <canvas id="gameCanvas"></canvas>
 
         <div id="overlay">
@@ -648,12 +665,17 @@
                         } else {
                             player.vy = isPerfect ? JUMP_FORCE * 1.2 : JUMP_FORCE;
                             playSound(isPerfect ? 600 : 400 + Math.random() * 200, 'sine', 0.1);
-                            if (isPerfect) {
-                                showFloatingText("PERFECT! ✨", player.x + player.width/2, player.y);
-                                gold += 10;
-                                goldElement.innerText = `✨ ${gold}`;
-                                localStorage.setItem('cloudHopGold', gold);
-                            }
+                        if (isPerfect) {
+                            showFloatingText("PERFECT! ✨", player.x + player.width/2, player.y);
+                            gold += 10;
+                            goldElement.innerText = `✨ ${gold}`;
+                            localStorage.setItem('cloudHopGold', gold);
+                            
+                            const flash = document.getElementById('perfect-flash');
+                            flash.style.animation = 'none';
+                            flash.offsetHeight; // trigger reflow
+                            flash.style.animation = 'flash-anim 0.3s ease-out';
+                        }
                         }
 
                         if (cloud.type === 'gold') {
