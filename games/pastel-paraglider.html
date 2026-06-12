@@ -244,60 +244,9 @@
         highscoreEl.innerText = highscore;
         totalGledeEl.innerText = totalGlede;
     
-        const skins = [
-            { color: '#ff80ab', name: 'Pastel Pink', cost: 0 },
-            { color: '#ce93d8', name: 'Lavender', cost: 50 },
-            { color: '#fff59d', name: 'Lemon Drop', cost: 100 },
-            { color: '#b2ebf2', name: 'Sky Blue', cost: 150 },
-            { color: '#ffccbc', name: 'Peach Puff', cost: 200 },
-            { color: '#ffffff', name: 'Pure White', cost: 500 },
-        ];
-    
-        function initShop() {
-            shopGrid.innerHTML = '';
-            skins.forEach(skin => {
-                const item = document.createElement('div');
-                item.className = `shop-item ${currentSkin === skin.color ? 'selected' : ''}`;
-                item.innerHTML = `
-                    <div class="item-preview" style="background-color: ${skin.color}"></div>
-                    <div class="item-name">${skin.name}</div>
-                    <div class="item-cost">${skin.cost} ✨</div>
-                `;
-                item.onclick = () => buySkin(skin);
-                shopGrid.appendChild(item);
-            });
-        }
-    
-        function buySkin(skin) {
-            if (currentSkin === skin.color) return;
-            if (totalGlede >= skin.cost) {
-                totalGlede -= skin.cost;
-                currentSkin = skin.color;
-                localStorage.setItem('paragliderTotalGlede', totalGlede);
-                localStorage.setItem('paragliderSkin', currentSkin);
-                totalGledeEl.innerText = totalGlede;
-                playSound(600, 'sine', 0.2);
-                initShop();
-            } else {
-                playSound(200, 'sawtooth', 0.2);
-                showFloatingText("Not enough ✨", window.innerWidth / 2, window.innerHeight / 2);
-            }
-        }
-    
-        function openShop() {
-            shopOverlay.style.display = 'flex';
-            initShop();
-        }
-    
-        function closeShop() {
-            shopOverlay.style.display = 'none';
-        }
-    
-        // Initialize shop
-        initShop();
-
         // Audio Setup
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
+
         const audioCtx = new AudioCtx();
         function playSound(freq, type, duration, vol = 0.1) {
             const osc = audioCtx.createOscillator();
@@ -456,8 +405,9 @@
             update() {
                 this.x -= this.speed;
                 if (this.x < -100) this.reset();
+            }
         }
-   
+
         class WindCurrent {
             constructor() {
                 this.reset();
@@ -514,31 +464,6 @@
             }
         }
    
-        class Player {
-            constructor() {
-                this.reset();
-            }
-
-                this.vx = (Math.random() - 0.5) * 10;
-                this.vy = (Math.random() - 0.5) * 10;
-                this.life = 1.0;
-                this.size = Math.random() * 4 + 2;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life -= 0.02;
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.life;
-                ctx.fill();
-                ctx.globalAlpha = 1.0;
-            }
-        }
-
         const player = new Player();
         let obstacles = [];
         let backgroundElements = [];
@@ -548,7 +473,7 @@
         for(let i=0; i<20; i++) backgroundElements.push(new BackgroundElement(1));
         for(let i=0; i<15; i++) backgroundElements.push(new BackgroundElement(2));
         for(let i=0; i<10; i++) backgroundElements.push(new BackgroundElement(3));
-        }
+
 
         function spawnObstacle() {
             let type = 'cloud';

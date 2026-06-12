@@ -401,6 +401,7 @@
                 const p = prisms[i];
                 const dist = Math.hypot(clientX - p.x, clientY - p.y);
                 if (dist < p.radius) {
+                    prisms.splice(i, 1);
                     if (p.type === 'rainbow') {
                         // Rainbow effect: pop all target color prisms
                         score += 50;
@@ -441,7 +442,6 @@
                     }
                     
                     scoreEl.innerText = score;
-                    prisms.splice(i, 1);
                     return;
                 }
             }

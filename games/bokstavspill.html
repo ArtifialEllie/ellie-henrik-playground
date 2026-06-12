@@ -251,6 +251,7 @@
         let streak = 0;
         let currentItem = '';
         let lastItem = '';
+        let isProcessing = false;
 
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
@@ -318,6 +319,8 @@
         }
 
         function checkAnswer(letter, btn) {
+            if (isProcessing) return;
+
             if(letter === currentItem) {
                 btn.classList.add('correct');
                 streak++;
@@ -335,8 +338,10 @@
                     levelUp();
                 }
 
+                isProcessing = true;
                 setTimeout(() => {
                     resultDiv.classList.remove('pop-in');
+                    isProcessing = false;
                     nextRound();
                 }, 3000);
             } else {

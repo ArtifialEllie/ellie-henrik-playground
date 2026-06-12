@@ -178,6 +178,7 @@
         // Audio Context for "Juice"
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioCtx();
+        const resumeAudio = () => { if (audioCtx.state === 'suspended') audioCtx.resume(); };
         function playSound(freq, type, duration, volume = 0.1) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -322,7 +323,7 @@
             currentTotalLean = 0;
             const startY = canvasHeight - 50;
             const startX = canvasWidth / 2 - 60;
-            stack.push(new Pancake(startX, startY, pancakeColors[0]));
+            stack.push(new Pancake(startX, startY, pancakeColors.normal[0]));
             spawnActivePancake();
         }
 
@@ -376,7 +377,7 @@
         }
 
         function checkLanding() {
-            if (!activePancake || !activePancake.isFlipping) return;
+                if (!gameActive || !activePancake || !activePancake.isFlipping) return;
         
             const last = stack[stack.length - 1];
             const visualLastX = last.x + currentTotalLean;
@@ -497,6 +498,7 @@
             overlay.style.display = 'none';
             particles = [];
             initStack();
+            resumeAudio();
         }
 
         function update() {
@@ -524,6 +526,7 @@
 
             let currentTilt = 0;
             stack.forEach((p) => {
+                p.update();
                 currentTilt += p.tiltOffset;
                 p.draw(currentTilt);
             });
