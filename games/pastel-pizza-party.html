@@ -452,9 +452,8 @@
             }
             
             // Juice: Pizza pulses when topping is added
-            pizzaArea.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            pizzaArea.style.transform = 'translate(-50%, -50%) scale(1)';
             setTimeout(() => pizzaArea.style.transform = 'translate(-50%, -50%) scale(1)', 100);
-+
             if (toppingsCount >= TOPPINGS_PER_PIZZA) {
                 completePizza();
             }

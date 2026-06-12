@@ -215,7 +215,7 @@
                     'S': { name: 'Sel', emoji: '🦭' },
                     'T': { name: 'Tiger', emoji: '🐯' },
                     'U': { name: 'Ugle', emoji: '🦉' },
-                    'V': { name: 'Valross', emoji: '🦭' },
+                    'V': { name: 'Vannlilje', emoji: '🪷' },
                     'Y': { name: 'Yak', emoji: '🐂' },
                     'Z': { name: 'Zebra', emoji: '🦓' },
                     'Æ': { name: 'Ærfugl', emoji: '🦆' },
@@ -291,11 +291,13 @@
             const keys = Object.keys(pool);
             
             // Anti-repetisjon: Sjekk at vi ikke får samme lyd som sist
-            let newItem;
-            do {
-                newItem = keys[Math.floor(Math.random() * keys.length)];
-            } while (newItem === lastItem);
-            
+            let newItem = keys[0];
+            if (keys.length > 1) {
+                do {
+                    newItem = keys[Math.floor(Math.random() * keys.length)];
+                } while (newItem === lastItem);
+            }
+
             currentItem = newItem;
             lastItem = currentItem;
             
