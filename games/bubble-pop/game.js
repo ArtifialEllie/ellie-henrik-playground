@@ -66,6 +66,9 @@ const skins = [
     { color: '#a5d6a7', name: 'Minty', cost: 250 },
     { color: '#ffffff', name: 'Cloud White', cost: 500 },
     { color: 'rainbow', name: 'Rainbow', cost: 1000 },
+    { color: '#ffccbc', name: 'Peach Puff', cost: 1200 },
+    { color: '#b2dfdb', name: 'Seafoam', cost: 1500 },
+    { color: '#f8bbd0', name: 'Cherry Blossom', cost: 2000 },
 ];
 
 function openShop() {
