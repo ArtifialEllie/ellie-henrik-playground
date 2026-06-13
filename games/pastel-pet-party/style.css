@@ -85,6 +85,16 @@ h1 {
     top: 20px;
 }
 
+.pet.golden {
+    filter: drop-shadow(0 0 10px gold);
+    animation: goldenGlow 0.5s infinite alternate;
+}
+
+@keyframes goldenGlow {
+    from { transform: scale(1); filter: drop-shadow(0 0 5px gold); }
+    to { transform: scale(1.2); filter: drop-shadow(0 0 15px gold); }
+}
+
 .btn {
     background-color: var(--primary);
     color: white;
