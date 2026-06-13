@@ -22,6 +22,7 @@ let timerInterval;
 let spawnTimeout;
 let combo = 0;
 let isStarting = true;
+let level = 1;
 let comboTimer;
 let isFrenzy = false;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
@@ -145,9 +146,15 @@ class Bubble {
         if (rand > 0.92) {
             this.type = 'gold';
             this.color = '#ffd700';
-        } else if (rand < 0.08) {
+        } else if (rand > 0.87 && rand <= 0.92) {
+            this.type = 'heart';
+            this.color = '#ff4081';
+        } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
+        } else if (rand < 0.10) {
+            this.type = 'bomb';
+            this.color = '#424242';
         }
     }
 
@@ -198,6 +205,14 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('💨', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'heart') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('❤️', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'bomb') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('💣', this.x, this.y + currentRadius/3);
         }
     }
 }
@@ -260,7 +275,7 @@ function spawnBubble() {
     
     bubbles.push(new Bubble(isFrenzy));
     
-    let nextSpawn = Math.max(200, 600 - (score * 2));
+    let nextSpawn = Math.max(150, 600 - (score * 2) - (level * 20));
     if (isFrenzy) nextSpawn /= 3;
     
     spawnTimeout = setTimeout(spawnBubble, nextSpawn);
@@ -317,6 +332,17 @@ function handlePop(e) {
                 totalGoldEl.innerText = totalGold;
                 timeLeft += 2;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${bonus} TIME! ✨`, 'gold'));
+            } else if (b.type === 'heart') {
+                playPopSound();
+                const heartBonus = 50;
+                score += heartBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
+                createHeartEffect(b.x, b.y);
+            } else if (b.type === 'bomb') {
+                playSound(100, 'square', 0.5);
+                bubbles = [];
+                combo = 0;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
             } else if (b.type === 'stinky') {
                 playPopSound(false, true);
                 score = Math.max(0, score - 5);
@@ -338,15 +364,46 @@ function handlePop(e) {
             
             updateCombo();
             scoreEl.innerText = score;
+            
+            level = Math.floor(score / 200) + 1;
             bubbles.splice(i, 1);
             break;
         }
     }
 }
 
+function createHeartEffect(x, y) {
+    for (let i = 0; i < 10; i++) {
+        const p = new Particle(x, y, '#ff4081');
+        p.vx *= 1.5;
+        p.vy *= 1.5;
+        particles.push(p);
+    }
+}
+
 function createPopEffect(x, y, color) {
     for (let i = 0; i < 15; i++) {
         particles.push(new Particle(x, y, color));
+    }
+}
+
+class Sparkle {
+    constructor() {
+        this.x = Math.random() * canvasWidth;
+        this.y = Math.random() * canvasHeight;
+        this.size = Math.random() * 3 + 1;
+        this.opacity = Math.random() * 0.5 + 0.2;
+        this.speed = Math.random() * 0.5 + 0.2;
+    }
+    update() {
+        this.y -= this.speed;
+        if (this.y < 0) this.y = canvasHeight;
+    }
+    draw() {
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
@@ -357,6 +414,11 @@ function update() {
     }
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    sparkles.forEach(s => {
+        s.update();
+        s.draw();
+    });
 
     for (let i = bubbles.length - 1; i >= 0; i--) {
         bubbles[i].update();
@@ -428,6 +490,7 @@ function resetGame() {
     particles = [];
     floatingTexts = [];
     gameActive = true;
+    level = 1;
     overlay.style.display = 'none';
     comboText.style.opacity = '0';
     
@@ -443,6 +506,8 @@ window.addEventListener('touchstart', (e) => {
     handlePop(e);
     e.preventDefault();
 }, { passive: false });
+
+const sparkles = Array.from({ length: 50 }, () => new Sparkle());
 
 const startBtn = document.getElementById('start-btn');
 const startOverlay = document.getElementById('start-overlay');
