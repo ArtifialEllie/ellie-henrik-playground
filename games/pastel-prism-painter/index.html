@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Prism Painter ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>Pastel Prism Painter ✨</h1>
+            <p>Paint your dreams with rainbow sparkles!</p>
+        </header>
+        
+        <div id="canvas-wrapper">
+            <canvas id="paintCanvas"></canvas>
+        </div>
+
+        <div id="controls">
+            <div class="control-group">
+                <label for="brushSize">Brush Size: <span id="sizeVal">10</span></label>
+                <input type="range" id="brushSize" min="1" max="50" value="10">
+            </div>
+            <button id="clearBtn">Clear Canvas 🌈</button>
+            <button id="saveBtn">Save Masterpiece 🖼️</button>
+        </div>
+        
+        <div id="status-bar">
+            Color: <span id="currentColor">✨ Rainbow ✨</span>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
