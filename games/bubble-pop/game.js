@@ -145,6 +145,9 @@ class Bubble {
         if (rand > 0.92) {
             this.type = 'gold';
             this.color = '#ffd700';
+        } else if (rand > 0.85) {
+            this.type = 'cluster';
+            this.color = '#ffcc80';
         } else if (rand < 0.08) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -317,6 +320,21 @@ function handlePop(e) {
                 totalGoldEl.innerText = totalGold;
                 timeLeft += 2;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${bonus} TIME! ✨`, 'gold'));
+            } else if (b.type === 'cluster') {
+                playPopSound();
+                const bonus = 2 + (combo * 1);
+                score += bonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `CLUSTER! +${bonus} 💥`, '#ffcc80'));
+                for (let j = 0; j < 5; j++) {
+                    const mini = new Bubble(false);
+                    mini.radius = 10;
+                    mini.x = b.x + (Math.random() - 0.5) * 50;
+                    mini.y = b.y + (Math.random() - 0.5) * 50;
+                    mini.speed = Math.random() * 3 + 2;
+                    mini.type = 'normal';
+                    mini.color = b.color;
+                    bubbles.push(mini);
+                }
             } else if (b.type === 'stinky') {
                 playPopSound(false, true);
                 score = Math.max(0, score - 5);
