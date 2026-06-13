@@ -1,5 +1,7 @@
 const canvas = document.getElementById('paintCanvas');
 const ctx = canvas.getContext('2d');
+const sparkleCanvas = document.getElementById('sparkleCanvas');
+const sCtx = sparkleCanvas.getContext('2d');
 const brushSizeInput = document.getElementById('brushSize');
 const sizeVal = document.getElementById('sizeVal');
 const clearBtn = document.getElementById('clearBtn');
@@ -8,12 +10,53 @@ const currentColorDisplay = document.getElementById('currentColor');
 
 let painting = false;
 let hue = 0;
+let sparkles = [];
+
+class Sparkle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 4 + 2;
+        this.speedX = (Math.random() - 0.5) * 2;
+        this.speedY = (Math.random() - 0.5) * 2;
+        this.color = color;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.01;
+    }
+
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life -= this.decay;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        // Draw a little star/diamond shape
+        ctx.moveTo(this.x, this.y - this.size);
+        ctx.lineTo(this.x + this.size/2, this.y);
+        ctx.lineTo(this.x, this.y + this.size);
+        ctx.lineTo(this.x - this.size/2, this.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+}
 
 // Setup canvas size
 function resizeCanvas() {
     const wrapper = document.getElementById('canvas-wrapper');
     canvas.width = wrapper.clientWidth;
     canvas.height = 500;
+    sparkleCanvas.width = wrapper.clientWidth;
+    sparkleCanvas.height = 500;
+    
+    // Clear the paint canvas on resize to avoid distortion, 
+    // but maybe we should let the user decide. For now, standard.
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 window.addEventListener('resize', resizeCanvas);
@@ -32,26 +75,46 @@ function finishedPosition() {
 function draw(e) {
     if (!painting) return;
 
-    // Handle touch or mouse
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+    const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
 
     ctx.lineWidth = brushSizeInput.value;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Rainbow effect: hue cycles as you draw
-    ctx.strokeStyle = `hsl(${hue}, 100%, 75%)`;
+    const color = `hsl(${hue}, 100%, 75%)`;
+    ctx.strokeStyle = color;
     
     ctx.lineTo(x, y);
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(x, y);
 
+    // Create sparkles at the brush position
+    if (Math.random() > 0.5) {
+        sparkles.push(new Sparkle(x, y, color));
+    }
+
     hue += 2;
     if (hue >= 360) hue = 0;
 }
+
+function animateSparkles() {
+    sCtx.clearRect(0, 0, sparkleCanvas.width, sparkleCanvas.height);
+    
+    for (let i = sparkles.length - 1; i >= 0; i--) {
+        sparkles[i].update();
+        sparkles[i].draw(sCtx);
+        if (sparkles[i].life <= 0) {
+            sparkles.splice(i, 1);
+        }
+    }
+    
+    requestAnimationFrame(animateSparkles);
+}
+
+animateSparkles();
 
 // Event listeners
 canvas.addEventListener('mousedown', startPosition);
@@ -78,19 +141,22 @@ brushSizeInput.addEventListener('input', () => {
 // Clear canvas
 clearBtn.addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sparkles = [];
 });
 
 // Save canvas
 saveBtn.addEventListener('click', () => {
+    // To save both canvases, we need to merge them into a temporary canvas
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    tempCtx.drawImage(canvas, 0, 0);
+    tempCtx.drawImage(sparkleCanvas, 0, 0);
+    
     const link = document.createElement('a');
     link.download = 'my-pastel-masterpiece.png';
-    link.href = canvas.toDataURL();
+    link.href = tempCanvas.toDataURL();
     link.click();
 });
-
-// Sparkle effect periodically
-setInterval(() => {
-    if (painting) {
-        // We could add sparkles here, but keep it simple for now
-    }
-}, 100);
