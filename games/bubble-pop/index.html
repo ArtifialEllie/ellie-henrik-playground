@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Bubble Pop! 🫧✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui">
+        <div>Popp: <span id="score">0</span> 🫧</div>
+        <div>Tid: <span id="timer">30</span>s ⏰</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+        <div>✨ <span id="total-gold">0</span></div>
+    </div>
+   
+    <div id="start-overlay">
+        <h1>Ellie's Bubble Pop! 🫧✨</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 20px;">Popp bobler for poeng! Pass deg for stink-bobler! 💨</p>
+        <button class="btn" id="start-btn">Start Spill! 🚀</button>
+        <div id="countdown">3</div>
+    </div>
+
+    <div id="combo-container">
+        <div id="combo-bar"></div>
+        <div id="combo-text"></div>
+    </div>
+    <div id="frenzy-alert">BOBBEL-FEST! 🌈</div>
+    
+    <div id="overlay">
+        <h1 id="status-text">Tid er ute! 🌸</h1>
+        <p id="final-score" style="font-size: 1.5rem; margin-bottom: 30px;">Du poppet 0 bobler!</p>
+        <button class="btn" onclick="resetGame()">Spill igjen! ✨</button>
+        <button class="btn" onclick="openShop()" style="margin-top: 10px; background-color: var(--primary-purple); box-shadow: 0 6px 0 #9b7bc4;">Ellie's Boutique 🎀</button>
+    </div>
+    
+    <div id="shop-overlay">
+        <div class="shop-header">Ellie's Boutique 🎀</div>
+        <div class="shop-grid" id="shop-grid"></div>
+        <button class="btn" onclick="closeShop()">Back to Bubbles! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <script src="game.js"></script>
+</body>
+</html>

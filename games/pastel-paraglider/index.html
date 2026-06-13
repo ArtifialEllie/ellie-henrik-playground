@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Paraglider 🪂✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui">
+        <div>Glede: <span id="score">0</span> ✨</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+        <div>Liv: <span id="lives">3</span> ❤️</div>
+        <div id="gold-display">✨ <span id="total-glede">0</span></div>
+    </div>
+    <div id="combo-ui">COMBO x<span id="combo-val">0</span> ✨</div>
+    
+    <div id="overlay">
+        <h1 id="status-text">Oi da! 🌸</h1>
+        <p id="final-score">Du samlet 0 gledesgnister!</p>
+        <div class="instructions">Hold musen nede eller trykk på skjermen for å fly opp! 🎈</div>
+        <button class="btn" onclick="resetGame()">Fly igjen! ✨</button>
+        <button class="btn" onclick="openShop()" style="background-color: var(--primary-purple); box-shadow: 0 6px 0 #9b7bc4;">Ellie's Boutique 🎀</button>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="shop-overlay">
+        <div class="shop-header">Ellie's Boutique 🎀</div>
+        <div class="shop-grid" id="shop-grid"></div>
+        <button class="btn" onclick="closeShop()">Back to Flight! ✨</button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
