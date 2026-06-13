@@ -11,6 +11,8 @@ let lastHole;
 let timeUp = false;
 let timeLeft = 30;
 let timerInterval;
+let isFrenzy = false;
+let frenzyMultiplier = 1;
 
 const petEmojis = ['🐶', '🐱', '🐰', '🐹', '🦊', '🐼', '🐨', '🐯', '🦁'];
 const goldenPetEmoji = '⭐';
@@ -31,7 +33,12 @@ function randomHole(holes) {
 
 function peep() {
     const isGolden = Math.random() < 0.1; // 10% chance for a golden pet
-    const time = isGolden ? randomTime(300, 600) : randomTime(600, 1200);
+    
+    // During frenzy, pets appear and disappear much faster!
+    const minT = isFrenzy ? 200 : (isGolden ? 300 : 600);
+    const maxT = isFrenzy ? 500 : (isGolden ? 600 : 1200);
+    const time = randomTime(minT, maxT);
+    
     const hole = randomHole(holes);
     const pet = hole.querySelector('.pet');
     
@@ -64,6 +71,12 @@ function startGame() {
     timerInterval = setInterval(() => {
         timeLeft--;
         timerBoard.textContent = timeLeft;
+        
+        // Randomly trigger Frenzy Mode!
+        if (!isFrenzy && Math.random() < 0.05 && timeLeft < 25) {
+            triggerFrenzy();
+        }
+
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             timeUp = true;
@@ -75,6 +88,19 @@ function startGame() {
 function showGameOver() {
     finalScoreBoard.textContent = score;
     overlay.classList.add('show');
+}
+
+function triggerFrenzy() {
+    isFrenzy = true;
+    frenzyMultiplier = 2;
+    document.body.classList.add('frenzy');
+    createFloatingText(window.innerWidth/2, window.innerHeight/2, '🌈 FRENZY MODE! 🌈');
+    
+    setTimeout(() => {
+        isFrenzy = false;
+        frenzyMultiplier = 1;
+        document.body.classList.remove('frenzy');
+    }, 5000);
 }
 
 function createParticles(x, y, isGolden = false) {
@@ -114,7 +140,7 @@ function bonk(e) {
     if (!this.classList.contains('up')) return;
     
     const isGolden = this.classList.contains('golden');
-    const points = isGolden ? 5 : 1;
+    const points = (isGolden ? 5 : 1) * frenzyMultiplier;
     
     score += points;
     this.classList.remove('up');
@@ -125,7 +151,7 @@ function bonk(e) {
     
     const texts = isGolden 
         ? ['GOLDEN!', 'JACKPOT!', '✨ SUPER ✨', 'MAGIC!', 'WOW!'] 
-        : ['Yum!', 'So Cute!', '✨', 'Treat!', 'Yay!'];
+        : (isFrenzy ? ['FRENZY!', 'FAST!', 'ZOOM!', 'WOW!'] : ['Yum!', 'So Cute!', '✨', 'Treat!', 'Yay!']);
         
     createFloatingText(e.pageX, e.pageY, texts[Math.floor(Math.random() * texts.length)]);
     

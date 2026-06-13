@@ -189,3 +189,12 @@ h1 {
     color: var(--primary);
     margin-bottom: 10px;
 }
+
+body.frenzy {
+    animation: frenzyBg 0.5s infinite alternate;
+}
+
+@keyframes frenzyBg {
+    from { background-color: var(--bg); }
+    to { background-color: #ffe0f0; }
+}
