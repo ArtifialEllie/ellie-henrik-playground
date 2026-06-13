@@ -143,7 +143,10 @@ class Bubble {
         
         this.type = 'normal';
         const rand = Math.random();
-        if (rand > 0.92) {
+        if (rand > 0.95) {
+            this.type = 'rainbow-burst';
+            this.color = 'rainbow';
+        } else if (rand > 0.92 && rand <= 0.95) {
             this.type = 'gold';
             this.color = '#ffd700';
         } else if (rand > 0.87 && rand <= 0.92) {
@@ -213,6 +216,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('💣', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'rainbow-burst') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🌈', this.x, this.y + currentRadius/3);
         }
     }
 }
@@ -332,6 +339,13 @@ function handlePop(e) {
                 totalGoldEl.innerText = totalGold;
                 timeLeft += 2;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${bonus} TIME! ✨`, 'gold'));
+            } else if (b.type === 'rainbow-burst') {
+                playPopSound(true, false);
+                const rainbowBonus = 100;
+                score += rainbowBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW BURST! 🌈 +${rainbowBonus}`, 'magenta'));
+                triggerFrenzy();
+                createPopEffect(b.x, b.y, 'rainbow');
             } else if (b.type === 'heart') {
                 playPopSound();
                 const heartBonus = 50;
