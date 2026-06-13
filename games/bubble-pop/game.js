@@ -28,7 +28,7 @@ let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
 
 highscoreEl.innerText = highscore;
 totalGoldEl.innerText = totalGold;
-const colors = ['#ff80ab', '#81d4fa', '#ce93d8', '#b39ddb', '#fff59d', '#a5d6a7'];
+const colors = ['#ff80ab', '#81d4fa', '#ce93d8', '#b39ddb', '#fff59d', '#a5d6a7', '#ffccbc'];
 
 // Audio Setup
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
