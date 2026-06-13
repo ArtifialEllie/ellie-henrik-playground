@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bokstav- og Lyd-eventyret 🦄</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1>Bokstav- og Lyd-eventyret 🦄</h1>
+        <p style="font-size: 1.5rem;">Klar for å lære lyder?</p>
+        <button id="start-btn">START SPILLET! 🌟</button>
+    </div>
+
+    <h1>Bokstav- og Lyd-eventyret 🦄</h1>
+    
+    <div id="game-container">
+        <div id="level-up-banner">NIVÅ OPPHØYD! 🎉</div>
+        
+        <div id="status-bar">
+            <span id="level-text">Nivå: 1 (Enkel)</span>
+            <span id="streak-text">Streak: 0 🔥</span>
+        </div>
+
+        <button class="repeat-btn" onclick="speakPrompt()">🔊</button>
+        <div id="prompt">Hvilken lyd hører du?</div>
+        
+        <div id="letter-grid"></div>
+
+        <div id="result"></div>
+        <div id="animal-name"></div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

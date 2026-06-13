@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Star Catcher 🌟✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui">
+        <div>Stjerner: <span id="score">0</span> 🌟</div>
+        <div>Liv: <span id="lives">3</span> ❤️</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+    <div id="combo-ui">COMBO x0 ✨</div>
+    
+    <div id="magnet-alert" class="powerup-alert">MAGISK MAGNET! 🧲✨</div>
+    <div id="rainbow-alert" class="powerup-alert">REGNBUE-MODUS! 🌈✨</div>
+    
+    <div id="overlay">
+        <h1 id="status-text">Spillet er over! 🌸</h1>
+        <p id="final-score" style="font-size: 1.5rem; margin-bottom: 30px;">Du fanget 0 stjerner!</p>
+        <button class="btn" onclick="resetGame()">Prøv igjen! ✨</button>
+    </div>
+    
+    <div id="start-overlay">
+        <h1>Ellie's Star Catcher 🌟</h1>
+        <p>Fang stjerner, unngå skyer! <br> Samle mange stjerner for en COMBO! ✨</p>
+        <button class="btn" id="start-btn">Start Spill! 🚀</button>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <script src="game.js"></script>
+</body>
+</html>

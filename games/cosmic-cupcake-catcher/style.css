@@ -1,0 +1,163 @@
+:root {
+    --space-bg: #2d1b4e;
+    --shield-color: #a2ffdf;
+    --pastel-pink: #ffb7ce;
+    --pastel-blue: #b2e2f2;
+    --pastel-purple: #d1b3ff;
+    --pastel-yellow: #fff9b1;
+    --text-color: #ffffff;
+    --accent-gold: #ffd700;
+}
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--space-bg);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+    color: var(--text-color);
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#game-ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-shadow: 2px 2px #ff69b4;
+}
+#combo-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 200px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid var(--pastel-pink);
+    border-radius: 15px;
+    overflow: hidden;
+    z-index: 10;
+}
+#combo-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--pastel-pink), var(--accent-gold));
+    transition: width 0.2s;
+}
+#combo-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    line-height: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px #ff69b4;
+    z-index: 11;
+}
+canvas {
+    display: block;
+    background: radial-gradient(circle at center, #4b307a 0%, #2d1b4e 100%), 
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="1" fill="white" opacity="0.3"/></svg>');
+    cursor: none;
+}
+#overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 30px;
+    border: 5px solid var(--pastel-pink);
+    text-align: center;
+    z-index: 20;
+    display: none;
+    box-shadow: 0 10px 30px rgba(255, 183, 206, 0.5);
+    color: var(--space-bg);
+}
+#start-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(45, 27, 78, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    text-align: center;
+    color: white;
+    backdrop-filter: blur(5px);
+}
+#start-overlay h1 {
+    color: var(--pastel-pink);
+    font-size: 3rem;
+    text-shadow: 0 0 20px var(--pastel-pink);
+}
+.btn {
+    background-color: var(--pastel-pink);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s, background-color 0.2s;
+    margin-top: 20px;
+}
+.btn:hover { 
+    transform: scale(1.1); 
+    background-color: #ff8da1;
+}
+h1 { color: #ff69b4; margin-top: 0; }
+.magnet-alert {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+    color: var(--accent-gold);
+    text-shadow: 2px 2px #ff69b4;
+    display: none;
+    z-index: 10;
+    animation: bounce 0.5s infinite alternate;
+}
+.combo-text {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 30px;
+    color: var(--pastel-yellow);
+    text-shadow: 2px 2px #ff69b4;
+    z-index: 10;
+}
+.crit-text {
+    position: absolute;
+    pointer-events: none;
+    font-weight: bold;
+    font-size: 24px;
+    color: var(--pastel-yellow);
+    animation: floatUp 0.6s ease-out forwards;
+    z-index: 15;
+    text-shadow: 2px 2px #ff69b4;
+}
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-50px); opacity: 0; }
+}
+@keyframes bounce {
+    from { transform: translateX(-50%) translateY(0); }
+    to { transform: translateX(-50%) translateY(-10px); }
+}

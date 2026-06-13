@@ -131,6 +131,7 @@ h1 {
 }
 .hidden { display: none !important; }
 
+/* Pizza Styling */
 #pizza-area {
     position: absolute;
     top: 50%;

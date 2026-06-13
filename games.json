@@ -4,83 +4,83 @@
         "name": "Bokstav- og Ord-eventyret",
         "emoji": "🦄🦁",
         "description": "Lær bokstaver og lyder med søte dyr! Perfekt for små barn. 🦄",
-        "path": "games/bokstavspill.html"
+        "path": "games/bokstavspill/index.html"
     },
     {
         "id": "star-catcher",
         "name": "Ellie's Star Catcher",
         "emoji": "🐱🌟",
         "description": "Hjelp den søte katten med å fange så mange stjerner som mulig!",
-        "path": "games/star-catcher.html"
+        "path": "games/star-catcher/index.html"
     },
     {
         "id": "bubble-pop",
         "name": "Ellie's Bubble Pop!",
         "emoji": "🫧✨",
         "description": "Popp så mange magiske bobler som mulig før tiden renner ut! 🫧",
-        "path": "games/bubble-pop.html"
+        "path": "games/bubble-pop/index.html"
     },
     {
         "id": "pancake-flip",
         "name": "Ellie's Pastel Pancake Flip!",
         "emoji": "🥞🍓",
         "description": "Stable så mange fargerike pannekaker du kan uten at tårnet velter! 🥞",
-        "path": "games/pancake-flip.html"
+        "path": "games/pancake-flip/index.html"
     },
     {
         "id": "cloud-hop",
         "name": "Ellie's Dreamy Cloud Hop",
         "emoji": "☁️✨",
         "description": "Hopp oppover i de myke skyene og se hvor høyt du kan nå! ☁️",
-        "path": "games/cloud-hop.html"
+        "path": "games/cloud-hop/index.html"
     },
     {
         "id": "memory-match",
         "name": "Ellie's Memory Match",
         "emoji": "🧠✨",
         "description": "Hvor god er hukommelsen din? Finn alle parene! 🧠",
-        "path": "games/memory-match.html"
+        "path": "games/memory-match/index.html"
     },
     {
         "id": "pastel-pet-party",
         "name": "Ellie's Pastel Pet Party!",
         "emoji": "🐾💖",
         "description": "Gi godbiter til så mange søte kjæledyr som mulig! 🐾",
-        "path": "games/pastel-pet-party.html"
+        "path": "games/pastel-pet-party/index.html"
     },
     {
         "id": "pastel-plant-protector",
         "name": "Ellie's Pastel Plant Protector!",
         "emoji": "🌸💧",
         "description": "Vann blomstene, men pass deg for de gretne ugressene! 🌸✨",
-        "path": "games/pastel-plant-protector.html"
+        "path": "games/pastel-plant-protector/index.html"
     },
     {
         "id": "pastel-pizza-party",
         "name": "Ellie's Pastel Pizza Party!",
         "emoji": "🍕🌸",
         "description": "Lag magiske pizzaer ved å fange de riktige ingrediensene! 🍕✨",
-        "path": "games/pastel-pizza-party.html"
+        "path": "games/pastel-pizza-party/index.html"
     },
     {
         "id": "cosmic-cupcake-catcher",
         "name": "Ellie's Cosmic Cupcake Catcher",
         "emoji": "🧁🌌",
         "description": "Fang magiske kaker i verdensrommet, men pass deg for asteroider! 🧁✨",
-        "path": "games/cosmic-cupcake-catcher.html"
+        "path": "games/cosmic-cupcake-catcher/index.html"
     },
     {
         "id": "pastel-paraglider",
         "name": "Ellie's Pastel Paraglider",
         "emoji": "🪂🌈",
         "description": "Svev gjennom pastell-skyene i en magisk paraglider! 🪂",
-        "path": "games/pastel-paraglider.html"
+        "path": "games/pastel-paraglider/index.html"
     },
     {
         "id": "pastel-prism-pop",
         "name": "Ellie's Pastel Prism Pop!",
         "emoji": "🌈✨",
         "description": "Spre farger over hele verden ved å poppe prismer! 🌈",
-        "path": "games/pastel-prism-pop.html"
+        "path": "games/pastel-prism-pop/index.html"
     }
 ]

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Cosmic Cupcake Catcher 🧁✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui">
+        <div>Kaker: <span id="score">0</span> 🧁</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+    <div id="combo-container">
+        <div id="combo-bar"></div>
+        <div id="combo-text"></div>
+    </div>
+    
+    <div id="magnet-alert" class="magnet-alert">MAGISK MAGNET! ✨🧲</div>
+    <div id="shield-alert" class="magnet-alert">SKJOLD AKTIVERT! 🛡️</div>
+    <div id="superbowl-alert" class="magnet-alert">SUPER-BOWL AKTIVERT! 🌟🥣</div>
+    
+    <div id="overlay">
+        <h1 id="status-text">Kosmisk Kaos! 🌌</h1>
+        <p id="final-score">Du fanget 0 kaker!</p>
+        <button class="btn" onclick="resetGame()">Prøv igjen! ✨</button>
+    </div>
+    
+    <div id="start-overlay">
+        <h1>Kosmisk Kake-kaos! 🧁✨</h1>
+        <p>Fang kaker, unngå steiner!</p>
+        <button class="btn" id="start-btn">Start Spill! 🚀</button>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <script src="game.js"></script>
+</body>
+</html>

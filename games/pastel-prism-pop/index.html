@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Prism Pop! 💎✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-ui">
+        <div class="stat-box">Score: <span id="score">0</span></div>
+        <div class="stat-box">High Score: <span id="high-score">0</span></div>
+        <div class="stat-box">Time: <span id="timer">60</span>s</div>
+        <br>
+        <div id="target-display">
+            Pop the <span id="target-name">...</span> prisms! <div id="target-color-box"></div>
+        </div>
+    </div>
+
+    <div id="combo-display">x1</div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <div id="start-overlay" class="overlay">
+        <h1>Pastel Prism Pop! 💎✨</h1>
+        <p>Welcome to Ellie's magical prism garden! Pop only the prisms that match the target color to get points. <br><br>
+        <b>✨ Combo:</b> Pop correct prisms in a row for more points!<br>
+        <b>🌈 Rainbow Prism:</b> Pops all of the target color!<br>
+        <b>⏰ Clock Prism:</b> Adds extra time!</p>
+        <button class="btn" onclick="startGame()">Start Popping! 🌸</button>
+    </div>
+
+    <div id="end-overlay" class="overlay" style="display: none;">
+        <h1>Game Over! ✨</h1>
+        <p>You popped so many pretty prisms! Your final score is:</p>
+        <div class="stat-box" style="font-size: 3rem; margin-bottom: 30px;"><span id="final-score">0</span></div>
+        <button class="btn" onclick="location.reload()">Play Again! 🎀</button>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

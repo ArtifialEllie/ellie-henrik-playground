@@ -64,6 +64,7 @@ function getRandomIngredient() {
 }
 
 function setRequest() {
+    // Ensure we don't request the bonus magic sparkle too often
     let filtered = ingredients.filter(i => !i.bonus && !i.powerup);
     currentRequest = filtered[Math.floor(Math.random() * filtered.length)];
     requestQuantity = Math.floor(Math.random() * 3) + 1;
@@ -188,8 +189,9 @@ function addToPizza(emoji) {
     topping.className = 'pizza-topping';
     topping.innerText = emoji;
     
+    // Random position on the cheese area
     const angle = Math.random() * Math.PI * 2;
-    const dist = Math.random() * 110;
+    const dist = Math.random() * 110; // Stay within the cheese
     const x = 150 + Math.cos(angle) * dist - 20;
     const y = 150 + Math.sin(angle) * dist - 20;
     
@@ -198,10 +200,12 @@ function addToPizza(emoji) {
     
     toppingsLayer.appendChild(topping);
     
+    // Add some sparkles around the topping
     for(let i=0; i<3; i++) {
         showPop('✨', x + (Math.random()-0.5)*40, y + (Math.random()-0.5)*40, 'white');
     }
     
+    // Juice: Pizza pulses when topping is added
     pizzaArea.style.transform = 'translate(-50%, -50%) scale(1)';
     setTimeout(() => pizzaArea.style.transform = 'translate(-50%, -50%) scale(1)', 100);
     if (toppingsCount >= TOPPINGS_PER_PIZZA) {
@@ -215,9 +219,11 @@ function completePizza() {
     scoreEl.innerText = score;
     showPop('PIZZA SERVED! 🍕🎉', window.innerWidth/2 - 100, window.innerHeight/2 - 100, 'var(--primary)');
     
+    // Serve animation
     pizzaArea.style.transition = 'all 0.5s ease-in';
     pizzaArea.style.transform = 'translate(-50%, -200%) scale(0) rotate(360deg)';
     
+    // Chance to trigger Rainbow Mode for the next pizza
     if (Math.random() < 0.2) {
         triggerRainbowMode();
     }
