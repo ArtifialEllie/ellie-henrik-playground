@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glittery Galaxy Gardener ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div class="stat">✨ Stardust: <span id="score">0</span></div>
+            <div class="seed-selector">
+                <div class="seed active" data-color="#ffccff" data-type="pink" title="Pink Petal Star: Fast growth!">🌸</div>
+                <div class="seed" data-color="#ccffff" data-type="blue" title="Blue Breeze Star: High value!">💧</div>
+                <div class="seed" data-color="#ffffcc" data-type="gold" title="Gold Glow Star: Rare bonus!">🌟</div>
+            </div>
+            <div id="instructions">Click the cosmos to plant your magical stars!</div>
+        </div>
+        <canvas id="galaxyCanvas"></canvas>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
