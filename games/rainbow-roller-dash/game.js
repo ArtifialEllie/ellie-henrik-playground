@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 let scene, camera, renderer, ball, road, stars = [];
+let sparkles = [];
 let score = 0;
 let gameActive = false;
 let speed = 0.2;
@@ -72,6 +73,8 @@ function init() {
         createStar();
     }
 
+    createClouds();
+
     window.addEventListener('resize', onWindowResize, false);
     setupControls();
 }
@@ -92,6 +95,46 @@ function createStar() {
     
     scene.add(star);
     stars.push(star);
+}
+
+function createClouds() {
+    const cloudGeo = new THREE.SphereGeometry(1, 8, 8);
+    const cloudMat = new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+    
+    for (let i = 0; i < 30; i++) {
+        const cloud = new THREE.Mesh(cloudGeo, cloudMat);
+        cloud.position.set(
+            (Math.random() - 0.5) * 40,
+            2 + Math.random() * 5,
+            -Math.random() * ROAD_LENGTH * 2
+        );
+        cloud.scale.set(1 + Math.random() * 2, 0.5 + Math.random(), 1 + Math.random() * 2);
+        scene.add(cloud);
+        // We don't need to track them in an array if they are static, 
+        // but we can add them to a list if we want them to move.
+    }
+}
+
+function createSparkles(position) {
+    const sparkleGeo = new THREE.SphereGeometry(0.05, 4, 4);
+    const sparkleMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    
+    for (let i = 0; i < 10; i++) {
+        const sparkle = new THREE.Mesh(sparkleGeo, sparkleMat);
+        sparkle.position.copy(position);
+        
+        sparkle.userData = {
+            velocity: new THREE.Vector3(
+                (Math.random() - 0.5) * 0.2,
+                (Math.random() - 0.5) * 0.2,
+                (Math.random() - 0.5) * 0.2
+            ),
+            life: 1.0
+        };
+        
+        scene.add(sparkle);
+        sparkles.push(sparkle);
+    }
 }
 
 function setupControls() {
