@@ -24,6 +24,7 @@ let spawnTimeout;
 let combo = 0;
 let multiplier = 1;
 let isStarting = true;
+let isGoldenRain = false;
 let level = 1;
 let comboTimer;
 let isFrenzy = false;
@@ -364,6 +365,28 @@ function triggerParty() {
     }, 3000);
 }
 
+function triggerGoldenRain() {
+    isGoldenRain = true;
+    const rainAlert = document.getElementById('golden-rain-alert');
+    rainAlert.style.display = 'block';
+    
+    // Rain of gold bubbles!
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            const goldBubble = new Bubble(false);
+            goldBubble.type = 'gold';
+            goldBubble.color = '#ffd700';
+            goldBubble.y = -goldBubble.radius;
+            bubbles.push(goldBubble);
+        }, i * 100);
+    }
+    
+    setTimeout(() => {
+        isGoldenRain = false;
+        rainAlert.style.display = 'none';
+    }, 7000);
+}
+
 function updateCombo() {
     if (combo > 1) {
         comboText.innerText = `Combo x${combo}`;
@@ -530,6 +553,7 @@ function handlePop(e) {
             
             if (Math.random() < 0.03) triggerFrenzy();
             if (Math.random() < 0.01) triggerParty();
+            if (Math.random() < 0.005) triggerGoldenRain();
             
             updateCombo();
             scoreEl.innerText = score;
