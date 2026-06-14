@@ -7,6 +7,7 @@ const gameOverScreen = document.getElementById('game-over-screen');
 const startButton = document.getElementById('start-button');
 const restartButton = document.getElementById('restart-button');
 const finalScoreElement = document.getElementById('final-score');
+const ratingDisplay = document.getElementById('rating-display');
 const lanes = document.querySelectorAll('.lane');
 
 let score = 0;
@@ -95,6 +96,16 @@ function handleInput(key) {
                 
                 // Sparkle effect
                 createSparkles(note.x, note.y, note.color);
+                
+                // Rating based on distance
+                const dist = Math.abs(note.y - targetY);
+                if (dist < 15) {
+                    showRating('PERFECT!', '#ffff00');
+                } else if (dist < 30) {
+                    showRating('GREAT!', '#4caf50');
+                } else {
+                    showRating('GOOD', '#2196f3');
+                }
                 break;
             }
         }
@@ -102,7 +113,7 @@ function handleInput(key) {
 
     if (!hitFound) {
         combo = 0;
-        // Optional: Miss penalty or visual shake
+        showRating('MISS', '#ff4d4d');
     }
 
     updateUI();
@@ -142,6 +153,13 @@ function drawSparkles() {
         ctx.closePath();
         ctx.globalAlpha = 1.0;
     });
+}
+
+function showRating(text, color) {
+    ratingDisplay.innerText = text;
+    ratingDisplay.style.color = color;
+    ratingDisplay.classList.add('show');
+    setTimeout(() => ratingDisplay.classList.remove('show'), 300);
 }
 
 function updateUI() {
