@@ -1,4 +1,3 @@
-    <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
@@ -28,6 +27,8 @@
         let playerScale = 1;
         let superBowlActive = false;
         let superBowlTimer = 0;
+        let rainbowModeActive = false;
+        let rainbowTimer = 0;
 
         highscoreEl.innerText = highscore;
 
@@ -102,7 +103,11 @@ const audioCtx = new AudioCtx();
                 this.speed = this.baseSpeed;
                 
                 const rand = Math.random();
-                if (rand > 0.95) {
+                if (rand > 0.98) {
+                    this.type = 'rainbow';
+                    this.color = 'rainbow';
+                    this.emoji = '🌈';
+                } else if (rand > 0.95) {
                     this.type = 'gold';
                     this.color = '#ffd700';
                     this.emoji = '🌟';
@@ -142,6 +147,10 @@ const audioCtx = new AudioCtx();
                 if (this.type === 'gold') {
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = 'gold';
+                }
+                if (this.type === 'rainbow') {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'white';
                 }
                 ctx.fillText(this.emoji, this.x, this.y);
                 ctx.restore();
@@ -258,8 +267,14 @@ const audioCtx = new AudioCtx();
             ctx.scale(playerScale, playerScale);
             
             const playerGrad = ctx.createLinearGradient(0, 0, 0, player.height);
-            playerGrad.addColorStop(0, player.color);
-            playerGrad.addColorStop(1, '#c2185b');
+            if (rainbowModeActive) {
+                const hue = (Date.now() / 10) % 360;
+                playerGrad.addColorStop(0, `hsl(${hue}, 100%, 70%)`);
+                playerGrad.addColorStop(1, `hsl(${(hue + 60) % 360}, 100%, 50%)`);
+            } else {
+                playerGrad.addColorStop(0, player.color);
+                playerGrad.addColorStop(1, '#c2185b');
+            }
             ctx.fillStyle = playerGrad;
 
             // Draw a cute bow on the bowl! 🎀
@@ -351,6 +366,12 @@ const audioCtx = new AudioCtx();
                         playSound(300, 'sine', 0.4);
                         createBurst(item.x, item.y, item.color);
                         playerScale = 1.2;
+                    } else if (item.type === 'rainbow') {
+                        score += 20;
+                        activateRainbowMode();
+                        playSound(1200, 'sine', 0.5);
+                        createBurst(item.x, item.y, 'white');
+                        playerScale = 1.5;
                     } else if (item.type === 'rock') {
                         if (shieldActive) {
                             shieldActive = false;
@@ -390,6 +411,12 @@ const audioCtx = new AudioCtx();
                     superBowlAlert.style.display = 'none';
                 }
             }
+            if (rainbowModeActive) {
+                rainbowTimer--;
+                if (rainbowTimer <= 0) {
+                    rainbowModeActive = false;
+                }
+            }
 
             requestAnimationFrame(update);
         }
@@ -411,6 +438,13 @@ const audioCtx = new AudioCtx();
             superBowlTimer = 300; 
             superBowlAlert.style.display = 'block';
             playSound(1000, 'sine', 0.5);
+            createBurst(player.x, player.y, 'white');
+        }
+
+        function activateRainbowMode() {
+            rainbowModeActive = true;
+            rainbowTimer = 400;
+            playSound(1200, 'sine', 0.5);
             createBurst(player.x, player.y, 'white');
         }
 
@@ -449,6 +483,5 @@ const audioCtx = new AudioCtx();
         });
 
         requestAnimationFrame(update);
-    </script>
-</body>
-</html>
+
+
