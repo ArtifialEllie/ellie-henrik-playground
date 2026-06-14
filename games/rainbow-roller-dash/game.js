@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 let scene, camera, renderer, ball, road, stars = [];
 let sparkles = [];
+let rings = [];
 let score = 0;
 let gameActive = false;
 let speed = 0.2;
@@ -74,6 +75,7 @@ function init() {
     }
 
     createClouds();
+    createRings();
 
     window.addEventListener('resize', onWindowResize, false);
     setupControls();
@@ -95,6 +97,25 @@ function createStar() {
     
     scene.add(star);
     stars.push(star);
+}
+
+function createRings() {
+    for (let i = 0; i < 5; i++) {
+        const ringGeo = new THREE.TorusGeometry(0.8, 0.1, 16, 100);
+        const ringMat = new THREE.MeshPhongMaterial({ 
+            color: 0x00ffff, 
+            emissive: 0x00ffff, 
+            emissiveIntensity: 0.5 
+        });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        
+        ring.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+        ring.position.y = 0.5;
+        ring.position.z = -Math.random() * ROAD_LENGTH;
+        
+        scene.add(ring);
+        rings.push(ring);
+    }
 }
 
 function createClouds() {
@@ -196,6 +217,32 @@ function update() {
         if (star.position.z > ball.position.z + 5) {
             star.position.z = ball.position.z - ROAD_LENGTH;
             star.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
+        }
+    });
+
+    // Ring collision and speed boost
+    rings.forEach(ring => {
+        ring.rotation.y += 0.02;
+        
+        const dist = ball.position.distanceTo(ring.position);
+        if (dist < 1.2) {
+            speed += 0.05;
+            document.getElementById('message').innerText = 'SPEED BOOST! 🚀';
+            
+            // Move ring far ahead
+            ring.position.z = ball.position.z - ROAD_LENGTH;
+            ring.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+            
+            // Reset message after a delay
+            setTimeout(() => {
+                document.getElementById('message').innerText = 'Roll through the rainbow! ✨';
+            }, 2000);
+        }
+
+        // Recycle rings that are behind the player
+        if (ring.position.z > ball.position.z + 5) {
+            ring.position.z = ball.position.z - ROAD_LENGTH;
+            ring.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
         }
     });
 
