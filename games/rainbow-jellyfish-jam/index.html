@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Jellyfish Jam 🌈🪼</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Poeng: <span id="score">0</span></div>
+            <div id="timer-board">Tid: <span id="timer">30</span>s</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <div id="start-screen">
+                <h1>Rainbow Jellyfish Jam ✨</h1>
+                <p>Klikk på de fargerike manetene for å lage magisk musikk!</p>
+                <button id="start-btn">Start Jammen! 🎮</button>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h1>Jammen er slutt! 🌈</h1>
+                <p>Du samlet <span id="final-score">0</span> magiske gnister!</p>
+                <button id="restart-btn">Prøv igjen! 🔄</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
