@@ -25,6 +25,7 @@ let isStarting = true;
 let level = 1;
 let comboTimer;
 let isFrenzy = false;
+let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
 
 highscoreEl.innerText = highscore;
@@ -170,6 +171,9 @@ class Bubble {
         } else if (rand > 0.72 && rand <= 0.77) {
             this.type = 'lucky-star';
             this.color = '#ffeb3b';
+        } else if (rand > 0.67 && rand <= 0.72) {
+            this.type = 'freeze';
+            this.color = '#b2ebf2';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -226,6 +230,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('✨', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'freeze') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('❄️', this.x, this.y + currentRadius/3);
         } else if (this.type === 'stinky') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -389,18 +397,22 @@ function handlePop(e) {
                 score += heartBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
                 createHeartEffect(b.x, b.y);
-            } else if (b.type === 'magic-star') {
-                playPopSound(true, false);
-                const starBonus = 75;
-                score += starBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ⭐ +${starBonus}`, 'yellow'));
-                createPopEffect(b.x, b.y, 'yellow');
             } else if (b.type === 'lucky-star') {
                 playPopSound(true, false);
                 const starBonus = 40;
                 score += starBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY STAR! 🌟 +${starBonus}`, '#ffeb3b'));
                 createPopEffect(b.x, b.y, '#ffeb3b');
+            } else if (b.type === 'freeze') {
+                playPopSound();
+                floatingTexts.push(new FloatingText(b.x, b.y, 'FREEZE! ❄️', '#b2ebf2'));
+                createPopEffect(b.x, b.y, '#b2ebf2');
+                bubbles.forEach(bub => bub.speed = 0);
+                setTimeout(() => {
+                    bubbles.forEach(bub => {
+                        bub.speed = (Math.random() * 2 + 1) * (isFrenzy ? 1.5 : 1);
+                    });
+                }, 3000);
             } else if (b.type === 'cluster') {
                 playPopSound();
                 const bonus = 2 + (combo * 1);
@@ -416,6 +428,12 @@ function handlePop(e) {
                     mini.color = b.color;
                     bubbles.push(mini);
                 }
+            } else if (b.type === 'magic-star') {
+                playPopSound(true, false);
+                const magicBonus = 60;
+                score += magicBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ✨ +${magicBonus}`, '#ffff00'));
+                createPopEffect(b.x, b.y, '#ffff00');
             } else if (b.type === 'bomb') {
                 playSound(100, 'square', 0.5);
                 bubbles = [];
