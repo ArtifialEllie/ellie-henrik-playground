@@ -1,0 +1,105 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #0a0a2e;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    color: white;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#score-board, #timer-board {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 24px;
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+#gameCanvas {
+    display: block;
+    background: radial-gradient(circle, #1b1b4b 0%, #0a0a2e 100%);
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    backdrop-filter: blur(8px);
+    transition: opacity 0.5s ease;
+}
+
+#message-box {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+    color: #4a4a4a;
+    padding: 40px;
+    border-radius: 30px;
+    text-align: center;
+    max-width: 500px;
+    box-shadow: 0 0 30px rgba(255, 154, 158, 0.5);
+    border: 5px solid white;
+}
+
+#title {
+    font-size: 42px;
+    margin-bottom: 10px;
+    color: #d63384;
+    text-shadow: 2px 2px 0px white;
+}
+
+#description {
+    font-size: 20px;
+    margin-bottom: 30px;
+    line-height: 1.4;
+}
+
+#start-button {
+    background: #ff4d6d;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 22px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    font-family: inherit;
+}
+
+#start-button:hover {
+    transform: scale(1.1);
+    background: #ff758f;
+}
+
+#start-button:active {
+    transform: scale(0.95);
+}

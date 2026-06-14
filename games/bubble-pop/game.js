@@ -2,6 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
+const multiplierEl = document.getElementById('multiplier');
 const highscoreEl = document.getElementById('highscore');
 const overlay = document.getElementById('overlay');
 const statusText = document.getElementById('status-text');
@@ -21,10 +22,13 @@ let canvasWidth, canvasHeight;
 let timerInterval;
 let spawnTimeout;
 let combo = 0;
+let multiplier = 1;
 let isStarting = true;
+let isGoldenRain = false;
 let level = 1;
 let comboTimer;
 let isFrenzy = false;
+let shieldActive = false;
 let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
 
@@ -150,6 +154,9 @@ class Bubble {
         if (rand > 0.998) {
             this.type = 'golden-ticket';
             this.color = '#FFD700';
+        } else if (rand > 0.995) {
+            this.type = 'magic-mirror';
+            this.color = '#e0f7fa';
         } else if (rand > 0.99) {
             this.type = 'magic-wand';
             this.color = '#da70d6';
@@ -177,6 +184,15 @@ class Bubble {
         } else if (rand > 0.67 && rand <= 0.72) {
             this.type = 'freeze';
             this.color = '#b2ebf2';
+        } else if (rand > 0.62 && rand <= 0.67) {
+            this.type = 'time-warp';
+            this.color = '#e1bee7';
+        } else if (rand > 0.57 && rand <= 0.62) {
+            this.type = 'hammer';
+            this.color = '#a1887f';
+        } else if (rand > 0.47 && rand <= 0.52) {
+            this.type = 'shield';
+            this.color = '#b2dfdb';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -229,10 +245,18 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🎫', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'magic-mirror') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🪞', this.x, this.y + currentRadius/3);
         } else if (this.type === 'magic-wand') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🪄', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'hammer') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🔨', this.x, this.y + currentRadius/3);
         } else if (this.type === 'gold') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -241,6 +265,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('❄️', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'shield') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🛡️', this.x, this.y + currentRadius/3);
         } else if (this.type === 'stinky') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -342,6 +370,42 @@ function triggerFrenzy() {
     }, 5000);
 }
 
+function triggerParty() {
+    const partyAlert = document.getElementById('party-alert');
+    partyAlert.style.display = 'block';
+    
+    // Party effect: spawn a bunch of bubbles immediately
+    for (let i = 0; i < 15; i++) {
+        bubbles.push(new Bubble(true));
+    }
+    
+    setTimeout(() => {
+        partyAlert.style.display = 'none';
+    }, 3000);
+}
+
+function triggerGoldenRain() {
+    isGoldenRain = true;
+    const rainAlert = document.getElementById('golden-rain-alert');
+    rainAlert.style.display = 'block';
+    
+    // Rain of gold bubbles!
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            const goldBubble = new Bubble(false);
+            goldBubble.type = 'gold';
+            goldBubble.color = '#ffd700';
+            goldBubble.y = -goldBubble.radius;
+            bubbles.push(goldBubble);
+        }, i * 100);
+    }
+    
+    setTimeout(() => {
+        isGoldenRain = false;
+        rainAlert.style.display = 'none';
+    }, 7000);
+}
+
 function updateCombo() {
     if (combo > 1) {
         comboText.innerText = `Combo x${combo}`;
@@ -352,6 +416,10 @@ function updateCombo() {
         comboText.style.opacity = '0';
         comboBar.style.width = '0%';
     }
+    
+    // Oppdater multiplikator basert på combo
+    multiplier = 1 + Math.floor(combo / 5);
+    multiplierEl.innerText = `x${multiplier}`;
     
     clearTimeout(comboTimer);
     comboTimer = setTimeout(() => {
@@ -389,6 +457,13 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC WAND! 🪄 +${wandBonus}`, '#da70d6'));
                 createPopEffect(b.x, b.y, '#da70d6');
                 triggerFrenzy();
+            } else if (b.type === 'magic-mirror') {
+                playPopSound(true, false);
+                const mirrorBonus = 500;
+                score += mirrorBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC MIRROR! 🪞 +${mirrorBonus}`, '#e0f7fa'));
+                createPopEffect(b.x, b.y, '#e0f7fa');
+                triggerFrenzy();
             } else if (b.type === 'gold') {
                 playPopSound(true, false);
                 const bonus = 5 + (combo * 2);
@@ -417,6 +492,20 @@ function handlePop(e) {
                 score += starBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY STAR! 🌟 +${starBonus}`, '#ffeb3b'));
                 createPopEffect(b.x, b.y, '#ffeb3b');
+            } else if (b.type === 'time-warp') {
+                playPopSound(true, false);
+                const timeBonus = 3;
+                timeLeft += timeBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `TIME WARP! ⏳ +${timeBonus}s`, '#e1bee7'));
+                createPopEffect(b.x, b.y, '#e1bee7');
+            } else if (b.type === 'lucky-clover') {
+                playPopSound(true, false);
+                const goldBonus = Math.floor(Math.random() * 20) + 10;
+                totalGold += goldBonus;
+                localStorage.setItem('bubblePopTotalGold', totalGold);
+                totalGoldEl.innerText = totalGold;
+                floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY CLOVER! 🍀 +${goldBonus} ✨`, '#81c784'));
+                createPopEffect(b.x, b.y, '#81c784');
             } else if (b.type === 'freeze') {
                 playPopSound();
                 floatingTexts.push(new FloatingText(b.x, b.y, 'FREEZE! ❄️', '#b2ebf2'));
@@ -427,6 +516,14 @@ function handlePop(e) {
                         bub.speed = (Math.random() * 2 + 1) * (isFrenzy ? 1.5 : 1);
                     });
                 }, 3000);
+            } else if (b.type === 'shield') {
+                playPopSound();
+                shieldActive = true;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELD ACTIVE! 🛡️', '#b2dfdb'));
+                createPopEffect(b.x, b.y, '#b2dfdb');
+                setTimeout(() => {
+                    shieldActive = false;
+                }, 7000);
             } else if (b.type === 'cluster') {
                 playPopSound();
                 const bonus = 2 + (combo * 1);
@@ -448,20 +545,56 @@ function handlePop(e) {
                 score += magicBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ✨ +${magicBonus}`, '#ffff00'));
                 createPopEffect(b.x, b.y, '#ffff00');
+            } else if (b.type === 'hammer') {
+                playPopSound(true, false);
+                const hammerBonus = 80;
+                score += hammerBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `HAMMER TIME! 🔨 +${hammerBonus}`, '#a1887f'));
+                createPopEffect(b.x, b.y, '#a1887f');
+                
+                // Hammer effect: pop several random bubbles
+                const popCount = 5;
+                let popped = 0;
+                const potentialTargets = bubbles.filter(bub => bub !== b && bub.type !== 'bomb');
+                
+                while (popped < popCount && potentialTargets.length > 0) {
+                    const targetIndex = Math.floor(Math.random() * potentialTargets.length);
+                    const target = potentialTargets[targetIndex];
+                    
+                    createPopEffect(target.x, target.y, target.color);
+                    score += 10;
+                    floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
+                    
+                    // Remove the target from the main bubbles array
+                    const mainIndex = bubbles.indexOf(target);
+                    if (mainIndex > -1) {
+                        bubbles.splice(mainIndex, 1);
+                    }
+                    
+                    potentialTargets.splice(targetIndex, 1);
+                    popped++;
+                }
             } else if (b.type === 'bomb') {
                 playSound(100, 'square', 0.5);
                 bubbles = [];
                 combo = 0;
                 floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
             } else if (b.type === 'stinky') {
-                playPopSound(false, true);
-                score = Math.max(0, score - 5);
-                combo = 0;
-                comboBar.style.width = '0%';
-                comboText.innerText = '';
-                floatingTexts.push(new FloatingText(b.x, b.y, `-5 💨`, '#666'));
-                document.body.classList.add('shake');
-                setTimeout(() => document.body.classList.remove('shake'), 400);
+                if (shieldActive) {
+                    playPopSound(true, false);
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELDED! 🛡️', '#b2dfdb'));
+                    createPopEffect(b.x, b.y, '#b2dfdb');
+                    shieldActive = false;
+                } else {
+                    playPopSound(false, true);
+                    score = Math.max(0, score - 5);
+                    combo = 0;
+                    comboBar.style.width = '0%';
+                    comboText.innerText = '';
+                    floatingTexts.push(new FloatingText(b.x, b.y, `-5 💨`, '#666'));
+                    document.body.classList.add('shake');
+                    setTimeout(() => document.body.classList.remove('shake'), 400);
+                }
             } else if (b.type === 'super-pop') {
                 playSuperPopSound();
                 floatingTexts.push(new FloatingText(b.x, b.y, 'SUPER POP! 💥', 'orange'));
@@ -483,12 +616,14 @@ function handlePop(e) {
             } else {
                 playPopSound();
                 combo++;
-                const points = Math.ceil(60 / b.radius * 2) + (combo > 5 ? 5 : 0);
+                const points = (Math.ceil(60 / b.radius * 2) + (combo > 5 ? 5 : 0)) * multiplier;
                 score += points;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${points}`, b.color));
             }
             
             if (Math.random() < 0.03) triggerFrenzy();
+            if (Math.random() < 0.01) triggerParty();
+            if (Math.random() < 0.005) triggerGoldenRain();
             
             updateCombo();
             scoreEl.innerText = score;
@@ -621,8 +756,10 @@ function resetGame() {
     score = 0;
     timeLeft = 30;
     combo = 0;
+    multiplier = 1;
     comboBar.style.width = '0%';
     comboText.innerText = '';
+    multiplierEl.innerText = 'x1';
     scoreEl.innerText = '0';
     timerEl.innerText = '30';
     bubbles = [];

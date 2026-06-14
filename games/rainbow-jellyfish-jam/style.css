@@ -1,0 +1,104 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    color: white;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#score-board, #timer-board {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 24px;
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+#gameCanvas {
+    display: block;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    transition: opacity 0.5s ease;
+}
+
+#start-screen, #game-over-screen {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    border-radius: 30px;
+    border: 4px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #fff, 0 0 20px #ff00de, 0 0 30px #ff00de;
+    animation: float 3s ease-in-out infinite;
+}
+
+p {
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 24px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ff00de, #00d4ff);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 0, 222, 0.6);
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
