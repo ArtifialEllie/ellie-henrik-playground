@@ -141,6 +141,7 @@ let floatingTexts = [];
 class Bubble {
     constructor(frenzy = false) {
         this.radius = Math.random() * 30 + 20;
+        this.hits = 1;
         this.x = Math.random() * (canvasWidth - this.radius * 2) + this.radius;
         this.y = canvasHeight + this.radius;
         this.speed = (Math.random() * 2 + 1) * (frenzy ? 1.5 : 1);
@@ -191,6 +192,11 @@ class Bubble {
             this.type = 'hammer';
             this.color = '#a1887f';
         } else if (rand > 0.47 && rand <= 0.52) {
+            this.type = 'giant';
+            this.radius = Math.random() * 40 + 70;
+            this.hits = 3;
+            this.color = '#ffeb3b';
+        } else if (rand > 0.42 && rand <= 0.47) {
             this.type = 'shield';
             this.color = '#b2dfdb';
         } else if (rand < 0.05) {
@@ -240,7 +246,12 @@ class Bubble {
         if (currentSkin === 'rainbow') {
             this.color = `hsl(${Date.now() / 10 % 360}, 70%, 70%)`;
         }
-
+        
+        if (this.type === 'giant') {
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+        }
         if (this.type === 'golden-ticket') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -293,6 +304,13 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('💥', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'giant') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🌟', this.x, this.y + currentRadius/3);
+            // Draw health bar
+            ctx.fillStyle = 'white';
+            ctx.fillRect(this.x - 20, this.y - currentRadius - 10, 40 * (this.hits/3), 5);
         }
     }
 }
@@ -350,6 +368,29 @@ class FloatingText {
     }
 }
 
+class TrailParticle {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 8 + 4;
+        this.color = `hsl(${Date.now() / 5 % 360}, 80%, 70%)`;
+        this.life = 1.0;
+        this.decay = 0.03;
+    }
+    update() {
+        this.life -= this.decay;
+        this.size *= 0.95;
+    }
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 function spawnBubble() {
     if (!gameActive) return;
     
@@ -364,9 +405,11 @@ function spawnBubble() {
 function triggerFrenzy() {
     isFrenzy = true;
     frenzyAlert.style.display = 'block';
+    document.body.classList.add('frenzy-bg');
     setTimeout(() => {
         isFrenzy = false;
         frenzyAlert.style.display = 'none';
+        document.body.classList.remove('frenzy-bg');
     }, 5000);
 }
 
@@ -441,6 +484,13 @@ function handlePop(e) {
         const dist = Math.hypot(mouseX - b.x, mouseY - b.y);
         
         if (dist < b.radius + 10) {
+            if (b.hits > 1) {
+                b.hits--;
+                createPopEffect(b.x, b.y, b.color);
+                playSound(300, 'sine', 0.1);
+                floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
+                continue; 
+            }
             createPopEffect(b.x, b.y, b.color);
             
             if (b.type === 'golden-ticket') {
@@ -613,6 +663,12 @@ function handlePop(e) {
                 });
                 score += 100;
                 createBigExplosion(b.x, b.y);
+            } else if (b.type === 'giant') {
+                playSuperPopSound();
+                const giantBonus = 200;
+                score += giantBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `GIANT POP! 🌟 +${giantBonus}`, 'gold'));
+                createBigExplosion(b.x, b.y);
             } else {
                 playPopSound();
                 combo++;
@@ -689,9 +745,17 @@ function update() {
         requestAnimationFrame(update);
         return;
     }
-
+ 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
+ 
+    for (let i = trail.length - 1; i >= 0; i--) {
+        trail[i].update();
+        trail[i].draw();
+        if (trail[i].life <= 0) {
+            trail.splice(i, 1);
+        }
+    }
+ 
     sparkles.forEach(s => {
         s.update();
         s.draw();
@@ -782,7 +846,12 @@ window.addEventListener('touchstart', (e) => {
     handlePop(e);
     e.preventDefault();
 }, { passive: false });
-
+window.addEventListener('mousemove', handleMouseMove);
+window.addEventListener('touchmove', (e) => {
+    handleMouseMove(e);
+    e.preventDefault();
+}, { passive: false });
+ 
 const sparkles = Array.from({ length: 50 }, () => new Sparkle());
 
 const startBtn = document.getElementById('start-btn');
