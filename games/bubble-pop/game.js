@@ -154,6 +154,9 @@ class Bubble {
         if (rand > 0.998) {
             this.type = 'golden-ticket';
             this.color = '#FFD700';
+        } else if (rand > 0.995) {
+            this.type = 'magic-mirror';
+            this.color = '#e0f7fa';
         } else if (rand > 0.99) {
             this.type = 'magic-wand';
             this.color = '#da70d6';
@@ -239,6 +242,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🎫', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'magic-mirror') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🪞', this.x, this.y + currentRadius/3);
         } else if (this.type === 'magic-wand') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -442,6 +449,13 @@ function handlePop(e) {
                 score += wandBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC WAND! 🪄 +${wandBonus}`, '#da70d6'));
                 createPopEffect(b.x, b.y, '#da70d6');
+                triggerFrenzy();
+            } else if (b.type === 'magic-mirror') {
+                playPopSound(true, false);
+                const mirrorBonus = 500;
+                score += mirrorBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC MIRROR! 🪞 +${mirrorBonus}`, '#e0f7fa'));
+                createPopEffect(b.x, b.y, '#e0f7fa');
                 triggerFrenzy();
             } else if (b.type === 'gold') {
                 playPopSound(true, false);
