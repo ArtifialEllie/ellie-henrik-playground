@@ -146,7 +146,10 @@ class Bubble {
         
         this.type = 'normal';
         const rand = Math.random();
-        if (rand > 0.95) {
+        if (rand > 0.98) {
+            this.type = 'super-pop';
+            this.color = '#ff4500';
+        } else if (rand > 0.95) {
             this.type = 'rainbow-burst';
             this.color = 'rainbow';
         } else if (rand > 0.92 && rand <= 0.95) {
@@ -236,6 +239,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🌈', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'super-pop') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('💥', this.x, this.y + currentRadius/3);
         }
     }
 }
@@ -409,6 +416,24 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `-5 💨`, '#666'));
                 document.body.classList.add('shake');
                 setTimeout(() => document.body.classList.remove('shake'), 400);
+            } else if (b.type === 'super-pop') {
+                playSuperPopSound();
+                floatingTexts.push(new FloatingText(b.x, b.y, 'SUPER POP! 💥', 'orange'));
+                
+                const allBubbles = [...bubbles];
+                bubbles = [];
+                allBubbles.forEach(otherBubble => {
+                    if (otherBubble !== b) {
+                        if (otherBubble.type !== 'bomb' && otherBubble.type !== 'stinky') {
+                            createPopEffect(otherBubble.x, otherBubble.y, otherBubble.color);
+                            score += 10;
+                        } else {
+                            createPopEffect(otherBubble.x, otherBubble.y, '#444');
+                        }
+                    }
+                });
+                score += 100;
+                createBigExplosion(b.x, b.y);
             } else {
                 playPopSound();
                 combo++;
@@ -444,6 +469,20 @@ function createPopEffect(x, y, color) {
     }
 }
 
+function playSuperPopSound() {
+    playSound(200, 'sine', 0.5, 0.2);
+    playSound(100, 'sine', 0.5, 0.2);
+    setTimeout(() => playSound(50, 'sine', 0.5, 0.2), 100);
+}
+
+function createBigExplosion(x, y) {
+    for (let i = 0; i < 50; i++) {
+        const p = new Particle(x, y, 'orange');
+        p.vx *= 2;
+        p.vy *= 2;
+        particles.push(p);
+    }
+}
 class Sparkle {
     constructor() {
         this.x = Math.random() * canvasWidth;
