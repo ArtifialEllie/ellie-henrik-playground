@@ -348,6 +348,20 @@ function triggerFrenzy() {
     }, 5000);
 }
 
+function triggerParty() {
+    const partyAlert = document.getElementById('party-alert');
+    partyAlert.style.display = 'block';
+    
+    // Party effect: spawn a bunch of bubbles immediately
+    for (let i = 0; i < 15; i++) {
+        bubbles.push(new Bubble(true));
+    }
+    
+    setTimeout(() => {
+        partyAlert.style.display = 'none';
+    }, 3000);
+}
+
 function updateCombo() {
     if (combo > 1) {
         comboText.innerText = `Combo x${combo}`;
@@ -509,6 +523,7 @@ function handlePop(e) {
             }
             
             if (Math.random() < 0.03) triggerFrenzy();
+            if (Math.random() < 0.01) triggerParty();
             
             updateCombo();
             scoreEl.innerText = score;

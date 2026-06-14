@@ -201,7 +201,7 @@ h1 {
     margin-top: 0;
     text-shadow: 3px 3px white;
 }
-#frenzy-alert {
+#frenzy-alert, #party-alert {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -214,6 +214,11 @@ h1 {
     z-index: 15;
     display: none;
     animation: flash 0.5s infinite alternate;
+}
+
+#party-alert {
+    color: #ff4081;
+    text-shadow: 4px 4px #ffd700;
 }
 @keyframes flash {
     from { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
