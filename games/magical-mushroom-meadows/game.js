@@ -54,9 +54,18 @@ class Mushroom {
         this.growthSpeed = Math.random() * 0.01 + 0.005;
         this.life = 1.0;
         this.decay = Math.random() * 0.005 + 0.002;
-        this.color = currentSkin === 'rainbow' ? `hsl(${Math.random() * 360}, 70%, 70%)` : currentSkin;
-        this.type = Math.random() > 0.9 ? 'golden' : 'normal';
-        if (this.type === 'golden') this.color = '#ffd700';
+        
+        const rand = Math.random();
+        if (rand > 0.9) {
+            this.type = 'golden';
+            this.color = '#ffd700';
+        } else if (rand < 0.15) {
+            this.type = 'poison';
+            this.color = '#9c27b0'; // Deep purple
+        } else {
+            this.type = 'normal';
+            this.color = currentSkin === 'rainbow' ? `hsl(${Math.random() * 360}, 70%, 70%)` : currentSkin;
+        }
     }
 
     update() {
@@ -73,20 +82,28 @@ class Mushroom {
         ctx.save();
         ctx.translate(this.x, this.y);
 
+        // Magical Glow
+        ctx.shadowBlur = 15 * this.growth;
+        ctx.shadowColor = this.color;
+
         // Stem
+        ctx.shadowBlur = 0;
         ctx.fillStyle = '#fffafa';
         ctx.beginPath();
         ctx.rect(-currentRadius * 0.3, 0, currentRadius * 0.6, currentRadius * 0.8);
         ctx.fill();
 
         // Cap
+        ctx.shadowBlur = 15 * this.growth;
+        ctx.shadowColor = this.color;
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(0, 0, currentRadius, Math.PI, 0);
         ctx.fill();
         
         // Dots on cap
-        ctx.fillStyle = 'white';
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = this.type === 'poison' ? '#4a148c' : 'white';
         for(let i=0; i<3; i++) {
             ctx.beginPath();
             ctx.arc(-currentRadius * 0.5 + (i * currentRadius * 0.4), -currentRadius * 0.3, currentRadius * 0.2, 0, Math.PI * 2);
@@ -182,18 +199,26 @@ function popMushroom(index) {
     for (let i = 0; i < 12; i++) {
         particles.push(new Particle(m.x, m.y, m.color));
     }
-    floatingTexts.push(new FloatingText(m.x, m.y, `+${combo + 1}`, m.color));
     
-    // Logic
-    combo++;
-    if (m.type === 'golden') {
-        const bonus = 10 + (combo * 2);
-        score += bonus;
-        spores += bonus;
-        floatingTexts.push(new FloatingText(m.x, m.y - 20, `GOLDEN! ✨ +${bonus}`, '#ffd700'));
+    if (m.type === 'poison') {
+        floatingTexts.push(new FloatingText(m.x, m.y, `OOPS! -5 🍄`, '#9c27b0'));
+        combo = 0;
+        score = Math.max(0, score - 5);
+        spores = Math.max(0, spores - 5);
     } else {
-        score += 1;
-        spores += 1;
+        floatingTexts.push(new FloatingText(m.x, m.y, `+${combo + 1}`, m.color));
+        
+        // Logic
+        combo++;
+        if (m.type === 'golden') {
+            const bonus = 10 + (combo * 2);
+            score += bonus;
+            spores += bonus;
+            floatingTexts.push(new FloatingText(m.x, m.y - 20, `GOLDEN! ✨ +${bonus}`, '#ffd700'));
+        } else {
+            score += 1;
+            spores += 1;
+        }
     }
     
     localStorage.setItem('mushroomSpores', spores);
