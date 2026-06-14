@@ -152,20 +152,19 @@ class Bubble {
         } else if (rand > 0.92 && rand <= 0.95) {
             this.type = 'gold';
             this.color = '#ffd700';
-<<<<<<< HEAD
         } else if (rand > 0.87 && rand <= 0.92) {
             this.type = 'heart';
             this.color = '#ff4081';
-        } else if (rand < 0.05) {
-=======
-        } else if (rand > 0.85) {
+        } else if (rand > 0.82 && rand <= 0.87) {
             this.type = 'cluster';
             this.color = '#ffcc80';
-        } else if (rand < 0.08) {
->>>>>>> b7f1b64f7ca946e6a48ccdc7a32ccc0fdd718654
+        } else if (rand > 0.77 && rand <= 0.82) {
+            this.type = 'magic-star';
+            this.color = '#ffff00';
+        } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
-        } else if (rand < 0.10) {
+        } else if (rand >= 0.05 && rand < 0.10) {
             this.type = 'bomb';
             this.color = '#424242';
         }
@@ -349,7 +348,6 @@ function handlePop(e) {
                 totalGoldEl.innerText = totalGold;
                 timeLeft += 2;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${bonus} TIME! ✨`, 'gold'));
-<<<<<<< HEAD
             } else if (b.type === 'rainbow-burst') {
                 playPopSound(true, false);
                 const rainbowBonus = 100;
@@ -363,12 +361,12 @@ function handlePop(e) {
                 score += heartBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
                 createHeartEffect(b.x, b.y);
-            } else if (b.type === 'bomb') {
-                playSound(100, 'square', 0.5);
-                bubbles = [];
-                combo = 0;
-                floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
-=======
+            } else if (b.type === 'magic-star') {
+                playPopSound(true, false);
+                const starBonus = 75;
+                score += starBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ⭐ +${starBonus}`, 'yellow'));
+                createPopEffect(b.x, b.y, 'yellow');
             } else if (b.type === 'cluster') {
                 playPopSound();
                 const bonus = 2 + (combo * 1);
@@ -384,7 +382,11 @@ function handlePop(e) {
                     mini.color = b.color;
                     bubbles.push(mini);
                 }
->>>>>>> b7f1b64f7ca946e6a48ccdc7a32ccc0fdd718654
+            } else if (b.type === 'bomb') {
+                playSound(100, 'square', 0.5);
+                bubbles = [];
+                combo = 0;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
             } else if (b.type === 'stinky') {
                 playPopSound(false, true);
                 score = Math.max(0, score - 5);
