@@ -177,6 +177,12 @@ class Bubble {
         } else if (rand > 0.67 && rand <= 0.72) {
             this.type = 'freeze';
             this.color = '#b2ebf2';
+        } else if (rand > 0.62 && rand <= 0.67) {
+            this.type = 'time-warp';
+            this.color = '#e1bee7';
+        } else if (rand > 0.57 && rand <= 0.62) {
+            this.type = 'lucky-clover';
+            this.color = '#81c784';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -417,6 +423,20 @@ function handlePop(e) {
                 score += starBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY STAR! 🌟 +${starBonus}`, '#ffeb3b'));
                 createPopEffect(b.x, b.y, '#ffeb3b');
+            } else if (b.type === 'time-warp') {
+                playPopSound(true, false);
+                const timeBonus = 3;
+                timeLeft += timeBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `TIME WARP! ⏳ +${timeBonus}s`, '#e1bee7'));
+                createPopEffect(b.x, b.y, '#e1bee7');
+            } else if (b.type === 'lucky-clover') {
+                playPopSound(true, false);
+                const goldBonus = Math.floor(Math.random() * 20) + 10;
+                totalGold += goldBonus;
+                localStorage.setItem('bubblePopTotalGold', totalGold);
+                totalGoldEl.innerText = totalGold;
+                floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY CLOVER! 🍀 +${goldBonus} ✨`, '#81c784'));
+                createPopEffect(b.x, b.y, '#81c784');
             } else if (b.type === 'freeze') {
                 playPopSound();
                 floatingTexts.push(new FloatingText(b.x, b.y, 'FREEZE! ❄️', '#b2ebf2'));
