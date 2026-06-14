@@ -1,4 +1,4 @@
-    <script>
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
@@ -308,7 +308,8 @@ const audioCtx = new AudioCtx();
                 const dy = item.y - player.y;
                 const dist = Math.hypot(dx, dy);
 
-                if (dist < 50) {
+                const catchRadius = superBowlActive ? 100 : 50;
+                if (dist < catchRadius) {
                     if (item.type === 'normal') {
                         combo++;
                         comboTimer = 60;
@@ -449,6 +450,4 @@ const audioCtx = new AudioCtx();
         });
 
         requestAnimationFrame(update);
-    </script>
-</body>
-</html>
+
