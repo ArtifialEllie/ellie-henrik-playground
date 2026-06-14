@@ -161,6 +161,9 @@ class Bubble {
         } else if (rand > 0.77 && rand <= 0.82) {
             this.type = 'magic-star';
             this.color = '#ffff00';
+        } else if (rand > 0.72 && rand <= 0.77) {
+            this.type = 'lucky-star';
+            this.color = '#ffeb3b';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -221,6 +224,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('❤️', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'lucky-star') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🌟', this.x, this.y + currentRadius/3);
         } else if (this.type === 'bomb') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -367,6 +374,12 @@ function handlePop(e) {
                 score += starBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ⭐ +${starBonus}`, 'yellow'));
                 createPopEffect(b.x, b.y, 'yellow');
+            } else if (b.type === 'lucky-star') {
+                playPopSound(true, false);
+                const starBonus = 40;
+                score += starBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY STAR! 🌟 +${starBonus}`, '#ffeb3b'));
+                createPopEffect(b.x, b.y, '#ffeb3b');
             } else if (b.type === 'cluster') {
                 playPopSound();
                 const bonus = 2 + (combo * 1);
@@ -476,9 +489,6 @@ function update() {
         particles[i].update();
         particles[i].draw();
         if (particles[i].life <= 0) {
-            particles[i].update();
-            particles[i].draw();
-            // Fixed duplicate update/draw calls in the original snippet
             particles.splice(i, 1);
         }
     }
