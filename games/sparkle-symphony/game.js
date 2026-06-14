@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
+const comboElement = document.getElementById('combo');
 const magicBar = document.getElementById('magic-bar');
 const startScreen = document.getElementById('start-screen');
 const startButton = document.getElementById('start-button');
@@ -9,6 +10,7 @@ const finalScoreElement = document.getElementById('final-score');
 const restartButton = document.getElementById('restart-button');
 
 let score = 0;
+let combo = 0;
 let magicPower = 0;
 let gameActive = false;
 let sparkles = [];
@@ -103,9 +105,12 @@ function handleInput(ex, ey) {
         const s = sparkles[i];
         const dist = Math.hypot(ex - s.x, ey - s.y);
         if (dist < s.radius * 1.5) {
-            score += 10;
-            magicPower = Math.min(100, magicPower + 15);
+            combo++;
+            const comboBonus = Math.floor(combo / 5) * 5;
+            score += 10 + comboBonus;
+            magicPower = Math.min(100, magicPower + 15 + (comboBonus / 2));
             scoreElement.innerText = score;
+            comboElement.innerText = combo;
             magicBar.style.width = magicPower + '%';
             createExplosion(s.x, s.y, s.color);
             sparkles.splice(i, 1);
@@ -174,11 +179,13 @@ function gameLoop(time) {
 
 function startGame() {
     score = 0;
+    combo = 0;
     magicPower = 100;
     sparkles = [];
     particles = [];
     gameActive = true;
     scoreElement.innerText = '0';
+    comboElement.innerText = '0';
     magicBar.style.width = '100%';
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
