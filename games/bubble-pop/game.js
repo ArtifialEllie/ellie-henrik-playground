@@ -162,50 +162,57 @@ class Bubble {
         } else if (rand > 0.995) {
             this.type = 'golden-ticket';
             this.color = '#FFD700';
-        } else if (rand > 0.995) {
+        } else if (rand > 0.992) {
             this.type = 'magic-mirror';
             this.color = '#e0f7fa';
-        } else if (rand > 0.99) {
+        } else if (rand > 0.987) {
             this.type = 'magic-wand';
             this.color = '#da70d6';
-        } else if (rand > 0.98) {
+        } else if (rand > 0.977) {
             this.type = 'super-pop';
             this.color = '#ff4500';
-        } else if (rand > 0.95) {
+        } else if (rand > 0.957) {
             this.type = 'rainbow-burst';
             this.color = 'rainbow';
-        } else if (rand > 0.92 && rand <= 0.95) {
+        } else if (rand > 0.927) {
             this.type = 'gold';
             this.color = '#ffd700';
-        } else if (rand > 0.87 && rand <= 0.92) {
+        } else if (rand > 0.877) {
             this.type = 'heart';
             this.color = '#ff4081';
-        } else if (rand > 0.82 && rand <= 0.87) {
+        } else if (rand > 0.827) {
             this.type = 'cluster';
             this.color = '#ffcc80';
-        } else if (rand > 0.77 && rand <= 0.82) {
+        } else if (rand > 0.777) {
             this.type = 'magic-star';
             this.color = '#ffff00';
-        } else if (rand > 0.72 && rand <= 0.77) {
+        } else if (rand > 0.727) {
             this.type = 'lucky-star';
             this.color = '#ffeb3b';
-        } else if (rand > 0.67 && rand <= 0.72) {
+        } else if (rand > 0.677) {
             this.type = 'freeze';
             this.color = '#b2ebf2';
-        } else if (rand > 0.62 && rand <= 0.67) {
+        } else if (rand > 0.627) {
             this.type = 'time-warp';
             this.color = '#e1bee7';
-        } else if (rand > 0.57 && rand <= 0.62) {
+        } else if (rand > 0.577) {
             this.type = 'hammer';
             this.color = '#a1887f';
-        } else if (rand > 0.47 && rand <= 0.52) {
+        } else if (rand > 0.527) {
             this.type = 'giant';
             this.radius = Math.random() * 40 + 70;
             this.hits = 3;
             this.color = '#ffeb3b';
-        } else if (rand > 0.42 && rand <= 0.47) {
+        } else if (rand > 0.477) {
             this.type = 'shield';
             this.color = '#b2dfdb';
+        } else if (rand > 0.457) {
+            this.type = 'magic-dust';
+            this.color = '#ffffff';
+            this.radius = 25;
+        } else if (rand > 0.427) {
+            this.type = 'lucky-clover';
+            this.color = '#81c784';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -580,6 +587,26 @@ function handlePop(e) {
                 timeLeft += timeBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `TIME WARP! ⏳ +${timeBonus}s`, '#e1bee7'));
                 createPopEffect(b.x, b.y, '#e1bee7');
+            } else if (b.type === 'magic-dust') {
+                playPopSound(true, false);
+                const dustBonus = 30;
+                score += dustBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC DUST! ✨ +${dustBonus}`, 'white'));
+                createPopEffect(b.x, b.y, 'white');
+                
+                // Magic Dust effect: slightly increases the score of the next 5 pops
+                let popsCount = 0;
+                const originalHandlePop = handlePop;
+                handlePop = function(e) {
+                    const result = originalHandlePop(e);
+                    popsCount++;
+                    if (popsCount <= 5) {
+                        score += 5;
+                        scoreEl.innerText = score;
+                    }
+                    if (popsCount > 5) handlePop = originalHandlePop;
+                    return result;
+                };
             } else if (b.type === 'lucky-clover') {
                 playPopSound(true, false);
                 const goldBonus = Math.floor(Math.random() * 20) + 10;
