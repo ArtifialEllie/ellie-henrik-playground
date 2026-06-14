@@ -2,6 +2,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
+const comboEl = document.getElementById('combo');
+const comboBoard = document.getElementById('combo-board');
 const finalScoreEl = document.getElementById('final-score');
 const startScreen = document.getElementById('start-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
@@ -10,6 +12,8 @@ const restartBtn = document.getElementById('restart-btn');
 const overlay = document.getElementById('overlay');
 
 let score = 0;
+let combo = 0;
+let lastClickTime = 0;
 let timeLeft = 30;
 let gameActive = false;
 let jellyfish = [];
@@ -138,10 +142,13 @@ function spawnJellyfish() {
 
 function startGame() {
     score = 0;
+    combo = 0;
+    lastClickTime = 0;
     timeLeft = 30;
     gameActive = true;
     scoreEl.textContent = score;
-    timerEl.textContent = timeLeft;
+    comboEl.textContent = combo;
+    comboBoard.classList.add('hidden');
     overlay.classList.add('hidden');
     
     spawnJellyfish();
@@ -168,18 +175,37 @@ function handleInput(e) {
     if (!gameActive) return;
     
     const rect = canvas.getBoundingClientRect();
-    const mx = (e.clientX || e.touches[0].clientX) - rect.left;
-    const my = (e.clientY || e.touches[0].clientY) - rect.top;
+    const mx = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+    const my = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
 
     for (let i = jellyfish.length - 1; i >= 0; i--) {
         const j = jellyfish[i];
         if (j.isClicked(mx, my)) {
+            // Combo logic
+            const now = Date.now();
+            if (now - lastClickTime < 1000) {
+                combo++;
+            } else {
+                combo = 1;
+            }
+            lastClickTime = now;
+
+            // Show combo board if combo > 1
+            if (combo > 1) {
+                comboBoard.classList.remove('hidden');
+                comboEl.textContent = combo;
+            } else {
+                comboBoard.classList.add('hidden');
+            }
+
             // Explosion of particles
             for (let p = 0; p < 15; p++) {
                 particles.push(new Particle(j.x, j.y, j.color));
             }
             
-            score++;
+            // Points based on combo
+            const pointsGained = 1 * combo;
+            score += pointsGained;
             scoreEl.textContent = score;
             
             // Play a little beep (simulated)
@@ -193,8 +219,8 @@ function handleInput(e) {
 
 function playNote() {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
+    const oscillator = new (window.AudioContext || window.webkitAudioContext)().createOscillator();
+    const gainNode = new (window.AudioContext || window.webkitAudioContext)().createGain();
 
     oscillator.type = 'sine';
     const frequencies = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];

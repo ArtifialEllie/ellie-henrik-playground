@@ -26,7 +26,7 @@ body {
     z-index: 10;
 }
 
-#score-board, #timer-board {
+#score-board, #timer-board, #combo-board {
     background: rgba(255, 255, 255, 0.2);
     padding: 10px 20px;
     border-radius: 25px;
@@ -34,6 +34,18 @@ body {
     backdrop-filter: blur(5px);
     border: 2px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+#combo-board {
+    color: #fffb00;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 251, 0, 0.5);
+    animation: pulseCombo 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulseCombo {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
 }
 
 #gameCanvas {
