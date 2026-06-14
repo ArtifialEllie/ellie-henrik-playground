@@ -22,6 +22,7 @@ let player = {
 };
 
 const CANDY_COLORS = ['#ff69b4', '#00ffff', '#ffeb3b', '#7fff00', '#ff4500', '#da70d6'];
+const GOLDEN_CANDY_COLOR = '#ffd700';
 const OBSTACLE_COLOR = '#8b4513';
 
 function resize() {
@@ -50,12 +51,14 @@ window.addEventListener('touchmove', (e) => {
 
 function spawnCandy() {
     const radius = 10 + Math.random() * 10;
+    const isGolden = Math.random() < 0.1;
     candies.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: radius,
-        color: CANDY_COLORS[Math.floor(Math.random() * CANDY_COLORS.length)],
-        pulse: 0
+        radius: isGolden ? radius * 1.2 : radius,
+        color: isGolden ? GOLDEN_CANDY_COLOR : CANDY_COLORS[Math.floor(Math.random() * CANDY_COLORS.length)],
+        pulse: 0,
+        isGolden: isGolden
     });
 }
 
@@ -100,7 +103,12 @@ function update() {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < player.radius + candy.radius) {
-            score++;
+            if (candy.isGolden) {
+                score += 5;
+                timeLeft += 2;
+            } else {
+                score++;
+            }
             scoreElement.textContent = score;
             createParticles(candy.x, candy.y, candy.color);
             candies.splice(index, 1);
@@ -158,11 +166,16 @@ function draw() {
     candies.forEach(candy => {
         const pulseSize = candy.radius + Math.sin(candy.pulse) * 3;
         ctx.fillStyle = candy.color;
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = candy.isGolden ? 25 : 15;
         ctx.shadowColor = candy.color;
         ctx.beginPath();
         ctx.arc(candy.x, candy.y, pulseSize, 0, Math.PI * 2);
         ctx.fill();
+        if (candy.isGolden) {
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
         ctx.shadowBlur = 0;
     });
 
