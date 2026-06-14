@@ -28,6 +28,7 @@ let isGoldenRain = false;
 let level = 1;
 let comboTimer;
 let isFrenzy = false;
+let shieldActive = false;
 let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
 
@@ -183,9 +184,9 @@ class Bubble {
         } else if (rand > 0.62 && rand <= 0.67) {
             this.type = 'time-warp';
             this.color = '#e1bee7';
-        } else if (rand > 0.57 && rand <= 0.62) {
-            this.type = 'lucky-clover';
-            this.color = '#81c784';
+        } else if (rand > 0.47 && rand <= 0.52) {
+            this.type = 'shield';
+            this.color = '#b2dfdb';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -250,6 +251,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('❄️', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'shield') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🛡️', this.x, this.y + currentRadius/3);
         } else if (this.type === 'stinky') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -490,6 +495,14 @@ function handlePop(e) {
                         bub.speed = (Math.random() * 2 + 1) * (isFrenzy ? 1.5 : 1);
                     });
                 }, 3000);
+            } else if (b.type === 'shield') {
+                playPopSound();
+                shieldActive = true;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELD ACTIVE! 🛡️', '#b2dfdb'));
+                createPopEffect(b.x, b.y, '#b2dfdb');
+                setTimeout(() => {
+                    shieldActive = false;
+                }, 7000);
             } else if (b.type === 'cluster') {
                 playPopSound();
                 const bonus = 2 + (combo * 1);
@@ -517,14 +530,21 @@ function handlePop(e) {
                 combo = 0;
                 floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
             } else if (b.type === 'stinky') {
-                playPopSound(false, true);
-                score = Math.max(0, score - 5);
-                combo = 0;
-                comboBar.style.width = '0%';
-                comboText.innerText = '';
-                floatingTexts.push(new FloatingText(b.x, b.y, `-5 💨`, '#666'));
-                document.body.classList.add('shake');
-                setTimeout(() => document.body.classList.remove('shake'), 400);
+                if (shieldActive) {
+                    playPopSound(true, false);
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELDED! 🛡️', '#b2dfdb'));
+                    createPopEffect(b.x, b.y, '#b2dfdb');
+                    shieldActive = false;
+                } else {
+                    playPopSound(false, true);
+                    score = Math.max(0, score - 5);
+                    combo = 0;
+                    comboBar.style.width = '0%';
+                    comboText.innerText = '';
+                    floatingTexts.push(new FloatingText(b.x, b.y, `-5 💨`, '#666'));
+                    document.body.classList.add('shake');
+                    setTimeout(() => document.body.classList.remove('shake'), 400);
+                }
             } else if (b.type === 'super-pop') {
                 playSuperPopSound();
                 floatingTexts.push(new FloatingText(b.x, b.y, 'SUPER POP! 💥', 'orange'));
