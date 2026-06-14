@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sparkle Symphony ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Score: <span id="score">0</span></div>
+            <div id="magic-bar-container">
+                <div id="magic-bar"></div>
+            </div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="start-screen" class="overlay">
+            <h1>Sparkle Symphony</h1>
+            <p>Catch the falling sparkles to create a magical melody!</p>
+            <button id="start-button">Begin the Magic! ✨</button>
+        </div>
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>Symphony Ended</h1>
+            <p>Your magical score: <span id="final-score">0</span></p>
+            <button id="restart-button">Try Again 🌈</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
