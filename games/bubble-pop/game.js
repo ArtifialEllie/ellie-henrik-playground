@@ -146,7 +146,10 @@ class Bubble {
         
         this.type = 'normal';
         const rand = Math.random();
-        if (rand > 0.98) {
+        if (rand > 0.99) {
+            this.type = 'magic-wand';
+            this.color = '#da70d6';
+        } else if (rand > 0.98) {
             this.type = 'super-pop';
             this.color = '#ff4500';
         } else if (rand > 0.95) {
@@ -215,7 +218,11 @@ class Bubble {
             this.color = `hsl(${Date.now() / 10 % 360}, 70%, 70%)`;
         }
 
-        if (this.type === 'gold') {
+        if (this.type === 'magic-wand') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🪄', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'gold') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('✨', this.x, this.y + currentRadius/3);
@@ -353,7 +360,14 @@ function handlePop(e) {
         if (dist < b.radius + 10) {
             createPopEffect(b.x, b.y, b.color);
             
-            if (b.type === 'gold') {
+            if (b.type === 'magic-wand') {
+                playPopSound(true, false);
+                const wandBonus = 250;
+                score += wandBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC WAND! 🪄 +${wandBonus}`, '#da70d6'));
+                createPopEffect(b.x, b.y, '#da70d6');
+                triggerFrenzy();
+            } else if (b.type === 'gold') {
                 playPopSound(true, false);
                 const bonus = 5 + (combo * 2);
                 score += bonus;
