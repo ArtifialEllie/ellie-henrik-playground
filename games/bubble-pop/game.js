@@ -74,6 +74,7 @@ const skins = [
     { color: '#ffccbc', name: 'Peach Puff', cost: 1200 },
     { color: '#b2dfdb', name: 'Seafoam', cost: 1500 },
     { color: '#f8bbd0', name: 'Cherry Blossom', cost: 2000 },
+    { color: 'cosmic', name: 'Cosmic Glitter', cost: 3000 },
 ];
 
 function openShop() {
@@ -96,7 +97,7 @@ function renderShop() {
         const item = document.createElement('div');
         item.className = `shop-item ${isSelected ? 'selected' : ''}`;
         item.innerHTML = `
-            <div class="item-preview" style="background: ${skin.color === 'rainbow' ? 'linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)' : skin.color}"></div>
+            <div class="item-preview" style="background: ${skin.color === 'rainbow' ? 'linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)' : (skin.color === 'cosmic' ? 'linear-gradient(45deg, #ff00ff, #00ffff)' : skin.color)}"></div>
             <div style="font-size: 0.9rem; font-weight: bold;">${skin.name}</div>
             <div class="item-cost">${isOwned ? 'Owned' : '✨ ' + skin.cost}</div>
         `;
@@ -136,6 +137,7 @@ resize();
 
 let bubbles = [];
 let particles = [];
+let trail = [];
 let floatingTexts = [];
 
 class Bubble {
@@ -153,6 +155,11 @@ class Bubble {
         this.type = 'normal';
         const rand = Math.random();
         if (rand > 0.998) {
+            this.type = 'ellie-wish';
+            this.color = '#ff00ff';
+            this.radius = 40;
+            this.hits = 1;
+        } else if (rand > 0.995) {
             this.type = 'golden-ticket';
             this.color = '#FFD700';
         } else if (rand > 0.995) {
@@ -245,17 +252,26 @@ class Bubble {
 
         if (currentSkin === 'rainbow') {
             this.color = `hsl(${Date.now() / 10 % 360}, 70%, 70%)`;
+        } else if (currentSkin === 'cosmic') {
+            this.color = `hsl(${Date.now() / 20 % 360}, 80%, 60%)`;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = this.color;
         }
         
         if (this.type === 'giant') {
             ctx.strokeStyle = 'white';
-            ctx.lineWidth = 5;
+            ctx.shadowBlur = 0;
+        }
+        if (this.type === 'ellie-wish') {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'white';
+            ctx.font = `${currentRadius}px Arial`;
             ctx.stroke();
         }
         if (this.type === 'golden-ticket') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🎫', this.x, this.y + currentRadius/3);
+            ctx.fillText('🌟', this.x, this.y + currentRadius/3);
         } else if (this.type === 'magic-mirror') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -312,6 +328,7 @@ class Bubble {
             ctx.fillStyle = 'white';
             ctx.fillRect(this.x - 20, this.y - currentRadius - 10, 40 * (this.hits/3), 5);
         }
+        ctx.shadowBlur = 0;
     }
 }
 
@@ -500,6 +517,21 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `GOLDEN TICKET! 🎫 +${ticketBonus}`, 'gold'));
                 createPopEffect(b.x, b.y, 'gold');
                 triggerFrenzy();
+            } else if (b.type === 'ellie-wish') {
+                playPopSound(true, false);
+                const wishes = [
+                    { text: 'GOLD RAIN! ✨', action: () => triggerGoldenRain(), bonus: 0 },
+                    { text: 'TIME GIFT! ⏰', action: () => { timeLeft += 15; }, bonus: 0 },
+                    { text: 'JACKPOT! 💰', action: () => { totalGold += 500; localStorage.setItem('bubblePopTotalGold', totalGold); totalGoldEl.innerText = totalGold; }, bonus: 5000 },
+                ];
+                const wish = wishes[Math.floor(Math.random() * wishes.length)];
+                score += wish.bonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `ELLIE'S WISH: ${wish.text}`, 'magenta'));
+                wish.action();
+                createBigExplosion(b.x, b.y);
+                createPopEffect(b.x, b.y, 'magenta');
+                triggerFrenzy();
+            } else if (b.type === 'golden-ticket') {
             } else if (b.type === 'magic-wand') {
                 playPopSound(true, false);
                 const wandBonus = 250;
@@ -846,6 +878,16 @@ window.addEventListener('touchstart', (e) => {
     handlePop(e);
     e.preventDefault();
 }, { passive: false });
+function handleMouseMove(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+    const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+    
+    for (let i = 0; i < 2; i++) {
+        trail.push(new TrailParticle(x, y));
+    }
+}
+
 window.addEventListener('mousemove', handleMouseMove);
 window.addEventListener('touchmove', (e) => {
     handleMouseMove(e);
