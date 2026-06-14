@@ -187,6 +187,9 @@ class Bubble {
         } else if (rand > 0.62 && rand <= 0.67) {
             this.type = 'time-warp';
             this.color = '#e1bee7';
+        } else if (rand > 0.57 && rand <= 0.62) {
+            this.type = 'hammer';
+            this.color = '#a1887f';
         } else if (rand > 0.47 && rand <= 0.52) {
             this.type = 'shield';
             this.color = '#b2dfdb';
@@ -250,6 +253,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🪄', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'hammer') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🔨', this.x, this.y + currentRadius/3);
         } else if (this.type === 'gold') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -538,6 +545,35 @@ function handlePop(e) {
                 score += magicBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ✨ +${magicBonus}`, '#ffff00'));
                 createPopEffect(b.x, b.y, '#ffff00');
+            } else if (b.type === 'hammer') {
+                playPopSound(true, false);
+                const hammerBonus = 80;
+                score += hammerBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `HAMMER TIME! 🔨 +${hammerBonus}`, '#a1887f'));
+                createPopEffect(b.x, b.y, '#a1887f');
+                
+                // Hammer effect: pop several random bubbles
+                const popCount = 5;
+                let popped = 0;
+                const potentialTargets = bubbles.filter(bub => bub !== b && bub.type !== 'bomb');
+                
+                while (popped < popCount && potentialTargets.length > 0) {
+                    const targetIndex = Math.floor(Math.random() * potentialTargets.length);
+                    const target = potentialTargets[targetIndex];
+                    
+                    createPopEffect(target.x, target.y, target.color);
+                    score += 10;
+                    floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
+                    
+                    // Remove the target from the main bubbles array
+                    const mainIndex = bubbles.indexOf(target);
+                    if (mainIndex > -1) {
+                        bubbles.splice(mainIndex, 1);
+                    }
+                    
+                    potentialTargets.splice(targetIndex, 1);
+                    popped++;
+                }
             } else if (b.type === 'bomb') {
                 playSound(100, 'square', 0.5);
                 bubbles = [];
