@@ -2,6 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
+const multiplierEl = document.getElementById('multiplier');
 const highscoreEl = document.getElementById('highscore');
 const overlay = document.getElementById('overlay');
 const statusText = document.getElementById('status-text');
@@ -21,6 +22,7 @@ let canvasWidth, canvasHeight;
 let timerInterval;
 let spawnTimeout;
 let combo = 0;
+let multiplier = 1;
 let isStarting = true;
 let level = 1;
 let comboTimer;
@@ -373,6 +375,10 @@ function updateCombo() {
         comboBar.style.width = '0%';
     }
     
+    // Oppdater multiplikator basert på combo
+    multiplier = 1 + Math.floor(combo / 5);
+    multiplierEl.innerText = `x${multiplier}`;
+    
     clearTimeout(comboTimer);
     comboTimer = setTimeout(() => {
         combo = 0;
@@ -517,7 +523,7 @@ function handlePop(e) {
             } else {
                 playPopSound();
                 combo++;
-                const points = Math.ceil(60 / b.radius * 2) + (combo > 5 ? 5 : 0);
+                const points = (Math.ceil(60 / b.radius * 2) + (combo > 5 ? 5 : 0)) * multiplier;
                 score += points;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${points}`, b.color));
             }
@@ -656,8 +662,10 @@ function resetGame() {
     score = 0;
     timeLeft = 30;
     combo = 0;
+    multiplier = 1;
     comboBar.style.width = '0%';
     comboText.innerText = '';
+    multiplierEl.innerText = 'x1';
     scoreEl.innerText = '0';
     timerEl.innerText = '30';
     bubbles = [];
