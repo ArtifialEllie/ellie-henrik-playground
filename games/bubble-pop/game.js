@@ -147,7 +147,10 @@ class Bubble {
         
         this.type = 'normal';
         const rand = Math.random();
-        if (rand > 0.99) {
+        if (rand > 0.998) {
+            this.type = 'golden-ticket';
+            this.color = '#FFD700';
+        } else if (rand > 0.99) {
             this.type = 'magic-wand';
             this.color = '#da70d6';
         } else if (rand > 0.98) {
@@ -222,7 +225,11 @@ class Bubble {
             this.color = `hsl(${Date.now() / 10 % 360}, 70%, 70%)`;
         }
 
-        if (this.type === 'magic-wand') {
+        if (this.type === 'golden-ticket') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🎫', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'magic-wand') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🪄', this.x, this.y + currentRadius/3);
@@ -368,7 +375,14 @@ function handlePop(e) {
         if (dist < b.radius + 10) {
             createPopEffect(b.x, b.y, b.color);
             
-            if (b.type === 'magic-wand') {
+            if (b.type === 'golden-ticket') {
+                playPopSound(true, false);
+                const ticketBonus = 1000;
+                score += ticketBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `GOLDEN TICKET! 🎫 +${ticketBonus}`, 'gold'));
+                createPopEffect(b.x, b.y, 'gold');
+                triggerFrenzy();
+            } else if (b.type === 'magic-wand') {
                 playPopSound(true, false);
                 const wandBonus = 250;
                 score += wandBonus;
