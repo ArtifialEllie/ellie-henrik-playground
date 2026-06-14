@@ -19,12 +19,21 @@
         </div>
 
         <div id="controls">
-            <div class="control-group">
-                <label for="brushSize">Brush Size: <span id="sizeVal">10</span></label>
-                <input type="range" id="brushSize" min="1" max="50" value="10">
+            <div class="tools-group">
+                <button class="tool-btn active" data-tool="brush" title="Magic Brush">🖌️</button>
+                <button class="tool-btn" data-tool="eraser" title="Magic Eraser">🧹</button>
+                <button class="tool-btn" data-tool="star" title="Star Stamp">⭐</button>
+                <button class="tool-btn" data-tool="heart" title="Heart Stamp">❤️</button>
+                <button class="tool-btn" data-tool="cloud" title="Cloud Stamp">☁️</button>
             </div>
-            <button id="clearBtn">Clear Canvas 🌈</button>
-            <button id="saveBtn">Save Masterpiece 🖼️</button>
+            <div class="control-group">
+                <label for="brushSize">Size: <span id="sizeVal">10</span></label>
+                <input type="range" id="brushSize" min="1" max="100" value="10">
+            </div>
+            <div class="action-group">
+                <button id="clearBtn">Clear 🌈</button>
+                <button id="saveBtn">Save 🖼️</button>
+            </div>
         </div>
         
         <div id="status-bar">
