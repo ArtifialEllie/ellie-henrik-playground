@@ -141,6 +141,9 @@ let bubbles = [];
 let particles = [];
 let trail = [];
 let floatingTexts = [];
+let lastMouseX = canvasWidth / 2;
+let lastMouseY = canvasHeight / 2;
+let pet = new MagicalPet();
 
 class Bubble {
     constructor(frenzy = false) {
@@ -414,6 +417,75 @@ class TrailParticle {
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
+    }
+}
+
+class MagicalPet {
+    constructor() {
+        this.x = canvasWidth / 2;
+        this.y = canvasHeight / 2;
+        this.targetX = this.x;
+        this.targetY = this.y;
+        this.size = 40;
+        this.emoji = '🐱';
+        this.floatOffset = 0;
+        this.floatDir = 1;
+        this.autoPopTimer = 0;
+        this.popInterval = 8000; // Pop every 8 seconds
+    }
+
+    update(mouseX, mouseY) {
+        this.targetX = mouseX;
+        this.targetY = mouseY;
+
+        // Smoothly follow mouse
+        this.x += (this.targetX - this.x) * 0.1;
+        this.y += (this.targetY - this.y) * 0.1;
+
+        // Floating animation
+        this.floatOffset += 0.05 * this.floatDir;
+        if (this.floatOffset > 10 || this.floatOffset < -10) this.floatDir *= -1;
+
+        // Auto-pop logic
+        if (gameActive) {
+            this.autoPopTimer++;
+            if (this.autoPopTimer >= this.popInterval) {
+                this.tryAutoPop();
+                this.autoPopTimer = 0;
+            }
+        }
+    }
+
+    draw() {
+        ctx.font = `${this.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(this.emoji, this.x, this.y + this.floatOffset);
+    }
+
+    tryAutoPop() {
+        if (bubbles.length === 0) return;
+        
+        // Find nearest bubble within range
+        let nearest = null;
+        let minDist = 150;
+
+        bubbles.forEach(b => {
+            const dist = Math.hypot(this.x - b.x, this.y - b.y);
+            if (dist < minDist) {
+                minDist = dist;
+                nearest = b;
+            }
+        });
+
+        if (nearest) {
+            // Simulate a pop at the bubble's location
+            const mockEvent = {
+                clientX: nearest.x + canvas.getBoundingClientRect().left,
+                clientY: nearest.y + canvas.getBoundingClientRect().top
+            };
+            handlePop(mockEvent);
+            floatingTexts.push(new FloatingText(nearest.x, nearest.y, 'PET POP! 🐱✨', 'gold'));
+        }
     }
 }
 
@@ -836,7 +908,10 @@ function update() {
         requestAnimationFrame(update);
         return;
     }
- 
+
+    pet.update(lastMouseX, lastMouseY);
+    pet.draw();
+
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
  
     for (let i = trail.length - 1; i >= 0; i--) {
@@ -941,6 +1016,8 @@ function handleMouseMove(e) {
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
     const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+    lastMouseX = x;
+    lastMouseY = y;
     
     for (let i = 0; i < 2; i++) {
         trail.push(new TrailParticle(x, y));
