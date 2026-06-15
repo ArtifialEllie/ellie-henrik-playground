@@ -1,0 +1,41 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    color: #fff;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    pointer-events: none;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    color: #ffccff;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+}
+
+p {
+    font-size: 1.2rem;
+    color: #ccffff;
+}
+
+#score-container {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffffcc;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 20px;
+    display: inline-block;
+    border: 2px solid #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    margin-top: 10px;
+}
