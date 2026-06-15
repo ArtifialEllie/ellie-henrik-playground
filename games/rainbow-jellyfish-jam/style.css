@@ -43,6 +43,18 @@ body {
     animation: pulseCombo 0.5s ease-in-out infinite alternate;
 }
 
+#frenzy-board {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ff00de;
+    font-weight: bold;
+    font-size: 32px;
+    text-shadow: 0 0 20px #ff00de, 0 0 30px #fff;
+    animation: frenzyShake 0.2s ease-in-out infinite;
+}
+
 @keyframes pulseCombo {
     from { transform: scale(1); }
     to { transform: scale(1.1); }
@@ -113,4 +125,12 @@ button:hover {
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-20px); }
+}
+
+@keyframes frenzyShake {
+    0% { transform: translate(-50%, 0); }
+    25% { transform: translate(-52%, 2px); }
+    50% { transform: translate(-50%, -2px); }
+    75% { transform: translate(-48%, 2px); }
+    100% { transform: translate(-50%, 0); }
 }

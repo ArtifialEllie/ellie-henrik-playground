@@ -6,6 +6,7 @@ const comboEl = document.getElementById('combo');
 const comboBoard = document.getElementById('combo-board');
 const finalScoreEl = document.getElementById('final-score');
 const startScreen = document.getElementById('start-screen');
+const frenzyBoard = document.getElementById('frenzy-board');
 const gameOverScreen = document.getElementById('game-over-screen');
 const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
@@ -18,6 +19,8 @@ let timeLeft = 30;
 let gameActive = false;
 let jellyfish = [];
 let particles = [];
+let isFrenzy = false;
+let frenzyTimeout;
 let timerInterval;
 
 const COLORS = [
@@ -145,6 +148,7 @@ function startGame() {
     combo = 0;
     lastClickTime = 0;
     timeLeft = 30;
+    isFrenzy = false;
     gameActive = true;
     scoreEl.textContent = score;
     comboEl.textContent = combo;
@@ -190,6 +194,11 @@ function handleInput(e) {
             }
             lastClickTime = now;
 
+            // Trigger Frenzy Mode at combo 10
+            if (combo >= 10 && !isFrenzy) {
+                activateFrenzy();
+            }
+
             // Show combo board if combo > 1
             if (combo > 1) {
                 comboBoard.classList.remove('hidden');
@@ -204,7 +213,7 @@ function handleInput(e) {
             }
             
             // Points based on combo
-            const pointsGained = 1 * combo;
+            const pointsGained = (isFrenzy ? 2 : 1) * combo;
             score += pointsGained;
             scoreEl.textContent = score;
             
@@ -215,6 +224,22 @@ function handleInput(e) {
             break;
         }
     }
+}
+
+function activateFrenzy() {
+    isFrenzy = true;
+    frenzyBoard.classList.remove('hidden');
+    
+    // Spawn extra jellyfish for the frenzy!
+    for (let i = 0; i < 5; i++) {
+        jellyfish.push(new Jellyfish());
+    }
+
+    clearTimeout(frenzyTimeout);
+    frenzyTimeout = setTimeout(() => {
+        isFrenzy = false;
+        frenzyBoard.classList.add('hidden');
+    }, 5000);
 }
 
 function playNote() {
