@@ -4,6 +4,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 let scene, camera, renderer, controls, raycaster, mouse;
 let crystals = [];
 let score = 0;
+let combo = 0;
+let comboTimer = null;
+const comboElement = document.getElementById('combo');
 const scoreElement = document.getElementById('score');
 
 function init() {
@@ -120,6 +123,20 @@ function onMouseDown(event) {
         const object = intersects[0].object;
         score++;
         scoreElement.innerText = score;
+
+        // Combo Logic
+        combo++;
+        comboElement.innerText = combo;
+        document.getElementById('combo-container').style.display = 'inline';
+
+        if (comboTimer) clearTimeout(comboTimer);
+        comboTimer = setTimeout(() => {
+            combo = 0;
+            document.getElementById('combo-container').style.display = 'none';
+        }, 2000);
+
+        // Boost explosion size based on combo
+        const comboMultiplier = 1 + (combo * 0.2);
         
         // Visual effect
         object.scale.set(1.5, 1.5, 1.5);
@@ -130,16 +147,16 @@ function onMouseDown(event) {
         object.material.color.set(newColor);
         object.material.emissive.set(newColor);
         
-        spawnExplosion(object.position, newColor);
+        spawnExplosion(object.position, newColor, comboMultiplier);
     }
 }
 
-function spawnExplosion(position, color) {
+function spawnExplosion(position, color, multiplier = 1) {
     const particleCount = 12;
     const particles = [];
     
     for (let i = 0; i < particleCount; i++) {
-        const particleGeo = new THREE.SphereGeometry(0.05, 4, 4);
+        const particleGeo = new THREE.SphereGeometry(0.05 * multiplier, 4, 4);
         const particleMat = new THREE.MeshBasicMaterial({ 
             color: color,
             transparent: true,
