@@ -25,6 +25,7 @@ let friends = [];
 let enemies = [];
 let pearls = [];
 let bubbles = [];
+let particles = [];
 
 const COLORS = ['#FF69B4', '#00FF7F', '#00BFFF', '#FFD700', '#FF4500', '#DA70D6'];
 
@@ -160,6 +161,40 @@ class Bubble {
     }
 }
 
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 3 + 1;
+        this.vx = (Math.random() - 0.5) * 4;
+        this.vy = (Math.random() - 0.5) * 4;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.01;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+function createParticles(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+}
+
 function spawnEntities() {
     friends = [];
     enemies = [];
@@ -192,13 +227,14 @@ function checkCollisions() {
         const dx = player.x - friend.x;
         const dy = player.y - friend.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < player.radius + friend.radius) {
-            rescuedCount++;
-            rescuedElement.innerText = `Friends Rescued: ${rescuedCount}`;
-            friend.reset();
-            // Add a pearl as a reward
-            pearls.push(new Pearl());
-        }
+    if (dist < player.radius + friend.radius) {
+        rescuedCount++;
+        rescuedElement.innerText = `Friends Rescued: ${rescuedCount}`;
+        createParticles(friend.x, friend.y, friend.color, 15);
+        friend.reset();
+        // Add a pearl as a reward
+        pearls.push(new Pearl());
+    }
     });
 
     // Check enemy collision
@@ -219,6 +255,7 @@ function checkCollisions() {
         if (dist < player.radius + pearl.radius) {
             score += 10;
             scoreElement.innerText = `Pearls: ${score}`;
+            createParticles(pearl.x, pearl.y, 'white', 10);
             pearls.splice(index, 1);
         }
     });
@@ -260,6 +297,13 @@ function gameLoop() {
     pearls.forEach(pearl => {
         pearl.update();
         pearl.draw();
+    });
+
+    // Draw particles
+    particles.forEach((particle, index) => {
+        particle.update();
+        particle.draw();
+        if (particle.life <= 0) particles.splice(index, 1);
     });
 
     // Draw friends
