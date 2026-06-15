@@ -41,6 +41,44 @@ body {
 #gameCanvas {
     display: block;
     background: linear-gradient(to bottom, #fdf6ff, #ffeefc);
+    transition: background 0.5s ease;
+}
+
+.fever-bg {
+    background: linear-gradient(45deg, #ffccf9, #ccf2ff, #d1ffcc, #fff2cc) !important;
+    background-size: 400% 400% !important;
+    animation: feverGradient 3s ease infinite !important;
+}
+
+@keyframes feverGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+#fever-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 80px;
+    color: #ff1493;
+    font-weight: bold;
+    text-shadow: 0 0 20px #fff, 0 0 30px #ff69b4;
+    pointer-events: none;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#fever-text.visible {
+    opacity: 1;
+    animation: bounce 0.5s infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: translate(-50%, -50%) scale(1); }
+    to { transform: translate(-50%, -50%) scale(1.1); }
 }
 
 #start-screen, #game-over-screen {

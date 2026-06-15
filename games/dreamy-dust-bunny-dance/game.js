@@ -26,6 +26,10 @@ let particles = [];
 let lastNoteTime = 0;
 let noteSpeed = 5;
 let spawnRate = 1500;
+let feverMode = false;
+let feverTimer = 0;
+const FEVER_THRESHOLD = 20;
+const FEVER_DURATION = 5000;
 
 const keys = {
     'a': { x: 0.2, color: '#ffb7ce', label: 'A' },
@@ -144,13 +148,19 @@ function handleInput(e) {
         }
         
         if (hit) {
-            score += 10 * (1 + Math.floor(combo / 10));
+            const multiplier = feverMode ? 3 : (1 + Math.floor(combo / 10));
+            score += 10 * multiplier;
             combo++;
             updateUI();
             triggerComboPop();
+            
+            if (combo >= FEVER_THRESHOLD && !feverMode) {
+                startFever();
+            }
         } else {
             combo = 0;
             updateUI();
+            stopFever();
         }
     }
 }
@@ -173,10 +183,27 @@ function triggerComboPop() {
     }, 100);
 }
 
+function startFever() {
+    feverMode = true;
+    feverTimer = Date.now() + FEVER_DURATION;
+    document.getElementById('gameCanvas').classList.add('fever-bg');
+    document.getElementById('fever-text').classList.add('visible');
+}
+
+function stopFever() {
+    feverMode = false;
+    document.getElementById('gameCanvas').classList.remove('fever-bg');
+    document.getElementById('fever-text').classList.remove('visible');
+}
+
 function gameLoop() {
     if (!gameActive) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (feverMode && Date.now() > feverTimer) {
+        stopFever();
+    }
 
     const targetY = canvas.height - 100;
     Object.values(keys).forEach(k => {
@@ -237,6 +264,7 @@ function startGame() {
     spawnRate = 1500;
     noteSpeed = 5;
     gameActive = true;
+    stopFever();
     
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
