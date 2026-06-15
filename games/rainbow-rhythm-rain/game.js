@@ -9,9 +9,12 @@ const restartButton = document.getElementById('restart-button');
 const finalScoreElement = document.getElementById('final-score');
 const ratingDisplay = document.getElementById('rating-display');
 const lanes = document.querySelectorAll('.lane');
+const feverBar = document.getElementById('fever-bar');
 
 let score = 0;
 let combo = 0;
+let fever = 0;
+let feverActive = false;
 let gameActive = false;
 let notes = [];
 let lastNoteTime = 0;
@@ -106,11 +109,20 @@ function handleInput(key) {
             const dist = Math.abs(note.y - targetY);
             if (dist < hitWindow) {
                 playNote(LANE_FREQS[laneIndex], 'sine', 0.2, 0.15);
-                score += 10 + Math.floor(combo / 10) * 5;
+                const multiplier = feverActive ? 3 : 1;
+                score += (10 + Math.floor(combo / 10) * 5) * multiplier;
                 combo++;
                 hitFound = true;
                 note.hit = true;
                 
+                // Fever system
+                if (!feverActive) {
+                    fever += 2;
+                    if (fever >= 100) {
+                        activateFever();
+                    }
+                }
+
                 // Sparkle effect
                 createSparkles(note.x, note.y, note.color);
                 
@@ -130,6 +142,7 @@ function handleInput(key) {
 
     if (!hitFound) {
         combo = 0;
+        fever = Math.max(0, fever - 10);
         showRating('MISS', '#ff4d4d');
         playNote(110, 'sawtooth', 0.2, 0.1);
     }
@@ -212,6 +225,21 @@ function showRating(text, color) {
 function updateUI() {
     scoreElement.innerText = `Score: ${score}`;
     comboElement.innerText = `Combo: ${combo}`;
+    feverBar.style.width = `${fever}%`;
+}
+
+function activateFever() {
+    feverActive = true;
+    document.getElementById('game-container').classList.add('fever-active');
+    showRating('FEVER TIME! 🔥', '#ff00ff');
+    
+    // Fever lasts for 10 seconds
+    setTimeout(() => {
+        feverActive = false;
+        fever = 0;
+        document.getElementById('game-container').classList.remove('fever-active');
+        updateUI();
+    }, 10000);
 }
 
 function gameLoop(timestamp) {
@@ -255,6 +283,8 @@ function gameLoop(timestamp) {
 function startGame() {
     score = 0;
     combo = 0;
+    fever = 0;
+    feverActive = false;
     notes = [];
     sparkles = [];
     backgroundRain.length = 0;

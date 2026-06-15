@@ -178,3 +178,34 @@ button:active {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1.2);
 }
+
+#fever-container {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    border: 2px solid white;
+    overflow: hidden;
+    z-index: 10;
+}
+
+#fever-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff00ff, #ffff00);
+    transition: width 0.1s ease-out;
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+.fever-active #fever-bar {
+    animation: fever-pulse 0.5s infinite alternate;
+}
+
+@keyframes fever-pulse {
+    from { filter: brightness(1); }
+    to { filter: brightness(1.5); }
+}
