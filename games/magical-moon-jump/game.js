@@ -13,6 +13,7 @@ const PLATFORM_WIDTH = 70;
 const PLATFORM_HEIGHT = 15;
 const STAR_RADIUS = 8;
 
+let bgOffset = 0;
 let canvasWidth, canvasHeight;
 let score = 0;
 let gameActive = true;
@@ -66,8 +67,8 @@ function handleTouchStart(e) {
 
 function spawnPlatform(y, isFirst = false) {
     const x = Math.random() * (canvasWidth - PLATFORM_WIDTH);
-    const type = Math.random() > 0.8 ? 'bouncy' : 'normal';
-    platforms.push({ x, y, width: PLATFORM_WIDTH, height: PLATFORM_HEIGHT, type });
+    const type = Math.random() > 0.85 ? 'bouncy' : (Math.random() > 0.7 ? 'vanishing' : 'normal');
+    platforms.push({ x, y, width: PLATFORM_WIDTH, height: PLATFORM_HEIGHT, type, timer: 60 });
 }
 
 function spawnStar() {
@@ -117,6 +118,10 @@ function update() {
                 player.y + player.height > p.y && 
                 player.y + player.height < p.y + p.height + player.vy) {
                 
+                if (p.type === 'vanishing') {
+                    p.timer = 30; // Start vanishing timer
+                }
+
                 if (p.type === 'bouncy') {
                     player.vy = JUMP_FORCE * 1.5;
                     createParticles(player.x + player.width/2, player.y + player.height, '#fff');
@@ -163,6 +168,14 @@ function update() {
     stars = stars.filter(s => s.y < canvasHeight + 100);
     particles = particles.filter(p => p.y < canvasHeight + 100);
 
+    // Update vanishing platforms
+    platforms.forEach(p => {
+        if (p.type === 'vanishing' && p.timer < 60) {
+            p.timer--;
+        }
+    });
+    platforms = platforms.filter(p => p.type !== 'vanishing' || p.timer > 0);
+
     // Periodic star spawn
     if (Math.random() < 0.01) spawnStar();
 
@@ -178,17 +191,26 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // Draw stars (background)
+    // Draw scrolling starry background
+    bgOffset += 0.2;
     ctx.fillStyle = 'white';
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
+        const x = (i * 137.5) % canvasWidth;
+        const y = (i * 243.1 + bgOffset) % canvasHeight;
         ctx.beginPath();
-        ctx.arc(Math.random() * canvasWidth, Math.random() * canvasHeight, 1, 0, Math.PI * 2);
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
         ctx.fill();
     }
 
     // Draw platforms
     platforms.forEach(p => {
-        ctx.fillStyle = p.type === 'bouncy' ? '#00f2ff' : '#ffb6c1';
+        if (p.type === 'bouncy') ctx.fillStyle = '#00f2ff';
+        else if (p.type === 'vanishing') {
+            const opacity = p.timer < 60 ? p.timer / 30 : 1;
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        }
+        else ctx.fillStyle = '#ffb6c1';
+
         ctx.beginPath();
         ctx.roundRect(p.x, p.y, p.width, p.height, 10);
         ctx.fill();
