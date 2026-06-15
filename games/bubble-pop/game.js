@@ -76,6 +76,7 @@ const skins = [
     { color: '#b2dfdb', name: 'Seafoam', cost: 1500 },
     { color: '#f8bbd0', name: 'Cherry Blossom', cost: 2000 },
     { color: 'cosmic', name: 'Cosmic Glitter', cost: 3000 },
+    { color: '#c0c0c0', name: 'Starlight Silver', cost: 4000 },
 ];
 
 function openShop() {
