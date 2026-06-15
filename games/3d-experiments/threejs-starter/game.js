@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let scene, camera, renderer, controls, raycaster, mouse;
 let prisms = [];
+let orbitals = [];
 let score = 0;
 let goldenPrisms = [];
 let combo = 0;
@@ -57,6 +58,8 @@ function init() {
 
     // Create Prisms
     createPrisms();
+    createOrbitals();
+
 
     window.addEventListener('resize', onWindowResize, false);
     window.addEventListener('mousedown', onMouseDown, false);
@@ -94,6 +97,24 @@ function onMouseMove(event) {
         mesh: particle,
         life: 1.0
     });
+}
+
+function createOrbitals() {
+    const orbitalCount = 5;
+    for (let i = 0; i < orbitalCount; i++) {
+        const geometry = new THREE.TorusGeometry(6, 0.05, 16, 100);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x00ffff, 
+            transparent: true, 
+            opacity: 0.3 
+        });
+        const orbital = new THREE.Mesh(geometry, material);
+        orbital.rotation.x = Math.random() * Math.PI;
+        orbital.rotation.y = Math.random() * Math.PI;
+        orbital.rotation.z = Math.random() * Math.PI;
+        scene.add(orbital);
+        orbitals.push(orbital);
+    }
 }
 
 function createPrisms() {
@@ -375,6 +396,11 @@ function animate() {
         prism.rotation.z += 0.02;
         const pulse = 1 + Math.sin(time * 4 + index) * 0.1;
         prism.scale.set(pulse, pulse, pulse);
+    });
+
+    orbitals.forEach((orbital, index) => {
+        orbital.rotation.x += 0.002 * (index + 1);
+        orbital.rotation.y += 0.002 * (index + 1);
     });
 
     controls.update();
