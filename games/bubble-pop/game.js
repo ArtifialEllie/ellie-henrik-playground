@@ -28,6 +28,7 @@ let isGoldenRain = false;
 let level = 1;
 let comboTimer;
 let isFrenzy = false;
+let isVortex = false;
 let shieldActive = false;
 let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
@@ -473,6 +474,35 @@ function triggerGoldenRain() {
     }, 7000);
 }
 
+function triggerVortex() {
+    isVortex = true;
+    const vortexAlert = document.getElementById('vortex-alert');
+    vortexAlert.style.display = 'block';
+    
+    // Vortex effect: pull all bubbles toward the center
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+    
+    const vortexInterval = setInterval(() => {
+        if (!isVortex) {
+            clearInterval(vortexInterval);
+            return;
+        }
+        bubbles.forEach(b => {
+            const dx = centerX - b.x;
+            const dy = centerY - b.y;
+            const dist = Math.hypot(dx, dy);
+            b.vx += dx / dist * 0.5;
+            b.vy = (dy / dist * 0.5) - b.speed; // counteract vertical speed slightly
+        });
+    }, 20);
+
+    setTimeout(() => {
+        isVortex = false;
+        vortexAlert.style.display = 'none';
+    }, 5000);
+}
+
 function updateCombo() {
     if (combo > 1) {
         comboText.innerText = `Combo x${combo}`;
@@ -739,6 +769,7 @@ function handlePop(e) {
             if (Math.random() < 0.03) triggerFrenzy();
             if (Math.random() < 0.01) triggerParty();
             if (Math.random() < 0.005) triggerGoldenRain();
+            if (Math.random() < 0.008) triggerVortex();
             
             updateCombo();
             scoreEl.innerText = score;

@@ -215,6 +215,11 @@ h1 {
     display: none;
     animation: flash 0.5s infinite alternate;
 }
+
+@keyframes rotateVortex {
+    from { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+    to { transform: translate(-50%, -50%) rotate(360deg) scale(1.2); }
+}
 .frenzy-bg {
     background: linear-gradient(45deg, #ff80ab, #ce93d8, #81d4fa, #a5d6a7) !important;
     animation: bgShift 5s linear infinite;
