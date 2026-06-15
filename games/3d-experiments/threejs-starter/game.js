@@ -44,7 +44,6 @@ function init() {
     scene.add(pointLight);
     scene.pointLight = pointLight; // Store reference for animation
 
-
     // Stars
     const starGeometry = new THREE.BufferGeometry();
     const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
@@ -98,25 +97,8 @@ function onMouseMove(event) {
 }
 
 function createPrisms() {
-    const geometry = new THREE.OctahedronGeometry(0.5, 0);
-    const colors = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000, 0x0000ff];
-    
     for (let i = 0; i < 30; i++) {
-        const material = new THREE.MeshPhongMaterial({
-            color: colors[Math.floor(Math.random() * colors.length)],
-            shininess: 100,
-            transparent: true,
-            opacity: 0.8,
-            flatShading: true
-        });
-        const prism = new THREE.Mesh(geometry, material);
-        prism.position.set(
-            (Math.random() - 0.5) * 10,
-            (Math.random() - 0.5) * 10,
-            (Math.random() - 0.5) * 10
-        );
-        scene.add(prism);
-        prisms.push(prism);
+        createSinglePrism();
     }
 
     // Initial golden prism
@@ -124,6 +106,27 @@ function createPrisms() {
     
     // Periodically spawn golden prisms
     setInterval(spawnGoldenPrism, 5000);
+}
+
+function createSinglePrism() {
+    const geometry = new THREE.OctahedronGeometry(0.5, 0);
+    const colors = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000, 0x0000ff];
+    const material = new THREE.MeshPhongMaterial({
+        color: colors[Math.floor(Math.random() * colors.length)],
+        shininess: 100,
+        transparent: true,
+        opacity: 0.8,
+        flatShading: true
+    });
+    const prism = new THREE.Mesh(geometry, material);
+    prism.level = 1;
+    prism.position.set(
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10
+    );
+    scene.add(prism);
+    prisms.push(prism);
 }
 
 function onWindowResize() {
@@ -167,19 +170,40 @@ function onMouseDown(event) {
         if (combo > 1) {
             comboElement.innerText = combo;
             comboContainer.style.display = 'block';
-            // Re-trigger animation
             comboContainer.style.animation = 'none';
-            comboContainer.offsetHeight; // trigger reflow
+            comboContainer.offsetHeight;
             comboContainer.style.animation = 'pop 0.3s ease-out';
         }
 
-
         // Effect: pop and change color
         object.scale.set(1.5, 1.5, 1.5);
-        setTimeout(() => object.scale.set(1, 1, 1), 100);
+        setTimeout(() => {
+            const levelScale = 1 + (object.level || 1 - 1) * 0.2;
+            object.scale.set(levelScale, levelScale, levelScale);
+        }, 100);
+        
+        // Level up logic
+        object.level = (object.level || 1) + 1;
+        const currentLevelScale = 1 + (object.level - 1) * 0.2;
+        object.scale.set(currentLevelScale, currentLevelScale, currentLevelScale);
+        
         object.material.color.setHex(Math.random() * 0xffffff);
         
-        // Spawn a little spark
+        if (object.level >= 4) {
+            // Super Prism Burst!
+            score += 100 * combo;
+            scoreElement.innerText = score;
+            spawnSpark(object.position);
+            
+            scene.remove(object);
+            prisms = prisms.filter(p => p !== object);
+            
+            createSinglePrism();
+            if (Math.random() > 0.7) {
+                spawnGoldenPrism();
+            }
+        }
+        
         spawnSpark(object.position);
     }
 }
@@ -206,7 +230,7 @@ function spawnSpark(position) {
         );
         const startTime = Date.now();
         const duration = 600 + Math.random() * 400;
-
+        
         function updateSpark() {
             const elapsed = Date.now() - startTime;
             const progress = elapsed / duration;
@@ -242,7 +266,6 @@ function spawnGoldenPrism() {
     scene.add(prism);
     goldenPrisms.push(prism);
     
-    // Golden prisms vanish after 4 seconds if not clicked
     setTimeout(() => {
         if (goldenPrisms.includes(prism)) {
             removeGoldenPrism(prism);
@@ -267,28 +290,34 @@ function triggerMagicBurst() {
     magicEnergy = 0;
     updateEnergyUI();
     
-    // Visual effect: flash the background
     const originalBg = scene.background;
     scene.background = new THREE.Color(0xffffff);
     setTimeout(() => {
         scene.background = originalBg;
     }, 100);
     
-    // Give all prisms a massive pop and score
     prisms.forEach((prism, index) => {
         setTimeout(() => {
             spawnSpark(prism.position);
             prism.scale.set(2, 2, 2);
-            setTimeout(() => prism.scale.set(1, 1, 1), 200);
+            setTimeout(() => {
+                const levelScale = 1 + (prism.level || 1 - 1) * 0.2;
+                prism.scale.set(levelScale, levelScale, levelScale);
+            }, 200);
+            
+            if (prism.level) {
+                prism.level++;
+                const nextLevelScale = 1 + (prism.level - 1) * 0.2;
+                prism.scale.set(nextLevelScale, nextLevelScale, nextLevelScale);
+            }
         }, index * 20);
     });
     
     score += 1000;
     scoreElement.innerText = score;
     
-    // Create a shockwave effect
     const shockwaveGeo = new THREE.TorusGeometry(0.1, 0.05, 16, 100);
-    const shockwaveMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
+    const shockwaveMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1});
     const shockwave = new THREE.Mesh(shockwaveGeo, shockwaveMat);
     shockwave.position.set(0, 0, 0);
     scene.add(shockwave);
@@ -315,7 +344,6 @@ function animate() {
     
     const time = Date.now() * 0.001;
     
-    // Update mouse trail
     for (let i = mouseTrail.length - 1; i >= 0; i--) {
         const p = mouseTrail[i];
         p.life -= 0.02;
@@ -327,7 +355,6 @@ function animate() {
         }
     }
 
-    // Move light for dynamic shadows
     if (scene.pointLight) {
         scene.pointLight.position.x = Math.sin(time * 0.5) * 10;
         scene.pointLight.position.z = Math.cos(time * 0.5) * 10;
@@ -338,9 +365,9 @@ function animate() {
         prism.rotation.y += 0.01;
         prism.position.y += Math.sin(Date.now() * 0.001 + index) * 0.005;
         
-        // Subtle pulse effect
         const pulse = 1 + Math.sin(time * 2 + index) * 0.05;
-        prism.scale.set(pulse, pulse, pulse);
+        const levelScale = 1 + (prism.level || 1 - 1) * 0.2;
+        prism.scale.set(pulse * levelScale, pulse * levelScale, pulse * levelScale);
     });
 
     goldenPrisms.forEach((prism, index) => {
