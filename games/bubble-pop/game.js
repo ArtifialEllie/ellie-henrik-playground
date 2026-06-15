@@ -427,11 +427,13 @@ class MagicalPet {
         this.targetX = this.x;
         this.targetY = this.y;
         this.size = 40;
-        this.emoji = '🐱';
+        this.level = 1;
+        this.emoji = '🐱'; 
         this.floatOffset = 0;
         this.floatDir = 1;
         this.autoPopTimer = 0;
-        this.popInterval = 8000; // Pop every 8 seconds
+        this.popInterval = 8000;
+        this.popRange = 150;
     }
 
     update(mouseX, mouseY) {
@@ -445,6 +447,26 @@ class MagicalPet {
         // Floating animation
         this.floatOffset += 0.05 * this.floatDir;
         if (this.floatOffset > 10 || this.floatOffset < -10) this.floatDir *= -1;
+
+        // Pet Evolution Logic
+        let nextLevel = 1;
+        let nextEmoji = '🐱';
+        let nextInterval = 8000;
+        let nextRange = 150;
+
+        if (score >= 5000) { nextLevel = 5; nextEmoji = '✨🌈'; nextInterval = 3000; nextRange = 300; }
+        else if (score >= 3000) { nextLevel = 4; nextEmoji = '🐉'; nextInterval = 4000; nextRange = 250; }
+        else if (score >= 1500) { nextLevel = 3; nextEmoji = '🦄'; nextInterval = 5000; nextRange = 200; }
+        else if (score >= 500) { nextLevel = 2; nextEmoji = '🦊'; nextInterval = 6000; nextRange = 175; }
+
+        if (nextLevel > this.level) {
+            this.level = nextLevel;
+            this.emoji = nextEmoji;
+            this.popInterval = nextInterval;
+            this.popRange = nextRange;
+            floatingTexts.push(new FloatingText(this.x, this.y, `PET EVOLVED! ${this.emoji}`, 'gold'));
+            playSound(800, 'sine', 0.3);
+        }
 
         // Auto-pop logic
         if (gameActive) {
@@ -467,7 +489,7 @@ class MagicalPet {
         
         // Find nearest bubble within range
         let nearest = null;
-        let minDist = 150;
+        let minDist = this.popRange;
 
         bubbles.forEach(b => {
             const dist = Math.hypot(this.x - b.x, this.y - b.y);
