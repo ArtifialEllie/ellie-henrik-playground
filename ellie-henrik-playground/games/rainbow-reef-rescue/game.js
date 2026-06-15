@@ -26,10 +26,7 @@ let enemies = [];
 let pearls = [];
 let bubbles = [];
 let particles = [];
-<<<<<<< HEAD
-=======
 let seaweeds = [];
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
 
 const COLORS = ['#FF69B4', '#00FF7F', '#00BFFF', '#FFD700', '#FF4500', '#DA70D6'];
 
@@ -54,14 +51,12 @@ class Fish {
 
     update() {
         if (this.isEnemy) {
-            // Enemies track player
             const dx = player.x - this.x;
             const dy = player.y - this.y;
             const angle = Math.atan2(dy, dx);
             this.x += Math.cos(angle) * this.speed;
             this.y += Math.sin(angle) * this.speed;
         } else {
-            // Friends wander
             this.x += Math.cos(this.angle) * this.speed;
             this.y += Math.sin(this.angle) * this.speed;
             if (Math.random() < 0.01) {
@@ -69,7 +64,6 @@ class Fish {
             }
         }
 
-        // Wrap around or reset
         if (this.x < -50 || this.x > canvas.width + 50 || this.y < -50 || this.y > canvas.height + 50) {
             this.reset();
         }
@@ -78,28 +72,18 @@ class Fish {
     draw() {
         ctx.save();
         ctx.translate(this.x, this.y);
-        
-        const direction = this.isEnemy ? 
-            Math.atan2(player.y - this.y, player.x - this.x) : 
-            this.angle;
-            
+        const direction = this.isEnemy ? Math.atan2(player.y - this.y, player.x - this.x) : this.angle;
         ctx.rotate(direction);
-
-        // Body
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.ellipse(0, 0, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
         ctx.fill();
-
-        // Tail
         ctx.beginPath();
         ctx.moveTo(-this.radius * 1.2, 0);
         ctx.lineTo(-this.radius * 2, -this.radius);
         ctx.lineTo(-this.radius * 2, this.radius);
         ctx.closePath();
         ctx.fill();
-
-        // Eye
         ctx.fillStyle = 'white';
         ctx.beginPath();
         ctx.arc(this.radius * 0.8, -this.radius * 0.3, this.radius * 0.3, 0, Math.PI * 2);
@@ -108,7 +92,6 @@ class Fish {
         ctx.beginPath();
         ctx.arc(this.radius * 0.8, -this.radius * 0.3, this.radius * 0.15, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.restore();
     }
 }
@@ -120,11 +103,7 @@ class Pearl {
         this.y = Math.random() * (canvas.height - 20) + 10;
         this.pulse = 0;
     }
-
-    update() {
-        this.pulse += 0.1;
-    }
-
+    update() { this.pulse += 0.1; }
     draw() {
         const glow = 5 + Math.sin(this.pulse) * 3;
         ctx.save();
@@ -146,7 +125,6 @@ class Bubble {
         this.speed = 1 + Math.random() * 2;
         this.drift = (Math.random() - 0.5) * 1;
     }
-
     update() {
         this.y -= this.speed;
         this.x += this.drift;
@@ -155,7 +133,6 @@ class Bubble {
             this.x = Math.random() * canvas.width;
         }
     }
-
     draw() {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
         ctx.lineWidth = 1;
@@ -171,44 +148,23 @@ class Particle {
         this.y = y;
         this.color = color;
         this.radius = Math.random() * 3 + 1;
-<<<<<<< HEAD
-        this.vx = (Math.random() - 0.5) * 4;
-        this.vy = (Math.random() - 0.5) * 4;
-        this.life = 1.0;
-        this.decay = Math.random() * 0.02 + 0.01;
-=======
         this.vx = (Math.random() - 0.5) * 6;
         this.vy = (Math.random() - 0.5) * 6;
         this.life = 1.0;
         this.decay = Math.random() * 0.02 + 0.015;
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
     }
-
     update() {
         this.x += this.vx;
         this.y += this.vy;
         this.life -= this.decay;
     }
-
     draw() {
-<<<<<<< HEAD
-=======
         ctx.save();
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
         ctx.globalAlpha = this.life;
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
-<<<<<<< HEAD
-        ctx.globalAlpha = 1.0;
-    }
-}
-
-function createParticles(x, y, color, count = 10) {
-    for (let i = 0; i < count; i++) {
-        particles.push(new Particle(x, y, color));
-=======
         ctx.restore();
     }
 }
@@ -221,7 +177,6 @@ class Seaweed {
         this.width = 10 + Math.random() * 10;
         this.color = `hsl(${120 + Math.random() * 40}, 70%, ${30 + Math.random() * 20}%)`;
     }
-
     draw(time) {
         ctx.save();
         ctx.strokeStyle = this.color;
@@ -229,7 +184,6 @@ class Seaweed {
         ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(this.x, canvas.height);
-        
         const sway = Math.sin(time * 0.002 + this.offset) * 20;
         ctx.bezierCurveTo(
             this.x + sway / 2, canvas.height - this.height / 2,
@@ -238,7 +192,12 @@ class Seaweed {
         );
         ctx.stroke();
         ctx.restore();
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
+    }
+}
+
+function createParticles(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        particles.push(new Particle(x, y, color));
     }
 }
 
@@ -249,7 +208,6 @@ function spawnEntities() {
     bubbles = [];
     particles = [];
     seaweeds = [];
-    
     for (let i = 0; i < 6; i++) friends.push(new Fish(false));
     for (let i = 0; i < 3; i++) enemies.push(new Fish(true));
     for (let i = 0; i < 15; i++) bubbles.push(new Bubble());
@@ -272,48 +230,26 @@ function updatePlayer() {
 }
 
 function checkCollisions() {
-    // Check friend rescue
-    friends.forEach((friend, index) => {
+    friends.forEach(friend => {
         const dx = player.x - friend.x;
         const dy = player.y - friend.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-<<<<<<< HEAD
-    if (dist < player.radius + friend.radius) {
-        rescuedCount++;
-        rescuedElement.innerText = `Friends Rescued: ${rescuedCount}`;
-        createParticles(friend.x, friend.y, friend.color, 15);
-        friend.reset();
-        // Add a pearl as a reward
-        pearls.push(new Pearl());
-    }
-=======
         if (dist < player.radius + friend.radius) {
             rescuedCount++;
             rescuedElement.innerText = `Friends Rescued: ${rescuedCount}`;
-            
-            // Add sparkle particles
-            for(let i=0; i<10; i++) {
-                particles.push(new Particle(friend.x, friend.y, friend.color));
-            }
-            
+            createParticles(friend.x, friend.y, friend.color, 15);
             friend.reset();
-            // Add a pearl as a reward
             pearls.push(new Pearl());
         }
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
     });
 
-    // Check enemy collision
     enemies.forEach(enemy => {
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < player.radius + enemy.radius) {
-            gameOver();
-        }
+        if (dist < player.radius + enemy.radius) gameOver();
     });
 
-    // Check pearl collection
     pearls.forEach((pearl, index) => {
         const dx = player.x - pearl.x;
         const dy = player.y - pearl.y;
@@ -350,45 +286,20 @@ function start() {
 
 function gameLoop() {
     if (!gameActive) return;
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const time = Date.now();
 
-    // Draw background seaweeds
-    seaweeds.forEach(seaweed => {
-        seaweed.draw(time);
-    });
+    seaweeds.forEach(seaweed => seaweed.draw(time));
+    bubbles.forEach(bubble => { bubble.update(); bubble.draw(); });
+    pearls.forEach(pearl => { pearl.update(); pearl.draw(); });
+    
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => { p.update(); p.draw(); });
 
-    // Draw background bubbles
-    bubbles.forEach(bubble => {
-        bubble.update();
-        bubble.draw();
-    });
-
-    // Draw pearls
-    pearls.forEach(pearl => {
-        pearl.update();
-        pearl.draw();
-    });
-
-    // Draw particles
-    particles.forEach((particle, index) => {
-        particle.update();
-        particle.draw();
-        if (particle.life <= 0) particles.splice(index, 1);
-    });
-
-    // Draw friends
-    friends.forEach(friend => {
-        friend.update();
-        friend.draw();
-    });
-
-    // Draw enemies
+    friends.forEach(friend => { friend.update(); friend.draw(); });
     enemies.forEach(enemy => {
         enemy.update();
         enemy.draw();
-        // Add spikes to urchins
         ctx.save();
         ctx.strokeStyle = 'purple';
         ctx.lineWidth = 2;
@@ -402,14 +313,6 @@ function gameLoop() {
         ctx.restore();
     });
 
-    // Update and draw particles
-    particles = particles.filter(p => p.life > 0);
-    particles.forEach(p => {
-        p.update();
-        p.draw();
-    });
-
-    // Draw player
     ctx.save();
     ctx.translate(player.x, player.y);
     const angle = Math.atan2(player.targetY - player.y, player.targetX - player.x);

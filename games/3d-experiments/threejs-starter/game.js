@@ -7,6 +7,9 @@ let score = 0;
 let goldenPrisms = [];
 let combo = 0;
 let lastClickTime = 0;
+let mouseTrail = [];
+let magicEnergy = 0;
+const MAX_MAGIC_ENERGY = 100;
 const scoreElement = document.getElementById('score');
 const comboElement = document.getElementById('combo');
 const comboContainer = document.getElementById('combo-container');
@@ -57,8 +60,37 @@ function init() {
 
     window.addEventListener('resize', onWindowResize, false);
     window.addEventListener('mousedown', onMouseDown, false);
-
+    window.addEventListener('mousemove', onMouseMove, false);
+    
     animate();
+}
+
+function onMouseMove(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+    // Create trail particles
+    const trailGeo = new THREE.SphereGeometry(0.02, 8, 8);
+    const trailMat = new THREE.MeshBasicMaterial({ 
+        color: 0x00ffff, 
+        transparent: true, 
+        opacity: 0.6 
+    });
+    const particle = new THREE.Mesh(trailGeo, trailMat);
+    
+    // Project mouse position to 3D space (roughly)
+    const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+    vector.unproject(camera);
+    const dir = vector.sub(camera.position).normalize();
+    const distance = 5;
+    const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+    
+    particle.position.copy(pos);
+    scene.add(particle);
+    mouseTrail.push({
+        mesh: particle,
+        life: 1.0
+    });
 }
 
 function createPrisms() {
@@ -124,6 +156,10 @@ function onMouseDown(event) {
         score += combo;
         scoreElement.innerText = score;
         
+        // Increase magic energy
+        magicEnergy = Math.min(MAX_MAGIC_ENERGY, magicEnergy + 5 * combo);
+        updateEnergyUI();
+        
         if (combo > 1) {
             comboElement.innerText = combo;
             comboContainer.style.display = 'block';
@@ -132,6 +168,7 @@ function onMouseDown(event) {
             comboContainer.offsetHeight; // trigger reflow
             comboContainer.style.animation = 'pop 0.3s ease-out';
         }
+
 
         // Effect: pop and change color
         object.scale.set(1.5, 1.5, 1.5);
@@ -209,6 +246,15 @@ function spawnGoldenPrism() {
     }, 4000);
 }
 
+function updateEnergyUI() {
+    const fill = document.getElementById('energy-fill');
+    const text = document.getElementById('energy-text');
+    if (fill && text) {
+        fill.style.width = `${magicEnergy}%`;
+        text.innerText = `Magi: ${Math.floor(magicEnergy)}%`;
+    }
+}
+
 function removeGoldenPrism(prism) {
     scene.remove(prism);
     goldenPrisms = goldenPrisms.filter(p => p !== prism);
@@ -218,6 +264,18 @@ function animate() {
     requestAnimationFrame(animate);
     
     const time = Date.now() * 0.001;
+    
+    // Update mouse trail
+    for (let i = mouseTrail.length - 1; i >= 0; i--) {
+        const p = mouseTrail[i];
+        p.life -= 0.02;
+        p.mesh.scale.set(p.life, p.life, p.life);
+        p.mesh.material.opacity = p.life * 0.6;
+        if (p.life <= 0) {
+            scene.remove(p.mesh);
+            mouseTrail.splice(i, 1);
+        }
+    }
 
     // Move light for dynamic shadows
     if (scene.pointLight) {

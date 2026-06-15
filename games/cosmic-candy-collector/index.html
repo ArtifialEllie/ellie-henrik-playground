@@ -1,24 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmic Candy Collector 🍭✨</title>
+    <title>Cosmic Candy Collector ✨🍬</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <div id="ui">
-            <div id="score-board">Candies: <span id="score">0</span></div>
-            <div id="timer-board">Time: <span id="timer">30</span>s</div>
+            <div id="score">Poeng: 0</div>
+            <div id="lives">Liv: ❤️❤️❤️</div>
         </div>
         <canvas id="gameCanvas"></canvas>
-        <div id="overlay">
-            <div id="message-box">
-                <h1 id="title">Cosmic Candy Collector</h1>
-                <p id="description">Collect as many glowing candies as you can before time runs out! Avoid the grumpy asteroids! 🌌🍬</p>
-                <button id="start-button">Start Adventure! ✨</button>
-            </div>
+        <div id="start-screen" class="overlay">
+            <h1>Cosmic Candy Collector</h1>
+            <p>Fang det søte stjernestøvet! Unngå de grumsete tordenskyene! ☁️⚡</p>
+            <button id="start-btn">Start Eventyret! 🚀</button>
+        </div>
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>Spill Over! 🌌</h1>
+            <p id="final-score">Du samlet 0 kosmiske godbiter!</p>
+            <button id="restart-btn">Prøv på nytt! ✨</button>
         </div>
     </div>
     <script src="game.js"></script>
