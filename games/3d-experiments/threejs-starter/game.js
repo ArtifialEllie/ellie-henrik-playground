@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 let scene, camera, renderer, controls, raycaster, mouse;
 let prisms = [];
 let score = 0;
+let goldenPrisms = [];
 let combo = 0;
 let lastClickTime = 0;
 const scoreElement = document.getElementById('score');
@@ -35,8 +36,10 @@ function init() {
     scene.add(ambientLight);
 
     const pointLight = new THREE.PointLight(0xffffff, 100, 100);
-    pointLight.position.set(10, 10, 10);
+    pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
+    scene.pointLight = pointLight; // Store reference for animation
+
 
     // Stars
     const starGeometry = new THREE.BufferGeometry();
@@ -79,6 +82,12 @@ function createPrisms() {
         scene.add(prism);
         prisms.push(prism);
     }
+
+    // Initial golden prism
+    spawnGoldenPrism();
+    
+    // Periodically spawn golden prisms
+    setInterval(spawnGoldenPrism, 5000);
 }
 
 function onWindowResize() {
@@ -97,6 +106,12 @@ function onMouseDown(event) {
     if (intersects.length > 0) {
         const object = intersects[0].object;
         
+        // Check if it's a golden prism
+        if (goldenPrisms.includes(object)) {
+            score += 50 * combo;
+            removeGoldenPrism(object);
+        }
+
         // Combo logic
         const currentTime = Date.now();
         if (currentTime - lastClickTime < 1000) {
@@ -129,37 +144,102 @@ function onMouseDown(event) {
 }
 
 function spawnSpark(position) {
-    const sparkGeo = new THREE.SphereGeometry(0.05, 8, 8);
-    const sparkMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-    const spark = new THREE.Mesh(sparkGeo, sparkMat);
-    spark.position.copy(position);
-    scene.add(spark);
+    const particleCount = 15;
+    const colors = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000, 0x0000ff];
+    
+    for (let i = 0; i < particleCount; i++) {
+        const sparkGeo = new THREE.SphereGeometry(0.04, 8, 8);
+        const sparkMat = new THREE.MeshBasicMaterial({ 
+            color: colors[Math.floor(Math.random() * colors.length)],
+            transparent: true,
+            opacity: 1 
+        });
+        const spark = new THREE.Mesh(sparkGeo, sparkMat);
+        spark.position.copy(position);
+        scene.add(spark);
 
-    const animation = { size: 0.05, opacity: 1 };
-    const startTime = Date.now();
-    const duration = 500;
+        const velocity = new THREE.Vector3(
+            (Math.random() - 0.5) * 0.2,
+            (Math.random() - 0.5) * 0.2,
+            (Math.random() - 0.5) * 0.2
+        );
+        const startTime = Date.now();
+        const duration = 600 + Math.random() * 400;
 
-    function updateSpark() {
-        const elapsed = Date.now() - startTime;
-        const progress = elapsed / duration;
-        if (progress >= 1) {
-            scene.remove(spark);
-            return;
+        function updateSpark() {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            if (progress >= 1) {
+                scene.remove(spark);
+                return;
+            }
+            spark.position.add(velocity);
+            spark.material.opacity = 1 - progress;
+            spark.scale.set(1 - progress, 1 - progress, 1 - progress);
+            requestAnimationFrame(updateSpark);
         }
-        spark.scale.set(1 + progress * 2, 1 + progress * 2, 1 + progress * 2);
-        spark.material.opacity = 1 - progress;
-        requestAnimationFrame(updateSpark);
+        updateSpark();
     }
-    updateSpark();
+}
+
+function spawnGoldenPrism() {
+    const geometry = new THREE.IcosahedronGeometry(0.6, 0);
+    const material = new THREE.MeshPhongMaterial({
+        color: 0xffd700,
+        shininess: 100,
+        transparent: true,
+        opacity: 0.9,
+        emissive: 0xffd700,
+        emissiveIntensity: 0.5
+    });
+    const prism = new THREE.Mesh(geometry, material);
+    prism.position.set(
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10
+    );
+    scene.add(prism);
+    goldenPrisms.push(prism);
+    
+    // Golden prisms vanish after 4 seconds if not clicked
+    setTimeout(() => {
+        if (goldenPrisms.includes(prism)) {
+            removeGoldenPrism(prism);
+        }
+    }, 4000);
+}
+
+function removeGoldenPrism(prism) {
+    scene.remove(prism);
+    goldenPrisms = goldenPrisms.filter(p => p !== prism);
 }
 
 function animate() {
     requestAnimationFrame(animate);
     
+    const time = Date.now() * 0.001;
+
+    // Move light for dynamic shadows
+    if (scene.pointLight) {
+        scene.pointLight.position.x = Math.sin(time * 0.5) * 10;
+        scene.pointLight.position.z = Math.cos(time * 0.5) * 10;
+    }
+
     prisms.forEach((prism, index) => {
         prism.rotation.x += 0.01;
         prism.rotation.y += 0.01;
         prism.position.y += Math.sin(Date.now() * 0.001 + index) * 0.005;
+        
+        // Subtle pulse effect
+        const pulse = 1 + Math.sin(time * 2 + index) * 0.05;
+        prism.scale.set(pulse, pulse, pulse);
+    });
+
+    goldenPrisms.forEach((prism, index) => {
+        prism.rotation.y -= 0.02;
+        prism.rotation.z += 0.02;
+        const pulse = 1 + Math.sin(time * 4 + index) * 0.1;
+        prism.scale.set(pulse, pulse, pulse);
     });
 
     controls.update();
