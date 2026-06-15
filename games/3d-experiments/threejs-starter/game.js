@@ -168,7 +168,9 @@ function onMouseDown(event) {
         
         // Check if it's a golden prism
         if (goldenPrisms.includes(object)) {
-            score += 50 * combo;
+            const bonus = 50 * combo;
+            score += bonus;
+            createFloatingText(`+${bonus} GOLD! 🌟`, event.clientX, event.clientY);
             removeGoldenPrism(object);
         }
 
@@ -181,8 +183,10 @@ function onMouseDown(event) {
         }
         lastClickTime = currentTime;
 
-        score += combo;
+        const points = combo;
+        score += points;
         scoreElement.innerText = score;
+        createFloatingText(`+${points}`, event.clientX, event.clientY);
         
         // Increase magic energy
         magicEnergy = Math.min(MAX_MAGIC_ENERGY, magicEnergy + 5 * combo);
@@ -212,8 +216,10 @@ function onMouseDown(event) {
         
         if (object.level >= 4) {
             // Super Prism Burst!
-            score += 100 * combo;
+            const superBonus = 100 * combo;
+            score += superBonus;
             scoreElement.innerText = score;
+            createFloatingText(`SUPER BURST! +${superBonus} 💥`, event.clientX, event.clientY);
             spawnSpark(object.position);
             
             scene.remove(object);
@@ -227,6 +233,19 @@ function onMouseDown(event) {
         
         spawnSpark(object.position);
     }
+}
+
+function createFloatingText(text, x, y) {
+    const el = document.createElement('div');
+    el.className = 'floating-text';
+    el.innerText = text;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    document.body.appendChild(el);
+    
+    setTimeout(() => {
+        el.remove();
+    }, 800);
 }
 
 function spawnSpark(position) {
