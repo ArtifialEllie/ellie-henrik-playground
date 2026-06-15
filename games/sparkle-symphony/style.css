@@ -25,6 +25,13 @@ body {
     z-index: 10;
 }
 
+#ui-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    pointer-events: auto;
+}
+
 #score-board {
     font-size: 24px;
     color: #ff69b4;

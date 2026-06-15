@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const comboElement = document.getElementById('combo');
 const magicBar = document.getElementById('magic-bar');
+const burstButton = document.getElementById('burst-button');
 const startScreen = document.getElementById('start-screen');
 const startButton = document.getElementById('start-button');
 const gameOverScreen = document.getElementById('game-over-screen');
@@ -31,7 +32,7 @@ class Sparkle {
         this.radius = Math.random() * 10 + 10;
         this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
         this.y = -this.radius;
-        this.speed = Math.random() * 2 + 2 + (score / 50);
+        this.speed = Math.random() * 2 + 2 + (score / 500);
         this.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
         this.angle = 0;
         this.rotationSpeed = (Math.random() - 0.5) * 0.1;
@@ -50,7 +51,6 @@ class Sparkle {
         ctx.shadowBlur = 15;
         ctx.shadowColor = this.color;
         
-        // Draw a star/sparkle shape
         ctx.beginPath();
         for (let i = 0; i < 5; i++) {
             ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * this.radius,
@@ -70,8 +70,8 @@ class Particle {
         this.y = y;
         this.color = color;
         this.size = Math.random() * 4 + 2;
-        this.speedX = (Math.random() - 0.5) * 8;
-        this.speedY = (Math.random() - 0.5) * 8;
+        this.speedX = (Math.random() - 0.5) * 10;
+        this.speedY = (Math.random() - 0.5) * 10;
         this.life = 1.0;
         this.decay = Math.random() * 0.02 + 0.02;
     }
@@ -93,7 +93,7 @@ class Particle {
 }
 
 function createExplosion(x, y, color) {
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 15; i++) {
         particles.push(new Particle(x, y, color));
     }
 }
@@ -108,10 +108,8 @@ function handleInput(ex, ey) {
             combo++;
             const comboBonus = Math.floor(combo / 5) * 5;
             score += 10 + comboBonus;
-            magicPower = Math.min(100, magicPower + 15 + (comboBonus / 2));
-            scoreElement.innerText = score;
-            comboElement.innerText = combo;
-            magicBar.style.width = magicPower + '%';
+            magicPower = Math.min(100, magicPower + 10 + (comboBonus / 2));
+            updateUI();
             createExplosion(s.x, s.y, s.color);
             sparkles.splice(i, 1);
             
@@ -122,14 +120,13 @@ function handleInput(ex, ey) {
 }
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playMagicalNote() {
+function playMagicalNote(freqMult = 1) {
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
     oscillator.type = 'sine';
-    // Pentatonic scale for a magical feel
     const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
-    const note = notes[Math.floor(Math.random() * notes.length)];
+    const note = notes[Math.floor(Math.random() * notes.length)] * freqMult;
     oscillator.frequency.setValueAtTime(note, audioCtx.currentTime);
 
     gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
@@ -142,6 +139,38 @@ function playMagicalNote() {
     oscillator.stop(audioCtx.currentTime + 0.5);
 }
 
+function triggerMagicBurst() {
+    if (magicPower < 100 || !gameActive) return;
+
+    const burstScore = sparkles.length * 20;
+    score += burstScore;
+    magicPower = 0;
+    
+    sparkles.forEach(s => {
+        createExplosion(s.x, s.y, s.color);
+        playMagicalNote(1.5);
+    });
+    
+    sparkles = [];
+    updateUI();
+    
+    // Big flash effect
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function updateUI() {
+    scoreElement.innerText = score;
+    comboElement.innerText = combo;
+    magicBar.style.width = magicPower + '%';
+    
+    if (magicPower >= 100) {
+        burstButton.classList.remove('hidden');
+    } else {
+        burstButton.classList.add('hidden');
+    }
+}
+
 function gameLoop(time) {
     if (!gameActive) return;
 
@@ -150,9 +179,8 @@ function gameLoop(time) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Update and draw sparkles
     spawnTimer += deltaTime;
-    if (spawnTimer > 1000 - Math.min(500, score)) {
+    if (spawnTimer > 1000 - Math.min(600, score / 10)) {
         sparkles.push(new Sparkle());
         spawnTimer = 0;
     }
@@ -162,9 +190,9 @@ function gameLoop(time) {
         s.draw();
         if (s.y > canvas.height + s.radius) {
             sparkles.splice(index, 1);
-            magicPower -= 10;
-            if (magicPower < 0) magicPower = 0;
-            magicBar.style.width = magicPower + '%';
+            magicPower = Math.max(0, magicPower - 15);
+            combo = 0;
+            updateUI();
         }
     });
 
@@ -180,13 +208,11 @@ function gameLoop(time) {
 function startGame() {
     score = 0;
     combo = 0;
-    magicPower = 100;
+    magicPower = 50;
     sparkles = [];
     particles = [];
     gameActive = true;
-    scoreElement.innerText = '0';
-    comboElement.innerText = '0';
-    magicBar.style.width = '100%';
+    updateUI();
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
     lastTime = performance.now();
@@ -199,26 +225,36 @@ function gameOver() {
     gameOverScreen.classList.remove('hidden');
 }
 
-// Input listeners
 canvas.addEventListener('mousedown', (e) => handleInput(e.clientX, e.clientY));
 canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     handleInput(e.touches[0].clientX, e.touches[0].clientY);
 }, { passive: false });
 
-// Magic Power logic
+burstButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    triggerMagicBurst();
+});
+
 setInterval(() => {
     if (gameActive) {
-        magicPower -= 2;
-        magicBar.style.width = magicPower + '%';
-        if (magicPower <= 0) {
-            gameOver();
+        magicPower = Math.max(0, magicPower - 1);
+        updateUI();
+        if (magicPower <= 0 && sparkles.length === 0 && score === 0) {
+            // Don't game over immediately at start, but if they lose all power...
+            // Actually, let's make it a bit more forgiving.
         }
     }
 }, 100);
 
+// Revised Game Over: only when power hits 0 and they can't get it back? 
+// No, let's keep it simple: if power hits 0, you have a few seconds or you lose.
+// Let's just make it: power hits 0 -> Game Over.
+setInterval(() => {
+    if (gameActive && magicPower <= 0) {
+        gameOver();
+    }
+}, 500);
+
 startButton.addEventListener('click', startGame);
 restartButton.addEventListener('click', startGame);
-
-// Correcting the playMagicalNote call in handleInput
-// I need to overwrite handleInput to use playMagicalNote
