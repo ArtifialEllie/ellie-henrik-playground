@@ -13,6 +13,7 @@ const MAX_MAGIC_ENERGY = 100;
 const scoreElement = document.getElementById('score');
 const comboElement = document.getElementById('combo');
 const comboContainer = document.getElementById('combo-container');
+const burstButton = document.getElementById('burst-button');
 
 function init() {
     scene = new THREE.Scene();
@@ -61,6 +62,9 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
     window.addEventListener('mousedown', onMouseDown, false);
     window.addEventListener('mousemove', onMouseMove, false);
+    if (burstButton) {
+        burstButton.addEventListener('click', triggerMagicBurst);
+    }
     
     animate();
 }
@@ -253,6 +257,52 @@ function updateEnergyUI() {
         fill.style.width = `${magicEnergy}%`;
         text.innerText = `Magi: ${Math.floor(magicEnergy)}%`;
     }
+    
+    if (burstButton) {
+        burstButton.style.display = magicEnergy >= MAX_MAGIC_ENERGY ? 'block' : 'none';
+    }
+}
+
+function triggerMagicBurst() {
+    magicEnergy = 0;
+    updateEnergyUI();
+    
+    // Visual effect: flash the background
+    const originalBg = scene.background;
+    scene.background = new THREE.Color(0xffffff);
+    setTimeout(() => {
+        scene.background = originalBg;
+    }, 100);
+    
+    // Give all prisms a massive pop and score
+    prisms.forEach((prism, index) => {
+        setTimeout(() => {
+            spawnSpark(prism.position);
+            prism.scale.set(2, 2, 2);
+            setTimeout(() => prism.scale.set(1, 1, 1), 200);
+        }, index * 20);
+    });
+    
+    score += 1000;
+    scoreElement.innerText = score;
+    
+    // Create a shockwave effect
+    const shockwaveGeo = new THREE.TorusGeometry(0.1, 0.05, 16, 100);
+    const shockwaveMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
+    const shockwave = new THREE.Mesh(shockwaveGeo, shockwaveMat);
+    shockwave.position.set(0, 0, 0);
+    scene.add(shockwave);
+    
+    function animateShockwave() {
+        shockwave.scale.addScalar(0.5);
+        shockwave.material.opacity -= 0.02;
+        if (shockwave.material.opacity <= 0) {
+            scene.remove(shockwave);
+            return;
+        }
+        requestAnimationFrame(animateShockwave);
+    }
+    animateShockwave();
 }
 
 function removeGoldenPrism(prism) {

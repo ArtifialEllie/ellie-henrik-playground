@@ -89,3 +89,41 @@ p {
     0% { transform: scale(0.5); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
 }
+
+#burst-button {
+    position: relative;
+    margin-top: 20px;
+    padding: 15px 30px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00);
+    background-size: 200% 200%;
+    border: 3px solid #fff;
+    border-radius: 50px;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+    animation: rainbow-bg 2s linear infinite, pulse 1.5s ease-in-out infinite;
+    transition: transform 0.2s ease;
+}
+
+#burst-button:hover {
+    transform: scale(1.1);
+}
+
+#burst-button:active {
+    transform: scale(0.9);
+}
+
+@keyframes rainbow-bg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff; }
+    50% { box-shadow: 0 0 40px #ff00ff, 0 0 60px #00ffff; }
+}
