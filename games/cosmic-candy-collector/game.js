@@ -22,17 +22,26 @@ let gameActive = false;
 let candies = [];
 let hazards = [];
 let particles = [];
+let combo = 0;
+let comboTimer = 0;
+let difficultyMultiplier = 1;
+let startTime = 0;
+
 let player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     radius: 20,
-    color: '#ffccff'
+    color: '#ffccff',
+    trail: [],
+    shielded: false,
+    shieldTimer: 0
 };
 
 const candyTypes = [
-    { color: '#ff00ff', value: 10, symbol: '🍬' },
-    { color: '#00ffff', value: 20, symbol: '🍭' },
-    { color: '#ffff00', value: 50, symbol: '⭐' },
+    { color: '#ff00ff', value: 10, symbol: '🍬', weight: 0.6 },
+    { color: '#00ffff', value: 20, symbol: '🍭', weight: 0.3 },
+    { color: '#ffff00', value: 50, symbol: '⭐', weight: 0.1 },
+    { color: '#ffffff', value: 0, symbol: '🛡️', weight: 0.05, isPowerUp: true },
 ];
 
 const hazardTypes = [
@@ -41,12 +50,25 @@ const hazardTypes = [
 ];
 
 function spawnCandy() {
-    const type = candyTypes[Math.floor(Math.random() * candyTypes.length)];
+    const rand = Math.random();
+    let cumulativeWeight = 0;
+    let type = candyTypes[0];
+
+    for (const t of candyTypes) {
+        cumulativeWeight += t.weight || 0.1;
+        if (rand < cumulativeWeight) {
+            type = t;
+            break;
+        }
+    }
+
     candies.push({
         x: Math.random() * canvas.width,
         y: -50,
         radius: 15,
-        speed: 2 + Math.random() * 3,
+        speed: (2 + Math.random() * 3) * difficultyMultiplier,
+        rotation: 0,
+        rotationSpeed: (Math.random() - 0.5) * 0.1,
         ...type
     });
 }
@@ -57,35 +79,27 @@ function spawnHazard() {
         x: Math.random() * canvas.width,
         y: -50,
         radius: 20,
-        speed: 3 + Math.random() * 4,
+        speed: (3 + Math.random() * 4) * difficultyMultiplier,
+        rotation: 0,
+        rotationSpeed: (Math.random() - 0.5) * 0.1,
         ...type
     });
 }
 
 function createParticles(x, y, color) {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 12; i++) {
         particles.push({
             x: x,
             y: y,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            radius: Math.random() * 5,
+            vx: (Math.random() - 0.5) * 12,
+            vy: (Math.random() - 0.5) * 12,
+            radius: Math.random() * 4,
             color: color,
             life: 1.0
         });
     }
 }
 
-function update() {
-    if (!gameActive) return;
-
-    // Player movement
-    player.x = canvas.width / 2; // Centered horizontally for simplicity in this version
-    // Use mouse/touch position for Y axis
-    // Note: In a real game, we'd want to track mouse position.
-}
-
-// We need mouse tracking
 let mouseX = canvas.width / 2;
 let mouseY = canvas.height / 2;
 
@@ -97,38 +111,78 @@ canvas.addEventListener('mousemove', (e) => {
 function updateLogic() {
     if (!gameActive) return;
 
+    const currentTime = Date.now();
+    const elapsed = (currentTime - startTime) / 1000;
+    difficultyMultiplier = 1 + elapsed * 0.05;
+
     player.x = mouseX;
     player.y = mouseY;
 
+    // Update trail
+    player.trail.push({ x: player.x, y: player.y });
+    if (player.trail.length > 15) player.trail.shift();
+
+    if (player.shieldTimer > 0) {
+        player.shieldTimer--;
+        if (player.shieldTimer <= 0) player.shielded = false;
+    }
+
+    if (comboTimer > 0) {
+        comboTimer--;
+        if (comboTimer <= 0) {
+            combo = 0;
+        }
+    }
+
     candies.forEach((candy, index) => {
         candy.y += candy.speed;
+        candy.rotation += candy.rotationSpeed;
         if (candy.y > canvas.height + 50) {
             candies.splice(index, 1);
         }
         
         const dist = Math.hypot(player.x - candy.x, player.y - candy.y);
         if (dist < player.radius + candy.radius) {
-            score += candy.value;
-            scoreElement.innerText = `Poeng: ${score}`;
-            createParticles(candy.x, candy.y, candy.color);
+            if (candy.isPowerUp) {
+                player.shielded = true;
+                player.shieldTimer = 300; // ~5 seconds at 60fps
+                createParticles(candy.x, candy.y, '#ffffff');
+            } else {
+                combo++;
+                comboTimer = 60;
+                const comboBonus = Math.floor(combo / 5) * 5;
+                score += candy.value + comboBonus;
+                createParticles(candy.x, candy.y, candy.color);
+            }
+            scoreElement.innerText = `Poeng: ${score}${combo > 1 ? ` (Combo x${combo}!)` : ''}`;
             candies.splice(index, 1);
         }
     });
 
     hazards.forEach((hazard, index) => {
         hazard.y += hazard.speed;
+        hazard.rotation += hazard.rotationSpeed;
         if (hazard.y > canvas.height + 50) {
             hazards.splice(index, 1);
         }
 
         const dist = Math.hypot(player.x - hazard.x, player.y - hazard.y);
         if (dist < player.radius + hazard.radius) {
-            lives--;
-            livesElement.innerText = `Liv: ${'❤️'.repeat(lives)}`;
-            createParticles(hazard.x, hazard.y, '#ff0000');
-            hazards.splice(index, 1);
-            if (lives <= 0) {
-                endGame();
+            if (player.shielded) {
+                player.shielded = false;
+                player.shieldTimer = 0;
+                createParticles(hazard.x, hazard.y, '#ffffff');
+                hazards.splice(index, 1);
+                combo = 0;
+            } else {
+                lives--;
+                livesElement.innerText = `Liv: ${'❤️'.repeat(lives)}`;
+                createParticles(hazard.x, hazard.y, '#ff0000');
+                hazards.splice(index, 1);
+                combo = 0;
+                if (lives <= 0) {
+                    endGame();
+                }
             }
         }
     });
@@ -142,12 +196,27 @@ function updateLogic() {
         }
     });
 
-    if (Math.random() < 0.02) spawnCandy();
-    if (Math.random() < 0.01) spawnHazard();
+    if (Math.random() < 0.03 * difficultyMultiplier) spawnCandy();
+    if (Math.random() < 0.015 * difficultyMultiplier) spawnHazard();
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Player Trail
+    ctx.beginPath();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = player.color;
+    for (let i = 0; i < player.trail.length; i++) {
+        const pos = player.trail[i];
+        const alpha = i / player.trail.length;
+        ctx.globalAlpha = alpha;
+        if (i === 0) ctx.moveTo(pos.x, pos.y);
+        else ctx.lineTo(pos.x, pos.y);
+    }
+    ctx.stroke();
+    ctx.closePath();
+    ctx.globalAlpha = 1.0;
 
     // Draw Player
     ctx.beginPath();
@@ -158,36 +227,42 @@ function draw() {
     ctx.fill();
     ctx.closePath();
 
+    if (player.shielded) {
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.closePath();
+    }
+
     // Draw Candies
     candies.forEach(candy => {
+        ctx.save();
+        ctx.translate(candy.x, candy.y);
+        ctx.rotate(candy.rotation);
         ctx.font = '30px serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(candy.symbol, candy.x, candy.y);
+        ctx.fillText(candy.symbol, 0, 0);
+        ctx.restore();
     });
 
     // Draw Hazards
     hazards.forEach(hazard => {
+        ctx.save();
+        ctx.translate(hazard.x, hazard.y);
+        ctx.rotate(hazard.rotation);
         ctx.font = '30px serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(hazard.symbol, hazard.x, hazard.y);
+        ctx.fillText(hazard.symbol, 0, 0);
+        ctx.restore();
     });
 
     // Draw Particles
-    particles.forEach(particle => {
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${parseInt(particle.color.slice(1, 3), 16)*255/255}, 
-                                 ${parseInt(particle.color.slice(3, 5), 16)*255/255}, 
-                                 ${parseInt(particle.color.slice(5, 7), 16)*255/255}, 
-                                 ${particle.life})`;
-        // Simple hex to rgba conversion for transparency
-        ctx.fill();
-        ctx.closePath();
-    });
-    
-    // Fixing particle color logic
     particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
@@ -197,6 +272,7 @@ function draw() {
         ctx.closePath();
     });
     ctx.globalAlpha = 1.0;
+    ctx.shadowBlur = 0;
 }
 
 function gameLoop() {
@@ -208,11 +284,17 @@ function gameLoop() {
 function startGame() {
     score = 0;
     lives = 3;
+    combo = 0;
+    difficultyMultiplier = 1;
+    startTime = Date.now();
     scoreElement.innerText = `Poeng: 0`;
     livesElement.innerText = `Liv: ❤️❤️❤️`;
     candies = [];
     hazards = [];
     particles = [];
+    player.trail = [];
+    player.shielded = false;
+    player.shieldTimer = 0;
     gameActive = true;
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
