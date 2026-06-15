@@ -22,6 +22,22 @@ let animationId;
 const LANE_KEYS = ['d', 'f', 'j', 'k'];
 const LANE_COLORS = ['#ff4d4d', '#ffa500', '#4caf50', '#2196f3'];
 
+const LANE_FREQS = [261.63, 293.66, 329.63, 349.23]; // C4, D4, E4, F4
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playNote(freq, type = 'sine', duration = 0.1, vol = 0.1) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
 function resize() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
@@ -89,6 +105,7 @@ function handleInput(key) {
         if (note.laneIndex === laneIndex && !note.hit && !note.missed) {
             const dist = Math.abs(note.y - targetY);
             if (dist < hitWindow) {
+                playNote(LANE_FREQS[laneIndex], 'sine', 0.2, 0.15);
                 score += 10 + Math.floor(combo / 10) * 5;
                 combo++;
                 hitFound = true;
@@ -114,12 +131,42 @@ function handleInput(key) {
     if (!hitFound) {
         combo = 0;
         showRating('MISS', '#ff4d4d');
+        playNote(110, 'sawtooth', 0.2, 0.1);
     }
 
     updateUI();
 }
 
 const sparkles = [];
+const backgroundRain = [];
+
+class Raindrop {
+    constructor() {
+        this.reset();
+        this.y = Math.random() * canvas.height;
+    }
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = -20;
+        this.speed = Math.random() * 5 + 5;
+        this.length = Math.random() * 10 + 10;
+        this.opacity = Math.random() * 0.3 + 0.1;
+    }
+    update() {
+        this.y += this.speed;
+        if (this.y > canvas.height) this.reset();
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.lineWidth = 1;
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.length);
+        ctx.stroke();
+        ctx.closePath();
+    }
+}
+
 function createSparkles(x, y, color) {
     for (let i = 0; i < 10; i++) {
         sparkles.push({
@@ -172,6 +219,11 @@ function gameLoop(timestamp) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    backgroundRain.forEach(drop => {
+        drop.update();
+        drop.draw();
+    });
+
     const now = timestamp;
     if (now - lastNoteTime > spawnRate) {
         spawnNote();
@@ -205,6 +257,10 @@ function startGame() {
     combo = 0;
     notes = [];
     sparkles = [];
+    backgroundRain.length = 0;
+    for (let i = 0; i < 50; i++) {
+        backgroundRain.push(new Raindrop());
+    }
     gameActive = true;
     lastNoteTime = 0;
     noteSpeed = 4;
