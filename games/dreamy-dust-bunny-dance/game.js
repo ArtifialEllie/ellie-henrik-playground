@@ -23,6 +23,8 @@ const MAX_MISSED = 10;
 let gameActive = false;
 let notes = [];
 let particles = [];
+let floatingTexts = [];
+let ambientSparkles = [];
 let lastNoteTime = 0;
 let noteSpeed = 5;
 let spawnRate = 1500;
@@ -37,6 +39,64 @@ const keys = {
     'k': { x: 0.6, color: '#c2f0c2', label: 'K' },
     'l': { x: 0.8, color: '#fff2b2', label: 'L' },
 };
+
+class FloatingText {
+    constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 1.0;
+        this.decay = 0.02;
+        this.vy = -2;
+    }
+
+    update() {
+        this.y += this.vy;
+        this.life -= this.decay;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold 24px "Comic Sans MS", cursive';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+    }
+}
+
+class AmbientSparkle {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 3 + 1;
+        this.speed = Math.random() * 1 + 0.5;
+        this.angle = Math.random() * Math.PI * 2;
+        this.opacity = Math.random() * 0.5 + 0.2;
+    }
+
+    update() {
+        this.y -= this.speed;
+        this.x += Math.sin(Date.now() * 0.001 + this.angle) * 0.5;
+        if (this.y < 0) this.reset();
+    }
+
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
 
 class Note {
     constructor(key) {
@@ -154,6 +214,9 @@ function handleInput(e) {
             updateUI();
             triggerComboPop();
             
+            const hitText = combo % 10 === 0 ? `COMBO x${combo}!` : (feverMode ? 'FEVER!' : 'Nice!');
+            floatingTexts.push(new FloatingText(note.x, note.y, hitText, note.color));
+            
             if (combo >= FEVER_THRESHOLD && !feverMode) {
                 startFever();
             }
@@ -201,6 +264,12 @@ function gameLoop() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Draw ambient sparkles
+    ambientSparkles.forEach(s => {
+        s.update();
+        s.draw();
+    });
+
     if (feverMode && Date.now() > feverTimer) {
         stopFever();
     }
@@ -243,6 +312,15 @@ function gameLoop() {
         }
     }
 
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.update();
+        ft.draw();
+        if (ft.life <= 0) {
+            floatingTexts.splice(i, 1);
+        }
+    }
+
     const now = Date.now();
     if (now - lastNoteTime > spawnRate) {
         spawnNote();
@@ -260,6 +338,8 @@ function startGame() {
     missedCount = 0;
     notes = [];
     particles = [];
+    floatingTexts = [];
+    ambientSparkles = Array.from({ length: 30 }, () => new AmbientSparkle());
     lastNoteTime = Date.now();
     spawnRate = 1500;
     noteSpeed = 5;
