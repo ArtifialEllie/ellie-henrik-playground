@@ -4,7 +4,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 let scene, camera, renderer, controls, raycaster, mouse;
 let prisms = [];
 let score = 0;
+let combo = 0;
+let lastClickTime = 0;
 const scoreElement = document.getElementById('score');
+const comboElement = document.getElementById('combo');
+const comboContainer = document.getElementById('combo-container');
 
 function init() {
     scene = new THREE.Scene();
@@ -92,9 +96,28 @@ function onMouseDown(event) {
 
     if (intersects.length > 0) {
         const object = intersects[0].object;
-        score++;
+        
+        // Combo logic
+        const currentTime = Date.now();
+        if (currentTime - lastClickTime < 1000) {
+            combo++;
+        } else {
+            combo = 1;
+        }
+        lastClickTime = currentTime;
+
+        score += combo;
         scoreElement.innerText = score;
         
+        if (combo > 1) {
+            comboElement.innerText = combo;
+            comboContainer.style.display = 'block';
+            // Re-trigger animation
+            comboContainer.style.animation = 'none';
+            comboContainer.offsetHeight; // trigger reflow
+            comboContainer.style.animation = 'pop 0.3s ease-out';
+        }
+
         // Effect: pop and change color
         object.scale.set(1.5, 1.5, 1.5);
         setTimeout(() => object.scale.set(1, 1, 1), 100);
