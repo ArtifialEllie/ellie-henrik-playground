@@ -118,8 +118,16 @@ function createOrbitals() {
 }
 
 function createPrisms() {
+    const geometries = [
+        new THREE.OctahedronGeometry(0.5, 0),
+        new THREE.IcosahedronGeometry(0.5, 0),
+        new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8),
+        new THREE.SphereGeometry(0.5, 16, 16),
+        new THREE.ConeGeometry(0.5, 1, 16)
+    ];
+
     for (let i = 0; i < 30; i++) {
-        createSinglePrism();
+        createSinglePrism(geometries);
     }
 
     // Initial golden prism
@@ -129,8 +137,8 @@ function createPrisms() {
     setInterval(spawnGoldenPrism, 5000);
 }
 
-function createSinglePrism() {
-    const geometry = new THREE.OctahedronGeometry(0.5, 0);
+function createSinglePrism(geometries) {
+    const geometry = geometries[Math.floor(Math.random() * geometries.length)];
     const colors = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000, 0x0000ff];
     const material = new THREE.MeshPhongMaterial({
         color: colors[Math.floor(Math.random() * colors.length)],
@@ -225,7 +233,7 @@ function onMouseDown(event) {
             scene.remove(object);
             prisms = prisms.filter(p => p !== object);
             
-            createSinglePrism();
+            createSinglePrism(getAvailableGeometries());
             if (Math.random() > 0.7) {
                 spawnGoldenPrism();
             }
@@ -233,6 +241,16 @@ function onMouseDown(event) {
         
         spawnSpark(object.position);
     }
+}
+
+function getAvailableGeometries() {
+    return [
+        new THREE.OctahedronGeometry(0.5, 0),
+        new THREE.IcosahedronGeometry(0.5, 0),
+        new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8),
+        new THREE.SphereGeometry(0.5, 16, 16),
+        new THREE.ConeGeometry(0.5, 1, 16)
+    ];
 }
 
 function createFloatingText(text, x, y) {
@@ -249,6 +267,7 @@ function createFloatingText(text, x, y) {
 }
 
 function spawnSpark(position) {
+    spawnClickRing(position);
     const particleCount = 15;
     const colors = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000, 0x0000ff];
     
@@ -285,6 +304,35 @@ function spawnSpark(position) {
         }
         updateSpark();
     }
+}
+
+function spawnClickRing(position) {
+    const ringGeo = new THREE.TorusGeometry(0.1, 0.02, 16, 100);
+    const ringMat = new THREE.MeshBasicMaterial({ 
+        color: 0xffffff, 
+        transparent: true, 
+        opacity: 0.8 
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.copy(position);
+    ring.position.z += 0.01; // Avoid z-fighting
+    ring.lookAt(camera.position);
+    scene.add(ring);
+
+    const startTime = Date.now();
+    const duration = 500;
+    function animateRing() {
+        const elapsed = Date.now() - startTime;
+        const progress = elapsed / duration;
+        if (progress >= 1) {
+            scene.remove(ring);
+            return;
+        }
+        ring.scale.set(1 + progress * 2, 1 + progress * 2, 1);
+        ring.material.opacity = 1 - progress;
+        requestAnimationFrame(animateRing);
+    }
+    animateRing();
 }
 
 function spawnGoldenPrism() {
