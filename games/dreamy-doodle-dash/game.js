@@ -17,6 +17,7 @@ let drawing = false;
 let currentPath = [];
 let platforms = []; // Static platforms
 let userBridges = []; // Bridges drawn by player
+let particles = []; // For glitter and explosions
 
 const GRAVITY = 0.2;
 const FRICTION = 0.98;
@@ -50,6 +51,21 @@ function initLevel() {
     }
 }
 
+function createParticles(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 5,
+            vy: (Math.random() - 0.5) * 5,
+            life: 1.0,
+            decay: 0.02 + Math.random() * 0.02,
+            color: color,
+            size: Math.random() * 4 + 2
+        });
+    }
+}
+
 function start() {
     gameState = 'PLAYING';
     overlay.style.opacity = '0';
@@ -79,6 +95,7 @@ window.addEventListener('mouseup', () => {
     drawing = false;
     if (currentPath.length > 2) {
         userBridges.push([...currentPath]);
+        createParticles(currentPath[currentPath.length - 1].x, currentPath[currentPath.length - 1].y, 'white', 15);
     }
 });
 
@@ -119,6 +136,17 @@ function resolveCollision(px, py, radius, platform) {
 
 function update() {
     if (gameState !== 'PLAYING') return;
+
+    // Update Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= p.decay;
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
 
     // Physics
     star.vx *= FRICTION;
@@ -197,16 +225,29 @@ function update() {
     // Goal check
     const distToGoal = Math.hypot(star.x - goal.x, star.y - goal.y);
     if (distToGoal < goal.radius + star.radius) {
+        createParticles(star.x, star.y, '#fff700', 30);
         score += 100;
         level++;
         scoreEl.innerText = `Stjerner: ${score}`;
         levelEl.innerText = `Drømmenivå: ${level}`;
-        initLevel();
+        setTimeout(() => {
+            initLevel();
+        }, 300);
     }
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Particles
+    particles.forEach((p) => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
 
     // Goal (Cloud)
     ctx.beginPath();
