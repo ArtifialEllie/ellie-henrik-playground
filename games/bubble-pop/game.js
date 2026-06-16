@@ -32,6 +32,7 @@ let isVortex = false;
 let shieldActive = false;
 let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
+let currentAccessory = localStorage.getItem('bubblePopAccessory') || '';
 
 highscoreEl.innerText = highscore;
 totalGoldEl.innerText = totalGold;
@@ -79,6 +80,15 @@ const skins = [
     { color: '#c0c0c0', name: 'Starlight Silver', cost: 4000 },
 ];
 
+const accessories = [
+    { emoji: '🎀', name: 'Pink Bow', cost: 100 },
+    { emoji: '👑', name: 'Royal Crown', cost: 500 },
+    { emoji: '🕶️', name: 'Cool Shades', cost: 300 },
+    { emoji: '🪄', name: 'Magic Wand', cost: 700 },
+    { emoji: '🎓', name: 'Smart Hat', cost: 400 },
+    { emoji: '🌸', name: 'Flower Crown', cost: 200 },
+];
+
 function openShop() {
     document.getElementById('shop-overlay').style.display = 'flex';
     renderShop();
@@ -90,7 +100,8 @@ function closeShop() {
 
 function renderShop() {
     const shopGrid = document.getElementById('shop-grid');
-    shopGrid.innerHTML = '';
+    shopGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px;">Bubble Skins ✨</div>';
+    
     skins.forEach(skin => {
         const isSelected = currentSkin === skin.color;
         const canAfford = totalGold >= skin.cost;
@@ -117,6 +128,43 @@ function renderShop() {
                 localStorage.setItem(`bubblePopSkin_${skin.color}`, 'true');
                 currentSkin = skin.color;
                 localStorage.setItem('bubblePopSkin', currentSkin);
+                renderShop();
+                playSound(880, 'sine', 0.2);
+            } else {
+                playSound(200, 'sawtooth', 0.1);
+            }
+        };
+        shopGrid.appendChild(item);
+    });
+
+    shopGrid.innerHTML += '<div style="grid-column: 1/-1; text-align: center; font-weight: bold; font-size: 1.2rem; margin: 20px 0 10px 0;">Pet Accessories 🎀</div>';
+
+    accessories.forEach(acc => {
+        const isSelected = currentAccessory === acc.emoji;
+        const canAfford = totalGold >= acc.cost;
+        const isOwned = localStorage.getItem(`bubblePopAcc_${acc.emoji}`) === 'true' || acc.cost === 0;
+        
+        const item = document.createElement('div');
+        item.className = `shop-item ${isSelected ? 'selected' : ''}`;
+        item.innerHTML = `
+            <div style="font-size: 2rem; margin-bottom: 5px;">${acc.emoji}</div>
+            <div style="font-size: 0.9rem; font-weight: bold;">${acc.name}</div>
+            <div class="item-cost">${isOwned ? 'Owned' : '✨ ' + acc.cost}</div>
+        `;
+        
+        item.onclick = () => {
+            if (isOwned) {
+                currentAccessory = acc.emoji;
+                localStorage.setItem('bubblePopAccessory', currentAccessory);
+                renderShop();
+                playSound(600, 'sine', 0.1);
+            } else if (canAfford) {
+                totalGold -= acc.cost;
+                localStorage.setItem('bubblePopTotalGold', totalGold);
+                totalGoldEl.innerText = totalGold;
+                localStorage.setItem(`bubblePopAcc_${acc.emoji}`, 'true');
+                currentAccessory = acc.emoji;
+                localStorage.setItem('bubblePopAccessory', currentAccessory);
                 renderShop();
                 playSound(880, 'sine', 0.2);
             } else {
@@ -517,6 +565,16 @@ class MagicalPet {
             };
             handlePop(mockEvent);
             floatingTexts.push(new FloatingText(nearest.x, nearest.y, 'PET POP! 🐱✨', 'gold'));
+        }
+    }
+
+    draw() {
+        ctx.font = `${this.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(this.emoji, this.x, this.y + this.floatOffset);
+        if (currentAccessory) {
+            ctx.font = `${this.size * 0.7}px Arial`;
+            ctx.fillText(currentAccessory, this.x + this.size * 0.3, this.y + this.floatOffset - this.size * 0.2);
         }
     }
 }
