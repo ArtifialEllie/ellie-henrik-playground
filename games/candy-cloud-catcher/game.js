@@ -1,0 +1,200 @@
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const timerElement = document.getElementById('timer');
+const highscoreElement = document.getElementById('highscore');
+const startOverlay = document.getElementById('start-overlay');
+const startBtn = document.getElementById('start-btn');
+const overlay = document.getElementById('overlay');
+const finalScoreElement = document.getElementById('final-score');
+
+let score = 0;
+let highscore = localStorage.getItem('candyCloudHighscore') || 0;
+let timeLeft = 60;
+let gameActive = false;
+let gameInterval;
+let timerInterval;
+
+highscoreElement.textContent = highscore;
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+class Player {
+    constructor() {
+        this.width = 120;
+        this.height = 60;
+        this.x = canvas.width / 2 - this.width / 2;
+        this.y = canvas.height - 100;
+        this.color = '#ffffff';
+    }
+
+    draw() {
+        // Draw a fluffy cloud
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x + 30, this.y + 30, 30, 0, Math.PI * 2);
+        ctx.arc(this.x + 60, this.y + 20, 35, 0, Math.PI * 2);
+        ctx.arc(this.x + 90, this.y + 30, 30, 0, Math.PI * 2);
+        ctx.arc(this.x + 60, this.y + 40, 30, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Add a little smiley face to the cloud
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(this.x + 50, this.y + 25, 3, 0, Math.PI * 2);
+        ctx.arc(this.x + 70, this.y + 25, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(this.x + 60, this.y + 35, 5, 0, Math.PI, false);
+        ctx.stroke();
+    }
+
+    update(mouseX) {
+        this.x = mouseX - this.width / 2;
+        // Keep in bounds
+        if (this.x < 0) this.x = 0;
+        if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+    }
+}
+
+class FallingItem {
+    constructor() {
+        this.radius = 15 + Math.random() * 10;
+        this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+        this.y = -this.radius;
+        this.speed = 3 + Math.random() * 4;
+        this.type = Math.random() > 0.2 ? 'candy' : 'lemon';
+        
+        if (this.type === 'candy') {
+            this.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
+            this.emoji = '🍬';
+        } else {
+            this.color = '#fef08a';
+            this.emoji = '🍋';
+        }
+    }
+
+    draw() {
+        ctx.font = `${this.radius * 2}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.emoji, this.x, this.y);
+    }
+
+    update() {
+        this.y += this.speed;
+    }
+}
+
+const player = new Player();
+const items = [];
+
+function spawnItem() {
+    if (!gameActive) return;
+    items.push(new FallingItem());
+}
+
+function update() {
+    if (!gameActive) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    player.update(mouseX);
+    player.draw();
+
+    for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        item.update();
+        item.draw();
+
+        // Collision detection
+        if (
+            item.y + item.radius > player.y &&
+            item.y - item.radius < player.y + player.height &&
+            item.x > player.x &&
+            item.x < player.x + player.width
+        ) {
+            if (item.type === 'candy') {
+                score++;
+                scoreElement.textContent = score;
+                // Simple pop effect could be added here
+            } else {
+                score = Math.max(0, score - 5);
+                scoreElement.textContent = score;
+            }
+            items.splice(i, 1);
+        } else if (item.y > canvas.height + item.radius) {
+            items.splice(i, 1);
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+let mouseX = 0;
+window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+});
+
+window.addEventListener('touchmove', (e) => {
+    mouseX = e.touches[0].clientX;
+});
+
+startBtn.addEventListener('click', () => {
+    startOverlay.style.display = 'none';
+    gameActive = true;
+    score = 0;
+    scoreElement.textContent = score;
+    
+    gameInterval = setInterval(spawnItem, 800);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            endGame();
+        }
+    }, 1000);
+    
+    update();
+});
+
+function endGame() {
+    gameActive = false;
+    clearInterval(gameInterval);
+    clearInterval(timerInterval);
+    
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem('candyCloudHighscore', highscore);
+        highscoreElement.textContent = highscore;
+    }
+    
+    overlay.style.display = 'flex';
+    finalScoreElement.textContent = `Du fanget ${score} godterier!`;
+}
+
+function resetGame() {
+    timeLeft = 60;
+    timerElement.textContent = timeLeft;
+    overlay.style.display = 'none';
+    gameActive = true;
+    
+    clearInterval(gameInterval);
+    clearInterval(timerInterval);
+    
+    gameInterval = setInterval(spawnItem, 800);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            endGame();
+        }
+    }, 1000);
+    
+    update();
+}

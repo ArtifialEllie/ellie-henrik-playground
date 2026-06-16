@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Cloud Catcher 🍬☁️</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui">
+        <div>Søtsaker: <span id="score">0</span> 🍬</div>
+        <div>Tid: <span id="timer">60</span>s ⏰</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+
+    <div id="start-overlay">
+        <h1>Candy Cloud Catcher 🍬☁️</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 20px;">Fang de søte godteriene på skyen din! Men pass deg for de sure sitronene! 🍋</p>
+        <button class="btn" id="start-btn">Start Fangst! 🚀</button>
+    </div>
+
+    <div id="overlay" style="display: none;">
+        <h1 id="status-text">Tid er ute! 🌸</h1>
+        <p id="final-score" style="font-size: 1.5rem; margin-bottom: 30px;">Du fanget 0 godterier!</p>
+        <button class="btn" onclick="location.reload()">Prøv igjen! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <script src="game.js"></script>
+</body>
+</html>
