@@ -402,6 +402,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🦴', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'cupcake') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🧁', this.x, this.y + currentRadius/3);
         }
         ctx.shadowBlur = 0;
     }
@@ -643,6 +647,32 @@ function triggerGoldenRain() {
         isGoldenRain = false;
         rainAlert.style.display = 'none';
     }, 7000);
+}
+
+function triggerCupcakeRain() {
+    const cupcakeAlert = document.getElementById('cupcake-alert');
+    cupcakeAlert.style.display = 'block';
+    cupcakeAlert.style.color = '#ffb6c1';
+    cupcakeAlert.style.textShadow = '4px 4px #ffffff';
+
+    for (let i = 0; i < 25; i++) {
+        setTimeout(() => {
+            const cupcake = new Bubble(false);
+            cupcake.type = 'normal';
+            cupcake.color = '#ffb6c1';
+            cupcake.radius = 35;
+            cupcake.y = -cupcake.radius;
+            
+            // Add a little cupcake emoji to the center (by monkey-patching the draw method slightly or just relying on type)
+            // Since Bubble.draw uses type, let's give it a custom type
+            cupcake.type = 'cupcake'; 
+            bubbles.push(cupcake);
+        }, i * 150);
+    }
+
+    setTimeout(() => {
+        cupcakeAlert.style.display = 'none';
+    }, 6000);
 }
 
 function triggerMagnetism() {
@@ -985,6 +1015,7 @@ function handlePop(e) {
             if (Math.random() < 0.01) triggerParty();
             if (Math.random() < 0.005) triggerGoldenRain();
             if (Math.random() < 0.008) triggerVortex();
+            if (Math.random() < 0.004) triggerCupcakeRain();
             
             updateCombo();
             scoreEl.innerText = score;

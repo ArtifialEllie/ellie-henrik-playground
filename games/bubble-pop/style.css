@@ -201,7 +201,7 @@ h1 {
     margin-top: 0;
     text-shadow: 3px 3px white;
 }
-#frenzy-alert, #party-alert, #golden-rain-alert {
+#frenzy-alert, #party-alert, #golden-rain-alert, #cupcake-alert {
     position: absolute;
     top: 50%;
     left: 50%;
