@@ -55,27 +55,52 @@ class Note {
         this.x = (canvas.width / 5) * (laneIndex + 1);
         this.y = -50;
         this.radius = 20;
-        this.color = LANE_COLORS[laneIndex];
+        this.isGolden = Math.random() < 0.1; // 10% chance to be golden
+        this.color = this.isGolden ? '#ffd700' : LANE_COLORS[laneIndex];
         this.hit = false;
         this.missed = false;
+        this.history = []; // For rainbow trail
     }
 
     update() {
+        this.history.push({x: this.x, y: this.y});
+        if (this.history.length > 10) this.history.shift();
+        
         this.y += noteSpeed;
-        if (this.y > canvas.height - 80 && !this.hit && !this.missed) {
-            // Note is in target zone
-        }
         if (this.y > canvas.height) {
             this.missed = true;
         }
     }
 
     draw() {
+        // Draw rainbow trail
+        ctx.beginPath();
+        ctx.lineWidth = this.radius * 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = this.isGolden ? 'rgba(255, 215, 0, 0.3)' : this.color + '44';
+        for (let i = 0; i < this.history.length - 1; i++) {
+            ctx.moveTo(this.history[i].x, this.history[i].y);
+            ctx.lineTo(this.history[i+1].x, this.history[i+1].y);
+        }
+        ctx.stroke();
+        ctx.closePath();
+
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = this.color;
+        
+        if (this.isGolden) {
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = '#fff700';
+            // Add a little star-like glow
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        } else {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = this.color;
+        }
+        
         ctx.fill();
         ctx.closePath();
         ctx.shadowBlur = 0;
@@ -109,15 +134,19 @@ function handleInput(key) {
             const dist = Math.abs(note.y - targetY);
             if (dist < hitWindow) {
                 playNote(LANE_FREQS[laneIndex], 'sine', 0.2, 0.15);
+                
+                // Golden notes give massive bonus
+                const goldenBonus = note.isGolden ? 5 : 1;
                 const multiplier = feverActive ? 3 : 1;
-                score += (10 + Math.floor(combo / 10) * 5) * multiplier;
+                score += (10 + Math.floor(combo / 10) * 5) * multiplier * goldenBonus;
+                
                 combo++;
                 hitFound = true;
                 note.hit = true;
                 
                 // Fever system
                 if (!feverActive) {
-                    fever += 2;
+                    fever += note.isGolden ? 10 : 2;
                     if (fever >= 100) {
                         activateFever();
                     }
@@ -129,11 +158,11 @@ function handleInput(key) {
                 // Rating based on distance
                 const dist = Math.abs(note.y - targetY);
                 if (dist < 15) {
-                    showRating('PERFECT!', '#ffff00');
+                    showRating(note.isGolden ? 'GOLDEN PERFECT! ✨' : 'PERFECT!', '#ffff00');
                 } else if (dist < 30) {
-                    showRating('GREAT!', '#4caf50');
+                    showRating(note.isGolden ? 'GOLDEN GREAT! ✨' : 'GREAT!', '#4caf50');
                 } else {
-                    showRating('GOOD', '#2196f3');
+                    showRating(note.isGolden ? 'GOLDEN GOOD ✨' : 'GOOD', '#2196f3');
                 }
                 break;
             }
