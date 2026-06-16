@@ -145,7 +145,6 @@ function renderShop() {
         shopGrid.appendChild(item);
     });
 
-<<<<<<< HEAD
     const accGrid = document.getElementById('accessory-grid');
     accGrid.innerHTML = '';
     accessories.forEach(acc => {
@@ -153,19 +152,7 @@ function renderShop() {
         const canAfford = totalGold >= acc.cost;
         
         const item = document.createElement('div');
-        item.className = `shop-item ${isOwned ? 'selected' : ''}`;
-        item.innerHTML = `
-            <div class="item-preview" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; background: none; border: 2px dashed #ccc; border-radius: 50%;">
-                ${acc.emoji}
-            </div>
-    const accGrid = document.getElementById('accessory-grid');
-    accGrid.innerHTML = '';
-    accessories.forEach(acc => {
-        const isOwned = ownedAccessories.includes(acc.name);
-        const canAfford = totalGold >= acc.cost;
-        
-        const item = document.createElement('div');
-        item.className = `shop-item ${isOwned ? 'selected' : ''}`;
+        item.className = `shop-item ${currentAccessory === acc.emoji ? 'selected' : ''}`;
         item.innerHTML = `
             <div class="item-preview" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; background: none; border: 2px dashed #ccc; border-radius: 50%;">
                 ${acc.emoji}
@@ -195,10 +182,6 @@ function renderShop() {
             }
         };
         accGrid.appendChild(item);
-    });
-
-        shopGrid.appendChild(item);
->>>>>>> 3e09457b30b1589aa73547e7469ff7a18186fcd3
     });
 }
 
