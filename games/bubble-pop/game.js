@@ -218,6 +218,9 @@ class Bubble {
         } else if (rand > 0.427) {
             this.type = 'lucky-clover';
             this.color = '#81c784';
+        } else if (rand > 0.327 && rand < 0.357) {
+            this.type = 'pet-treat';
+            this.color = '#ffca28';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -339,6 +342,10 @@ class Bubble {
             // Draw health bar
             ctx.fillStyle = 'white';
             ctx.fillRect(this.x - 20, this.y - currentRadius - 10, 40 * (this.hits/3), 5);
+        } else if (this.type === 'pet-treat') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🦴', this.x, this.y + currentRadius/3);
         }
         ctx.shadowBlur = 0;
     }
@@ -434,6 +441,8 @@ class MagicalPet {
         this.autoPopTimer = 0;
         this.popInterval = 8000;
         this.popRange = 150;
+        this.sugarRushTimer = 0;
+        this.isSugarRush = false;
     }
 
     update(mouseX, mouseY) {
@@ -467,29 +476,30 @@ class MagicalPet {
             floatingTexts.push(new FloatingText(this.x, this.y, `PET EVOLVED! ${this.emoji}`, 'gold'));
             playSound(800, 'sine', 0.3);
         }
-
-        // Auto-pop logic
-        if (gameActive) {
-            this.autoPopTimer++;
-            if (this.autoPopTimer >= this.popInterval) {
-                this.tryAutoPop();
-                this.autoPopTimer = 0;
-            }
+ 
+        // Sugar Rush Logic
+        if (this.sugarRushTimer > 0) {
+            this.sugarRushTimer--;
+            this.isSugarRush = true;
+        } else {
+            this.isSugarRush = false;
         }
     }
-
-    draw() {
-        ctx.font = `${this.size}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.fillText(this.emoji, this.x, this.y + this.floatOffset);
+ 
+    triggerSugarRush() {
+        this.sugarRushTimer = 600; // Approx 10 seconds at 60fps
+        floatingTexts.push(new FloatingText(this.x, this.y, `SUGAR RUSH! ⚡️`, 'gold'));
+        playSound(1000, 'sine', 0.2);
+        playSound(1200, 'sine', 0.2);
     }
-
+ 
     tryAutoPop() {
         if (bubbles.length === 0) return;
         
         // Find nearest bubble within range
         let nearest = null;
-        let minDist = this.popRange;
+        const currentRange = this.isSugarRush ? this.popRange * 2 : this.popRange;
+        let minDist = currentRange;
 
         bubbles.forEach(b => {
             const dist = Math.hypot(this.x - b.x, this.y - b.y);
@@ -503,6 +513,12 @@ class MagicalPet {
             // Simulate a pop at the bubble's location
             const mockEvent = {
                 clientX: nearest.x + canvas.getBoundingClientRect().left,
+                clientY: nearest.y + canvas.getBoundingClientRect().top
+            };
+            handlePop(mockEvent);
+            floatingTexts.push(new FloatingText(nearest.x, nearest.y, 'PET POP! 🐱✨', 'gold'));
+        }
+    }
                 clientY: nearest.y + canvas.getBoundingClientRect().top
             };
             handlePop(mockEvent);
