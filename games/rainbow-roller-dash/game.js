@@ -7,6 +7,7 @@ let scene, camera, renderer, ball, road, stars = [];
     let score = 0;
     let gameActive = false;
     let speed = 0.2;
+    let combo = 1;
     let targetX = 0;
     let currentX = 0;
 
@@ -226,8 +227,10 @@ function update() {
         
         const dist = ball.position.distanceTo(star.position);
         if (dist < 1) {
-            score++;
+            score += combo;
             document.getElementById('score').innerText = score;
+            combo++;
+            document.getElementById('combo').innerText = combo;
             createSparkles(star.position);
             
             // Move star far ahead
@@ -239,6 +242,10 @@ function update() {
         if (star.position.z > ball.position.z + 5) {
             star.position.z = ball.position.z - ROAD_LENGTH;
             star.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
+            
+            // Reset combo if the player misses too many stars (optional, but let's make it challenging)
+            // For now, let's just reset combo when they've passed a certain distance without a star
+            // Actually, let's just keep it simple: combo increases with each star and stays until hit.
         }
     });
 
@@ -326,10 +333,12 @@ document.getElementById('restart-button').addEventListener('click', () => {
     // Reset game state
     score = 0;
     speed = 0.2;
+    combo = 1;
     ball.position.set(0, 0.5, 0);
     currentX = 0;
     targetX = 0;
     document.getElementById('score').innerText = '0';
+    document.getElementById('combo').innerText = '1';
     document.getElementById('game-over').style.display = 'none';
     
     // Reposition obstacles, stars and rings
