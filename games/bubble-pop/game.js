@@ -32,6 +32,7 @@ let isVortex = false;
 let shieldActive = false;
 let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
+let currentAccessory = localStorage.getItem('bubblePopAccessory') || '';
 
 highscoreEl.innerText = highscore;
 totalGoldEl.innerText = totalGold;
@@ -80,11 +81,17 @@ const skins = [
 ];
 
 const accessories = [
-    { name: 'Golden Collar', emoji: '👑', cost: 300, effect: 'gold_bonus' },
-    { name: 'Magic Hat', emoji: '🎩', cost: 600, effect: 'spawn_rate' },
-    { name: 'Sparkle Wings', emoji: '🦋', cost: 1000, effect: 'auto_pop_range' },
-    { name: 'Diamond Bow', emoji: '🎀', cost: 2000, effect: 'multiplier_boost' },
+    { name: 'Pink Bow', emoji: '🎀', cost: 100, effect: 'none' },
+    { name: 'Flower Crown', emoji: '🌸', cost: 200, effect: 'none' },
+    { name: 'Cool Shades', emoji: '🕶️', cost: 300, effect: 'none' },
+    { name: 'Golden Collar', emoji: '👑', cost: 500, effect: 'gold_bonus' },
+    { name: 'Smart Hat', emoji: '🎓', cost: 600, effect: 'none' },
+    { name: 'Magic Wand', emoji: '🪄', cost: 700, effect: 'none' },
+    { name: 'Magic Hat', emoji: '🎩', cost: 1000, effect: 'spawn_rate' },
+    { name: 'Sparkle Wings', emoji: '🦋', cost: 1500, effect: 'auto_pop_range' },
+    { name: 'Diamond Bow', emoji: '💎', cost: 2000, effect: 'multiplier_boost' },
     { name: 'Cosmic Cape', emoji: '🌌', cost: 5000, effect: 'frenzy_chance' },
+    { name: 'Rainbow Tutu', emoji: '👗', cost: 7000, effect: 'rainbow_bonus' },
 ];
 
 let ownedAccessories = JSON.parse(localStorage.getItem('bubblePopAccessories')) || [];
@@ -100,7 +107,8 @@ function closeShop() {
 
 function renderShop() {
     const shopGrid = document.getElementById('shop-grid');
-    shopGrid.innerHTML = '';
+    shopGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px;">Bubble Skins ✨</div>';
+    
     skins.forEach(skin => {
         const isSelected = currentSkin === skin.color;
         const canAfford = totalGold >= skin.cost;
@@ -136,6 +144,19 @@ function renderShop() {
         shopGrid.appendChild(item);
     });
 
+<<<<<<< HEAD
+    const accGrid = document.getElementById('accessory-grid');
+    accGrid.innerHTML = '';
+    accessories.forEach(acc => {
+        const isOwned = ownedAccessories.includes(acc.name);
+        const canAfford = totalGold >= acc.cost;
+        
+        const item = document.createElement('div');
+        item.className = `shop-item ${isOwned ? 'selected' : ''}`;
+        item.innerHTML = `
+            <div class="item-preview" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; background: none; border: 2px dashed #ccc; border-radius: 50%;">
+                ${acc.emoji}
+            </div>
     const accGrid = document.getElementById('accessory-grid');
     accGrid.innerHTML = '';
     accessories.forEach(acc => {
@@ -154,6 +175,9 @@ function renderShop() {
         
         item.onclick = () => {
             if (isOwned) {
+                currentAccessory = acc.emoji;
+                localStorage.setItem('bubblePopAccessory', currentAccessory);
+                renderShop();
                 playSound(600, 'sine', 0.1);
             } else if (canAfford) {
                 totalGold -= acc.cost;
@@ -161,6 +185,8 @@ function renderShop() {
                 totalGoldEl.innerText = totalGold;
                 ownedAccessories.push(acc.name);
                 localStorage.setItem('bubblePopAccessories', JSON.stringify(ownedAccessories));
+                currentAccessory = acc.emoji;
+                localStorage.setItem('bubblePopAccessory', currentAccessory);
                 renderShop();
                 playSound(880, 'sine', 0.2);
             } else {
@@ -168,6 +194,10 @@ function renderShop() {
             }
         };
         accGrid.appendChild(item);
+    });
+
+        shopGrid.appendChild(item);
+>>>>>>> 3e09457b30b1589aa73547e7469ff7a18186fcd3
     });
 }
 
@@ -569,6 +599,16 @@ class MagicalPet {
             };
             handlePop(mockEvent);
             floatingTexts.push(new FloatingText(nearest.x, nearest.y, 'PET POP! 🐱✨', 'gold'));
+        }
+    }
+
+    draw() {
+        ctx.font = `${this.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(this.emoji, this.x, this.y + this.floatOffset);
+        if (currentAccessory) {
+            ctx.font = `${this.size * 0.7}px Arial`;
+            ctx.fillText(currentAccessory, this.x + this.size * 0.3, this.y + this.floatOffset - this.size * 0.2);
         }
     }
 }

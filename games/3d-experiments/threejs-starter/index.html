@@ -10,13 +10,16 @@
     <div id="ui">
         <h1>✨ Magic Prism World ✨</h1>
         <p>Beveg musen for å utforske, og klikk på prismene for magiske gnister! 🌈</p>
-        <div id="score-container">Magiske gnister: <span id="score">0</span></div>
+        <div id="score-container">
+            Magiske gnister: <span id="score">0</span> | Best: <span id="high-score">0</span>
+        </div>
         <div id="combo-container" style="display: none;">Combo x<span id="combo">1</span>! 🌟</div>
         <div id="energy-container">
             <div id="energy-bar"><div id="energy-fill"></div></div>
             <span id="energy-text">Magi: 0%</span>
         </div>
         <button id="burst-button" style="display: none;">✨ MAGIC BURST! ✨</button>
+        <button id="sound-toggle" style="margin-top: 10px; pointer-events: auto; cursor: pointer; background: rgba(255,255,255,0.2); color: white; border: 1px solid white; border-radius: 10px; padding: 5px 10px;">🔊 Sound: On</button>
     </div>
     <script type="importmap">
         {
