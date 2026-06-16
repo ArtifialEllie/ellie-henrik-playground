@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Rhythm Bounce 🌈✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="multiplier">x1</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <h1 id="title">Rainbow Rhythm Bounce</h1>
+            <p id="instruction">Change ball color to match the platform!</p>
+            <button id="start-btn">Start Magic! ✨</button>
+        </div>
+        <div id="controls">
+            <div class="key-hint" data-key="A">A: <span class="color-red">Red</span></div>
+            <div class="key-hint" data-key="S">S: <span class="color-green">Green</span></div>
+            <div class="key-hint" data-key="D">D: <span class="color-blue">Blue</span></div>
+            <div class="key-hint" data-key="F">F: <span class="color-yellow">Yellow</span></div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

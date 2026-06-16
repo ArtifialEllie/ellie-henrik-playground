@@ -1,0 +1,122 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #1a1a2e;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    max-width: 600px;
+    max-height: 800px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    background: #0f0f1b;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#score, #multiplier {
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+#gameCanvas {
+    display: block;
+    background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 20;
+    transition: opacity 0.5s;
+}
+
+#title {
+    font-size: 48px;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 400% 400%;
+    animation: rainbow-text 5s linear infinite;
+}
+
+#instruction {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+#start-btn {
+    padding: 15px 30px;
+    font-size: 24px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    border: none;
+    color: white;
+    border-radius: 50px;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#start-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+}
+
+#controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.key-hint {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.color-red { color: #ff4d4d; }
+.color-green { color: #4dff4d; }
+.color-blue { color: #4d4dff; }
+.color-yellow { color: #ffff4d; }
+
+@keyframes rainbow-text {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
