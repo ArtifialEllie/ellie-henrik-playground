@@ -9,6 +9,7 @@ let goldenPrisms = [];
 let combo = 0;
 let portal;
 let lastClickTime = 0;
+let lastClickedPrism = null;
 let mouseTrail = [];
 let cameraShake = 0;
 let magicEnergy = 0;
@@ -321,6 +322,9 @@ function onMouseDown(event) {
             if (Math.random() > 0.7) {
                 spawnGoldenPrism();
             }
+        } else if (object.level >= 2 && Math.random() > 0.6) {
+            // Chain Reaction!
+            triggerChainReaction(object);
         }
         
         spawnSpark(object.position);
@@ -516,6 +520,40 @@ function triggerMagicBurst() {
         requestAnimationFrame(animateShockwave);
     }
     animateShockwave();
+}
+
+function triggerChainReaction(originPrism) {
+    const chainRadius = 3;
+    const nearbyPrisms = prisms.filter(p => p !== originPrism && p.position.distanceTo(originPrism.position) < chainRadius);
+    
+    if (nearbyPrisms.length === 0) return;
+
+    createFloatingText('CHAIN! ⚡️', originPrism.position.x * 10, originPrism.position.y * 10); // Approximation
+
+    nearbyPrisms.forEach((p, index) => {
+        setTimeout(() => {
+            // Simulate a click on the nearby prism
+            p.level = (p.level || 1) + 1;
+            const currentLevelScale = 1 + (p.level - 1) * 0.2;
+            p.scale.set(currentLevelScale, currentLevelScale, currentLevelScale);
+            p.material.color.setHex(Math.random() * 0xffffff);
+            
+            score += 5 * (p.level || 1);
+            scoreElement.innerText = score;
+            
+            spawnSpark(p.position);
+            playSound(600 + index * 100, 'sine', 0.1, 0.05);
+
+            if (p.level >= 4) {
+                const superBonus = 100;
+                score += superBonus;
+                scoreElement.innerText = score;
+                scene.remove(p);
+                prisms = prisms.filter(prism => prism !== p);
+                createSinglePrism(getAvailableGeometries());
+            }
+        }, index * 150);
+    });
 }
 
 function removeGoldenPrism(prism) {
