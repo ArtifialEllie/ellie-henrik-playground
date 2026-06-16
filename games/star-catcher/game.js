@@ -10,11 +10,14 @@ const finalScoreEl = document.getElementById('final-score');
 const startOverlay = document.getElementById('start-overlay');
 const magnetAlert = document.getElementById('magnet-alert');
 const rainbowAlert = document.getElementById('rainbow-alert');
+const feverAlert = document.getElementById('fever-alert');
 
 let score = 0;
 let lives = 3;
 let combo = 0;
 let comboTimer = 0;
+let feverMode = false;
+let feverTimer = 0;
 let highscore = localStorage.getItem('starCatcherHighscore') || 0;
 let gameActive = false;
 let canvasWidth, canvasHeight;
@@ -154,6 +157,14 @@ function update() {
         }
     }
 
+    if (feverMode) {
+        feverTimer--;
+        if (feverTimer <= 0) {
+            feverMode = false;
+            feverAlert.style.display = 'none';
+        }
+    }
+
     if (comboTimer > 0) {
         comboTimer--;
         if (comboTimer <= 0) {
@@ -192,17 +203,23 @@ function update() {
                 combo++;
                 comboTimer = 60;
                 const mult = Math.floor(combo / 5) + 1;
-                score += mult;
+                let gain = mult;
+                if (feverMode) gain *= 2;
+                score += gain;
                 
                 if (combo > 1) {
-                    comboUi.innerText = `COMBO x${mult} ✨`;
+                    comboUi.innerText = `COMBO x${mult}${feverMode ? ' 🔥' : ''} ✨`;
                     comboUi.classList.add('show');
                 }
                 
-                showFloatingText(`+${mult}`, obj.x + 20, obj.y + 20);
+                showFloatingText(`+${gain}`, obj.x + 20, obj.y + 20);
                 playSound(440 + (combo * 20), 'sine', 0.1);
                 createParticles(obj.x + 25, obj.y + 25, 'gold');
                 playerScale = 1.2;
+
+                if (combo >= 15 && !feverMode) {
+                    activateFever();
+                }
             } else if (obj.type === objectTypes.CLOUD) {
                 if (!rainbowActive) {
                     loseLife();
@@ -293,6 +310,14 @@ function activateRainbow() {
     rainbowAlert.style.display = 'block';
 }
 
+function activateFever() {
+    feverMode = true;
+    feverTimer = 600;
+    feverAlert.style.display = 'block';
+    playSound(880, 'square', 0.4);
+    createParticles(canvasWidth / 2, canvasHeight / 2, 'rainbow');
+}
+
 function loseLife() {
     lives--;
     livesEl.innerText = lives;
@@ -333,8 +358,10 @@ function resetGame() {
     startOverlay.style.display = 'none';
     magnetActive = false;
     rainbowActive = false;
+    feverMode = false;
     magnetAlert.style.display = 'none';
     rainbowAlert.style.display = 'none';
+    feverAlert.style.display = 'none';
     spawnObject();
     requestAnimationFrame(update);
 }

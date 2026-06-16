@@ -9,11 +9,15 @@ let goldenPrisms = [];
 let combo = 0;
 let portal;
 let lastClickTime = 0;
+let lastClickedPrism = null;
 let mouseTrail = [];
 let cameraShake = 0;
 let magicEnergy = 0;
 let cosmicDust = [];
 let soundEnabled = true;
+let windActive = false;
+let windDirection = new THREE.Vector3(0, 0, 0);
+let windTimer = 0;
 const MAX_MAGIC_ENERGY = 100;
 const scoreElement = document.getElementById('score');
 const highScoreElement = document.getElementById('high-score');
@@ -321,6 +325,9 @@ function onMouseDown(event) {
             if (Math.random() > 0.7) {
                 spawnGoldenPrism();
             }
+        } else if (object.level >= 2 && Math.random() > 0.6) {
+            // Chain Reaction!
+            triggerChainReaction(object);
         }
         
         spawnSpark(object.position);
@@ -518,6 +525,40 @@ function triggerMagicBurst() {
     animateShockwave();
 }
 
+function triggerChainReaction(originPrism) {
+    const chainRadius = 3;
+    const nearbyPrisms = prisms.filter(p => p !== originPrism && p.position.distanceTo(originPrism.position) < chainRadius);
+    
+    if (nearbyPrisms.length === 0) return;
+
+    createFloatingText('CHAIN! ⚡️', originPrism.position.x * 10, originPrism.position.y * 10); // Approximation
+
+    nearbyPrisms.forEach((p, index) => {
+        setTimeout(() => {
+            // Simulate a click on the nearby prism
+            p.level = (p.level || 1) + 1;
+            const currentLevelScale = 1 + (p.level - 1) * 0.2;
+            p.scale.set(currentLevelScale, currentLevelScale, currentLevelScale);
+            p.material.color.setHex(Math.random() * 0xffffff);
+            
+            score += 5 * (p.level || 1);
+            scoreElement.innerText = score;
+            
+            spawnSpark(p.position);
+            playSound(600 + index * 100, 'sine', 0.1, 0.05);
+
+            if (p.level >= 4) {
+                const superBonus = 100;
+                score += superBonus;
+                scoreElement.innerText = score;
+                scene.remove(p);
+                prisms = prisms.filter(prism => prism !== p);
+                createSinglePrism(getAvailableGeometries());
+            }
+        }, index * 150);
+    });
+}
+
 function removeGoldenPrism(prism) {
     scene.remove(prism);
     goldenPrisms = goldenPrisms.filter(p => p !== prism);
@@ -581,7 +622,31 @@ function animate() {
         portal.scale.setScalar(1 + Math.sin(time * 3) * 0.05);
         portal.material.emissiveIntensity = 1 + Math.sin(time * 5) * 0.5;
     }
-    
+
+    // Cosmic Wind Logic
+    windTimer--;
+    if (!windActive && Math.random() < 0.002) {
+        windActive = true;
+        windTimer = 300 + Math.random() * 300;
+        windDirection.set(
+            (Math.random() - 0.5) * 0.05,
+            (Math.random() - 0.5) * 0.05,
+            (Math.random() - 0.5) * 0.05
+        );
+        document.getElementById('wind-container').style.display = 'block';
+    }
+
+    if (windActive) {
+        prisms.forEach(prism => {
+            prism.position.add(windDirection);
+        });
+        windTimer--;
+        if (windTimer <= 0) {
+            windActive = false;
+            document.getElementById('wind-container').style.display = 'none';
+        }
+    }
+
     orbitals.forEach((orbital, index) => {
         orbital.rotation.x += 0.002 * (index + 1);
         orbital.rotation.y += 0.002 * (index + 1);

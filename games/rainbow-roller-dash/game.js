@@ -5,11 +5,18 @@ let scene, camera, renderer, ball, road, stars = [];
     let rings = [];
     let obstacles = [];
     let trail = [];
+<<<<<<< HEAD
+=======
+    let powerups = [];
+>>>>>>> origin/main
     let score = 0;
     let gameActive = false;
     let speed = 0.2;
+    let combo = 1;
     let targetX = 0;
     let currentX = 0;
+    let superMode = false;
+    let superModeTimer = 0;
 
 
 const ROAD_WIDTH = 10;
@@ -49,6 +56,19 @@ function init() {
     ball.position.y = 0.5;
     scene.add(ball);
 
+    // Trail effect
+    const trailGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+    const trailMaterial = new THREE.MeshBasicMaterial({ 
+        transparent: true, 
+        opacity: 0.5 
+    });
+    for (let i = 0; i < 10; i++) {
+        const t = new THREE.Mesh(trailGeometry, trailMaterial);
+        t.visible = false;
+        scene.add(t);
+        trail.push(t);
+    }
+
     // The Rainbow Road
     const roadGeometry = new THREE.PlaneGeometry(ROAD_WIDTH, ROAD_LENGTH);
     const roadMaterial = new THREE.MeshPhongMaterial({ 
@@ -80,6 +100,7 @@ function init() {
     createClouds();
     createRings();
     createObstacles();
+    createPowerups();
 
     window.addEventListener('resize', onWindowResize, false);
     setupControls();
@@ -137,6 +158,25 @@ function createObstacles() {
         
         scene.add(obstacle);
         obstacles.push(obstacle);
+    }
+}
+
+function createPowerups() {
+    for (let i = 0; i < 3; i++) {
+        const pupGeo = new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8);
+        const pupMat = new THREE.MeshPhongMaterial({ 
+            color: 0xffd700, 
+            emissive: 0xffd700, 
+            emissiveIntensity: 0.8 
+        });
+        const pup = new THREE.Mesh(pupGeo, pupMat);
+        
+        pup.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+        pup.position.y = 0.5;
+        pup.position.z = -Math.random() * ROAD_LENGTH;
+        
+        scene.add(pup);
+        powerups.push(pup);
     }
 }
 
@@ -204,11 +244,35 @@ function update() {
     if (!gameActive) return;
 
     // Smooth movement
+function update() {
+    if (!gameActive) return;
+
+    // Super Mode Logic
+    if (superMode) {
+        superModeTimer--;
+        if (superModeTimer <= 0) {
+            superMode = false;
+            ball.material.color.set(0xff69b4);
+            document.getElementById('message').innerText = 'Roll through the rainbow! ✨';
+        }
+    }
+
+    // Smooth movement
     currentX += (targetX - currentX) * 0.1;
     ball.position.x = currentX;
     
     // Rotation for rolling effect
     ball.rotation.x -= speed;
+
+    // Update Trail
+    for (let i = 0; i < trail.length; i++) {
+        const t = trail[i];
+        t.position.copy(ball.position);
+        t.position.z += (i * 0.2);
+        t.visible = true;
+        t.material.opacity = 0.5 * (1 - i / trail.length);
+        t.scale.setScalar(1 - i / trail.length);
+    }
 
     // Move ball forward (fake it by moving everything else)
     // Or just move the ball and move the camera
@@ -216,6 +280,7 @@ function update() {
     camera.position.z = ball.position.z + 10;
     camera.position.x = ball.position.x * 0.5;
     camera.lookAt(ball.position);
+<<<<<<< HEAD
 
     // Create trail effect
     const trailGeo = new THREE.SphereGeometry(0.3, 8, 8);
@@ -239,6 +304,9 @@ function update() {
         }
     }
 
+=======
+    
+>>>>>>> origin/main
     // Bound checking
     if (ball.position.x > ROAD_WIDTH/2) ball.position.x = ROAD_WIDTH/2;
     if (ball.position.x < -ROAD_WIDTH/2) ball.position.x = -ROAD_WIDTH/2;
@@ -249,8 +317,11 @@ function update() {
         
         const dist = ball.position.distanceTo(star.position);
         if (dist < 1) {
-            score++;
+            score += combo;
             document.getElementById('score').innerText = score;
+            combo++;
+            document.getElementById('combo').innerText = combo;
+            createSparkles(star.position);
             
             // Move star far ahead
             star.position.z = ball.position.z - ROAD_LENGTH;
@@ -272,6 +343,7 @@ function update() {
         if (dist < 1.2) {
             speed += 0.05;
             document.getElementById('message').innerText = 'SPEED BOOST! 🚀';
+            createSparkles(ring.position);
             
             // Move ring far ahead
             ring.position.z = ball.position.z - ROAD_LENGTH;
@@ -279,7 +351,9 @@ function update() {
             
             // Reset message after a delay
             setTimeout(() => {
-                document.getElementById('message').innerText = 'Roll through the rainbow! ✨';
+                if (!superMode) {
+                    document.getElementById('message').innerText = 'Roll through the rainbow! ✨';
+                }
             }, 2000);
         }
 
@@ -290,14 +364,53 @@ function update() {
         }
     });
 
+    // Powerup collision
+    powerups.forEach(pup => {
+        pup.rotation.y += 0.05;
+        const dist = ball.position.distanceTo(pup.position);
+        if (dist < 1) {
+            activateSuperMode();
+            createSparkles(pup.position);
+            pup.position.z = ball.position.z - ROAD_LENGTH;
+            pup.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+        }
+        if (pup.position.z > ball.position.z + 5) {
+            pup.position.z = ball.position.z - ROAD_LENGTH;
+            pup.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+        }
+    });
+
     // Speed up over time
     speed += 0.00005;
+
+    // Update sparkles
+    for (let i = sparkles.length - 1; i >= 0; i--) {
+        const s = sparkles[i];
+        s.position.add(s.userData.velocity);
+        s.userData.life -= 0.02;
+        s.material.opacity = s.userData.life;
+        s.scale.setScalar(s.userData.life);
+        
+        if (s.userData.life <= 0) {
+            scene.remove(s);
+            sparkles.splice(i, 1);
+        }
+    }
 
     // Obstacle collision
     obstacles.forEach(obstacle => {
         const dist = ball.position.distanceTo(obstacle.position);
         if (dist < 0.8) {
-            gameOver();
+            if (superMode) {
+                // Destroy obstacle in super mode!
+                createSparkles(obstacle.position);
+                obstacle.position.z = ball.position.z - ROAD_LENGTH;
+                obstacle.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
+                score += 10;
+                document.getElementById('score').innerText = score;
+            } else {
+                gameOver();
+            }
         }
 
         // Recycle obstacles that are behind the player
@@ -306,6 +419,13 @@ function update() {
             obstacle.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
         }
     });
+}
+
+function activateSuperMode() {
+    superMode = true;
+    superModeTimer = 500; // Roughly 8-10 seconds
+    ball.material.color.set(0xffff00);
+    document.getElementById('message').innerText = 'SUPER MODE ACTIVATED! 🌟✨';
 }
 
 function gameOver() {
@@ -333,10 +453,12 @@ document.getElementById('restart-button').addEventListener('click', () => {
     // Reset game state
     score = 0;
     speed = 0.2;
+    combo = 1;
     ball.position.set(0, 0.5, 0);
     currentX = 0;
     targetX = 0;
     document.getElementById('score').innerText = '0';
+    document.getElementById('combo').innerText = '1';
     document.getElementById('game-over').style.display = 'none';
     
     // Reposition obstacles, stars and rings
