@@ -29,6 +29,7 @@ let level = 1;
 let comboTimer;
 let isFrenzy = false;
 let isVortex = false;
+let isMagnetic = false;
 let shieldActive = false;
 let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
@@ -269,6 +270,9 @@ class Bubble {
         } else if (rand > 0.327 && rand < 0.357) {
             this.type = 'pet-treat';
             this.color = '#ffca28';
+        } else if (rand > 0.307 && rand < 0.337) {
+            this.type = 'magnetic-bubble';
+            this.color = '#9c27b0';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -383,6 +387,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('💥', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'magnetic-bubble') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🧲', this.x, this.y + currentRadius/3);
         } else if (this.type === 'giant') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -635,6 +643,36 @@ function triggerGoldenRain() {
         isGoldenRain = false;
         rainAlert.style.display = 'none';
     }, 7000);
+}
+
+function triggerMagnetism() {
+    isMagnetic = true;
+    const magnetAlert = document.createElement('div');
+    magnetAlert.id = 'magnet-alert';
+    magnetAlert.className = 'alert-text';
+    magnetAlert.innerText = 'MAGNETIC PULL! 🧲';
+    document.body.appendChild(magnetAlert);
+    
+    setTimeout(() => {
+        magnetAlert.remove();
+        isMagnetic = false;
+    }, 5000);
+
+    const magnetInterval = setInterval(() => {
+        if (!isMagnetic) {
+            clearInterval(magnetInterval);
+            return;
+        }
+        bubbles.forEach(b => {
+            const dx = lastMouseX - b.x;
+            const dy = lastMouseY - b.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 300) {
+                b.vx += dx / dist * 0.8;
+                b.vy += dy / dist * 0.8;
+            }
+        });
+    }, 20);
 }
 
 function triggerVortex() {
@@ -922,6 +960,13 @@ function handlePop(e) {
                 });
                 score += 100;
                 createBigExplosion(b.x, b.y);
+            } else if (b.type === 'magnetic-bubble') {
+                playPopSound(true, false);
+                const magBonus = 150;
+                score += magBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MAGNETIC! 🧲 +${magBonus}`, '#9c27b0'));
+                createPopEffect(b.x, b.y, '#9c27b0');
+                triggerMagnetism();
             } else if (b.type === 'giant') {
                 playSuperPopSound();
                 const giantBonus = 200;
