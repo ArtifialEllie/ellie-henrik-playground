@@ -4,12 +4,16 @@ let scene, camera, renderer, ball, road, stars = [];
     let sparkles = [];
     let rings = [];
     let obstacles = [];
+    let trail = [];
+    let powerups = [];
     let score = 0;
     let gameActive = false;
     let speed = 0.2;
     let combo = 1;
     let targetX = 0;
     let currentX = 0;
+    let superMode = false;
+    let superModeTimer = 0;
 
 
 const ROAD_WIDTH = 10;
@@ -49,6 +53,19 @@ function init() {
     ball.position.y = 0.5;
     scene.add(ball);
 
+    // Trail effect
+    const trailGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+    const trailMaterial = new THREE.MeshBasicMaterial({ 
+        transparent: true, 
+        opacity: 0.5 
+    });
+    for (let i = 0; i < 10; i++) {
+        const t = new THREE.Mesh(trailGeometry, trailMaterial);
+        t.visible = false;
+        scene.add(t);
+        trail.push(t);
+    }
+
     // The Rainbow Road
     const roadGeometry = new THREE.PlaneGeometry(ROAD_WIDTH, ROAD_LENGTH);
     const roadMaterial = new THREE.MeshPhongMaterial({ 
@@ -80,6 +97,7 @@ function init() {
     createClouds();
     createRings();
     createObstacles();
+    createPowerups();
 
     window.addEventListener('resize', onWindowResize, false);
     setupControls();
@@ -137,6 +155,25 @@ function createObstacles() {
         
         scene.add(obstacle);
         obstacles.push(obstacle);
+    }
+}
+
+function createPowerups() {
+    for (let i = 0; i < 3; i++) {
+        const pupGeo = new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8);
+        const pupMat = new THREE.MeshPhongMaterial({ 
+            color: 0xffd700, 
+            emissive: 0xffd700, 
+            emissiveIntensity: 0.8 
+        });
+        const pup = new THREE.Mesh(pupGeo, pupMat);
+        
+        pup.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+        pup.position.y = 0.5;
+        pup.position.z = -Math.random() * ROAD_LENGTH;
+        
+        scene.add(pup);
+        powerups.push(pup);
     }
 }
 
@@ -204,11 +241,35 @@ function update() {
     if (!gameActive) return;
 
     // Smooth movement
+function update() {
+    if (!gameActive) return;
+
+    // Super Mode Logic
+    if (superMode) {
+        superModeTimer--;
+        if (superModeTimer <= 0) {
+            superMode = false;
+            ball.material.color.set(0xff69b4);
+            document.getElementById('message').innerText = 'Roll through the rainbow! ✨';
+        }
+    }
+
+    // Smooth movement
     currentX += (targetX - currentX) * 0.1;
     ball.position.x = currentX;
     
     // Rotation for rolling effect
     ball.rotation.x -= speed;
+
+    // Update Trail
+    for (let i = 0; i < trail.length; i++) {
+        const t = trail[i];
+        t.position.copy(ball.position);
+        t.position.z += (i * 0.2);
+        t.visible = true;
+        t.material.opacity = 0.5 * (1 - i / trail.length);
+        t.scale.setScalar(1 - i / trail.length);
+    }
 
     // Move ball forward (fake it by moving everything else)
     // Or just move the ball and move the camera
@@ -216,7 +277,7 @@ function update() {
     camera.position.z = ball.position.z + 10;
     camera.position.x = ball.position.x * 0.5;
     camera.lookAt(ball.position);
-
+    
     // Bound checking
     if (ball.position.x > ROAD_WIDTH/2) ball.position.x = ROAD_WIDTH/2;
     if (ball.position.x < -ROAD_WIDTH/2) ball.position.x = -ROAD_WIDTH/2;
@@ -242,10 +303,6 @@ function update() {
         if (star.position.z > ball.position.z + 5) {
             star.position.z = ball.position.z - ROAD_LENGTH;
             star.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
-            
-            // Reset combo if the player misses too many stars (optional, but let's make it challenging)
-            // For now, let's just reset combo when they've passed a certain distance without a star
-            // Actually, let's just keep it simple: combo increases with each star and stays until hit.
         }
     });
 
@@ -265,7 +322,9 @@ function update() {
             
             // Reset message after a delay
             setTimeout(() => {
-                document.getElementById('message').innerText = 'Roll through the rainbow! ✨';
+                if (!superMode) {
+                    document.getElementById('message').innerText = 'Roll through the rainbow! ✨';
+                }
             }, 2000);
         }
 
@@ -273,6 +332,22 @@ function update() {
         if (ring.position.z > ball.position.z + 5) {
             ring.position.z = ball.position.z - ROAD_LENGTH;
             ring.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+        }
+    });
+
+    // Powerup collision
+    powerups.forEach(pup => {
+        pup.rotation.y += 0.05;
+        const dist = ball.position.distanceTo(pup.position);
+        if (dist < 1) {
+            activateSuperMode();
+            createSparkles(pup.position);
+            pup.position.z = ball.position.z - ROAD_LENGTH;
+            pup.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+        }
+        if (pup.position.z > ball.position.z + 5) {
+            pup.position.z = ball.position.z - ROAD_LENGTH;
+            pup.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
         }
     });
 
@@ -297,7 +372,16 @@ function update() {
     obstacles.forEach(obstacle => {
         const dist = ball.position.distanceTo(obstacle.position);
         if (dist < 0.8) {
-            gameOver();
+            if (superMode) {
+                // Destroy obstacle in super mode!
+                createSparkles(obstacle.position);
+                obstacle.position.z = ball.position.z - ROAD_LENGTH;
+                obstacle.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
+                score += 10;
+                document.getElementById('score').innerText = score;
+            } else {
+                gameOver();
+            }
         }
 
         // Recycle obstacles that are behind the player
@@ -306,6 +390,13 @@ function update() {
             obstacle.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
         }
     });
+}
+
+function activateSuperMode() {
+    superMode = true;
+    superModeTimer = 500; // Roughly 8-10 seconds
+    ball.material.color.set(0xffff00);
+    document.getElementById('message').innerText = 'SUPER MODE ACTIVATED! 🌟✨';
 }
 
 function gameOver() {
