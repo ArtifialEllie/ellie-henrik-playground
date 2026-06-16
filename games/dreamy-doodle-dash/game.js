@@ -18,6 +18,8 @@ let currentPath = [];
 let platforms = []; // Static platforms
 let userBridges = []; // Bridges drawn by player
 let particles = []; // For glitter and explosions
+let backgroundElements = []; // Clouds and twinkling stars
+let starTrail = []; // Trail following the star
 
 const GRAVITY = 0.2;
 const FRICTION = 0.98;
@@ -33,6 +35,16 @@ function initLevel() {
     goal.y = 100 + Math.random() * 200;
     
     userBridges = [];
+    backgroundElements = [];
+    // Create some decorative background clouds
+    for (let i = 0; i < 8; i++) {
+        backgroundElements.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: 30 + Math.random() * 50,
+            speed: 0.2 + Math.random() * 0.5
+        });
+    }
     platforms = [
         { x: 50, y: 520, w: 100, h: 20 }, // Start platform
         { x: goal.x - 30, y: goal.y + 30, w: 60, h: 20 } // Goal platform
@@ -148,6 +160,18 @@ function update() {
         }
     }
 
+    // Update background clouds
+    backgroundElements.forEach(cloud => {
+        cloud.x += cloud.speed;
+        if (cloud.x > canvas.width + 100) cloud.x = -100;
+    });
+
+    // Update star trail
+    starTrail.push({ x: star.x, y: star.y });
+    if (starTrail.length > 20) {
+        starTrail.shift();
+    }
+
     // Physics
     star.vx *= FRICTION;
     star.vy += GRAVITY;
@@ -239,6 +263,16 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Draw Background Elements
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    backgroundElements.forEach(cloud => {
+        ctx.beginPath();
+        ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
+        ctx.arc(cloud.x + cloud.size * 0.5, cloud.y - cloud.size * 0.3, cloud.size * 0.7, 0, Math.PI * 2);
+        ctx.arc(cloud.x + cloud.size, cloud.y, cloud.size * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
     // Draw Particles
     particles.forEach((p) => {
         ctx.globalAlpha = p.life;
@@ -271,6 +305,17 @@ function draw() {
     platforms.forEach(p => {
         ctx.fillRect(p.x, p.y, p.w, p.h);
     });
+
+    // Draw Star Trail
+    ctx.beginPath();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(255, 247, 0, 0.3)';
+    for (let i = 0; i < starTrail.length; i++) {
+        const p = starTrail[i];
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
 
     // User Bridges (Rainbow colored)
     userBridges.forEach((bridge, idx) => {
