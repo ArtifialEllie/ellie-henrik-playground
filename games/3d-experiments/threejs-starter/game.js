@@ -7,6 +7,7 @@ let orbitals = [];
 let score = 0;
 let goldenPrisms = [];
 let combo = 0;
+let portal;
 let lastClickTime = 0;
 let mouseTrail = [];
 let magicEnergy = 0;
@@ -48,6 +49,8 @@ function init() {
     scene.pointLight = pointLight; // Store reference for animation
 
     // Stars
+    createPortal();
+    
     const starGeometry = new THREE.BufferGeometry();
     const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
     const starVertices = [];
@@ -136,6 +139,24 @@ function createOrbitals() {
     }
 }
 
+function createPortal() {
+    const portalGeo = new THREE.TorusGeometry(3, 0.1, 16, 100);
+    const portalMat = new THREE.MeshStandardMaterial({
+        color: 0xff00ff,
+        emissive: 0xff00ff,
+        emissiveIntensity: 2,
+        transparent: true,
+        opacity: 0.6
+    });
+    portal = new THREE.Mesh(portalGeo, portalMat);
+    portal.rotation.x = Math.PI / 2;
+    scene.add(portal);
+
+    const glowGeo = new THREE.SphereGeometry(3.2, 32, 32);
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0x440044, transparent: true, opacity: 0.1, side: THREE.BackSide });
+    scene.add(new THREE.Mesh(glowGeo, glowMat));
+}
+
 function createPrisms() {
     const geometries = [
         new THREE.OctahedronGeometry(0.5, 0),
@@ -161,10 +182,11 @@ function createSinglePrism(geometries) {
     const colors = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000, 0x0000ff];
     const material = new THREE.MeshPhongMaterial({
         color: colors[Math.floor(Math.random() * colors.length)],
-        shininess: 100,
+        shininess: 150,
         transparent: true,
         opacity: 0.8,
-        flatShading: true
+        flatShading: true,
+        reflectivity: 1
     });
     const prism = new THREE.Mesh(geometry, material);
     prism.level = 1;
@@ -400,6 +422,11 @@ function triggerMagicBurst() {
     cameraShake = 0.5;
     
     const originalBg = scene.background;
+    const originalFog = scene.fog.color;
+    
+    scene.background = new THREE.Color(0xffffff);
+    scene.fog.color.setHex(0xffffff);
+    
     scene.background = new THREE.Color(0xffffff);
     setTimeout(() => {
         scene.background = originalBg;
@@ -473,6 +500,8 @@ function animate() {
     }
 
     if (scene.pointLight) {
+        const time = Date.now() * 0.001;
+        scene.pointLight.color.setHSL((time * 0.1) % 1, 0.8, 0.6);
         scene.pointLight.position.x = Math.sin(time * 0.5) * 10;
         scene.pointLight.position.z = Math.cos(time * 0.5) * 10;
     }
@@ -480,6 +509,11 @@ function animate() {
     prisms.forEach((prism, index) => {
         prism.rotation.x += 0.01;
         prism.rotation.y += 0.01;
+        
+        // Attract towards portal slightly
+        const dirToPortal = new THREE.Vector3(0, 0, 0).sub(prism.position).normalize();
+        prism.position.add(dirToPortal.multiplyScalar(0.002));
+        
         prism.position.y += Math.sin(Date.now() * 0.001 + index) * 0.005;
         
         const pulse = 1 + Math.sin(time * 2 + index) * 0.05;
@@ -493,7 +527,13 @@ function animate() {
         const pulse = 1 + Math.sin(time * 4 + index) * 0.1;
         prism.scale.set(pulse, pulse, pulse);
     });
-
+    
+    if (portal) {
+        portal.rotation.z += 0.01;
+        portal.scale.setScalar(1 + Math.sin(time * 3) * 0.05);
+        portal.material.emissiveIntensity = 1 + Math.sin(time * 5) * 0.5;
+    }
+    
     orbitals.forEach((orbital, index) => {
         orbital.rotation.x += 0.002 * (index + 1);
         orbital.rotation.y += 0.002 * (index + 1);
