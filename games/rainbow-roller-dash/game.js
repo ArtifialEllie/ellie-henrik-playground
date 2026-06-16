@@ -228,6 +228,7 @@ function update() {
         if (dist < 1) {
             score++;
             document.getElementById('score').innerText = score;
+            createSparkles(star.position);
             
             // Move star far ahead
             star.position.z = ball.position.z - ROAD_LENGTH;
@@ -249,6 +250,7 @@ function update() {
         if (dist < 1.2) {
             speed += 0.05;
             document.getElementById('message').innerText = 'SPEED BOOST! 🚀';
+            createSparkles(ring.position);
             
             // Move ring far ahead
             ring.position.z = ball.position.z - ROAD_LENGTH;
@@ -269,6 +271,20 @@ function update() {
 
     // Speed up over time
     speed += 0.00005;
+
+    // Update sparkles
+    for (let i = sparkles.length - 1; i >= 0; i--) {
+        const s = sparkles[i];
+        s.position.add(s.userData.velocity);
+        s.userData.life -= 0.02;
+        s.material.opacity = s.userData.life;
+        s.scale.setScalar(s.userData.life);
+        
+        if (s.userData.life <= 0) {
+            scene.remove(s);
+            sparkles.splice(i, 1);
+        }
+    }
 
     // Obstacle collision
     obstacles.forEach(obstacle => {
