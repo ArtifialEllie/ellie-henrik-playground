@@ -1,13 +1,15 @@
 import * as THREE from 'three';
 
 let scene, camera, renderer, ball, road, stars = [];
-let sparkles = [];
-let rings = [];
-let score = 0;
-let gameActive = false;
-let speed = 0.2;
-let targetX = 0;
-let currentX = 0;
+    let sparkles = [];
+    let rings = [];
+    let obstacles = [];
+    let score = 0;
+    let gameActive = false;
+    let speed = 0.2;
+    let targetX = 0;
+    let currentX = 0;
+
 
 const ROAD_WIDTH = 10;
 const STAR_COUNT = 15;
@@ -76,6 +78,7 @@ function init() {
 
     createClouds();
     createRings();
+    createObstacles();
 
     window.addEventListener('resize', onWindowResize, false);
     setupControls();
@@ -115,6 +118,24 @@ function createRings() {
         
         scene.add(ring);
         rings.push(ring);
+    }
+}
+
+function createObstacles() {
+    for (let i = 0; i < 10; i++) {
+        const obstacleGeo = new THREE.ConeGeometry(0.4, 1, 8);
+        const obstacleMat = new THREE.MeshPhongMaterial({ 
+            color: 0xff00ff, 
+            shininess: 100 
+        });
+        const obstacle = new THREE.Mesh(obstacleGeo, obstacleMat);
+        
+        obstacle.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
+        obstacle.position.y = 0.5;
+        obstacle.position.z = -Math.random() * ROAD_LENGTH;
+        
+        scene.add(obstacle);
+        obstacles.push(obstacle);
     }
 }
 
@@ -248,6 +269,26 @@ function update() {
 
     // Speed up over time
     speed += 0.00005;
+
+    // Obstacle collision
+    obstacles.forEach(obstacle => {
+        const dist = ball.position.distanceTo(obstacle.position);
+        if (dist < 0.8) {
+            gameOver();
+        }
+
+        // Recycle obstacles that are behind the player
+        if (obstacle.position.z > ball.position.z + 5) {
+            obstacle.position.z = ball.position.z - ROAD_LENGTH;
+            obstacle.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
+        }
+    });
+}
+
+function gameOver() {
+    gameActive = false;
+    document.getElementById('game-over').style.display = 'flex';
+    document.getElementById('final-score').innerText = `Stars Collected: ${score}`;
 }
 
 function animate() {
@@ -262,6 +303,33 @@ document.getElementById('start-button').addEventListener('click', () => {
     setTimeout(() => {
         document.getElementById('overlay').style.display = 'none';
     }, 500);
+    gameActive = true;
+});
+
+document.getElementById('restart-button').addEventListener('click', () => {
+    // Reset game state
+    score = 0;
+    speed = 0.2;
+    ball.position.set(0, 0.5, 0);
+    currentX = 0;
+    targetX = 0;
+    document.getElementById('score').innerText = '0';
+    document.getElementById('game-over').style.display = 'none';
+    
+    // Reposition obstacles, stars and rings
+    stars.forEach(star => {
+        star.position.z = -Math.random() * ROAD_LENGTH;
+        star.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
+    });
+    rings.forEach(ring => {
+        ring.position.z = -Math.random() * ROAD_LENGTH;
+        ring.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+    });
+    obstacles.forEach(obstacle => {
+        obstacle.position.z = -Math.random() * ROAD_LENGTH;
+        obstacle.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 1);
+    });
+    
     gameActive = true;
 });
 
