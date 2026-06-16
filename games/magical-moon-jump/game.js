@@ -20,6 +20,7 @@ let gameActive = true;
 let platforms = [];
 let stars = [];
 let particles = [];
+let shake = 0; // Screen shake intensity
 
 const player = {
     x: 0,
@@ -125,6 +126,7 @@ function update() {
                 if (p.type === 'bouncy') {
                     player.vy = JUMP_FORCE * 1.5;
                     createParticles(player.x + player.width/2, player.y + player.height, '#fff');
+                    shake = 10; // Add some juice!
                 } else {
                     player.vy = JUMP_FORCE;
                 }
@@ -189,6 +191,13 @@ function update() {
 }
 
 function draw() {
+    if (shake > 0) {
+        ctx.save();
+        ctx.translate(Math.random() * shake - shake/2, Math.random() * shake - shake/2);
+        shake *= 0.9; // Decay shake
+        if (shake < 1) shake = 0;
+    }
+
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     // Draw scrolling starry background
@@ -260,6 +269,8 @@ function draw() {
         ctx.fill();
         ctx.globalAlpha = 1.0;
     });
+
+    if (shake > 0) ctx.restore();
 }
 
 function loop() {
