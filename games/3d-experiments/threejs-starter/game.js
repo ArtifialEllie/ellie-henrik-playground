@@ -10,6 +10,8 @@ let combo = 0;
 let lastClickTime = 0;
 let mouseTrail = [];
 let magicEnergy = 0;
+let cosmicDust = [];
+let cameraShake = 0;
 const MAX_MAGIC_ENERGY = 100;
 const scoreElement = document.getElementById('score');
 const comboElement = document.getElementById('combo');
@@ -49,12 +51,29 @@ function init() {
     const starGeometry = new THREE.BufferGeometry();
     const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
     const starVertices = [];
-    for (let i = 0; i < 2000; i++) {
+    for (let i = 0; i < 3000; i++) {
         starVertices.push((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100);
     }
     starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
+
+    // Cosmic Dust
+    const dustGeometry = new THREE.BufferGeometry();
+    const dustMaterial = new THREE.PointsMaterial({ 
+        color: 0xaa88ff, 
+        size: 0.05, 
+        transparent: true, 
+        opacity: 0.4 
+    });
+    const dustVertices = [];
+    for (let i = 0; i < 1000; i++) {
+        dustVertices.push((Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20);
+    }
+    dustGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dustVertices, 3));
+    const dust = new THREE.Points(dustGeometry, dustMaterial);
+    scene.add(dust);
+    cosmicDust.push(dust);
 
     // Create Prisms
     createPrisms();
@@ -378,6 +397,8 @@ function triggerMagicBurst() {
     magicEnergy = 0;
     updateEnergyUI();
     
+    cameraShake = 0.5;
+    
     const originalBg = scene.background;
     scene.background = new THREE.Color(0xffffff);
     setTimeout(() => {
@@ -432,6 +453,14 @@ function animate() {
     
     const time = Date.now() * 0.001;
     
+    // Camera Shake
+    if (cameraShake > 0) {
+        camera.position.x += (Math.random() - 0.5) * cameraShake;
+        camera.position.y += (Math.random() - 0.5) * cameraShake;
+        cameraShake *= 0.9;
+        if (cameraShake < 0.01) cameraShake = 0;
+    }
+
     for (let i = mouseTrail.length - 1; i >= 0; i--) {
         const p = mouseTrail[i];
         p.life -= 0.02;
@@ -468,6 +497,12 @@ function animate() {
     orbitals.forEach((orbital, index) => {
         orbital.rotation.x += 0.002 * (index + 1);
         orbital.rotation.y += 0.002 * (index + 1);
+    });
+
+    // Rotate cosmic dust
+    cosmicDust.forEach(dust => {
+        dust.rotation.y += 0.0005;
+        dust.rotation.x += 0.0002;
     });
 
     controls.update();
