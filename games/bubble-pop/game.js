@@ -519,12 +519,6 @@ class MagicalPet {
             floatingTexts.push(new FloatingText(nearest.x, nearest.y, 'PET POP! 🐱✨', 'gold'));
         }
     }
-                clientY: nearest.y + canvas.getBoundingClientRect().top
-            };
-            handlePop(mockEvent);
-            floatingTexts.push(new FloatingText(nearest.x, nearest.y, 'PET POP! 🐱✨', 'gold'));
-        }
-    }
 }
 
 function spawnBubble() {
@@ -824,6 +818,13 @@ function handlePop(e) {
                     potentialTargets.splice(targetIndex, 1);
                     popped++;
                 }
+            } else if (b.type === 'pet-treat') {
+                playPopSound(true, false);
+                pet.triggerSugarRush();
+                const treatBonus = 30;
+                score += treatBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `YUMMY! 🦴 +${treatBonus}`, '#ffca28'));
+                createPopEffect(b.x, b.y, '#ffca28');
             } else if (b.type === 'bomb') {
                 playSound(100, 'square', 0.5);
                 bubbles = [];
