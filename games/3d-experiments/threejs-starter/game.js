@@ -10,14 +10,16 @@ let combo = 0;
 let portal;
 let lastClickTime = 0;
 let mouseTrail = [];
+let cameraShake = 0;
 let magicEnergy = 0;
 let cosmicDust = [];
-let cameraShake = 0;
+let soundEnabled = true;
 const MAX_MAGIC_ENERGY = 100;
 const scoreElement = document.getElementById('score');
 const comboElement = document.getElementById('combo');
 const comboContainer = document.getElementById('combo-container');
 const burstButton = document.getElementById('burst-button');
+const soundToggle = document.getElementById('sound-toggle');
 
 function init() {
     scene = new THREE.Scene();
@@ -88,6 +90,12 @@ function init() {
     window.addEventListener('mousemove', onMouseMove, false);
     if (burstButton) {
         burstButton.addEventListener('click', triggerMagicBurst);
+    }
+    if (soundToggle) {
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.innerText = soundEnabled ? '🔊 Sound: On' : '🔇 Sound: Off';
+        });
     }
     
     animate();
@@ -205,6 +213,25 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+function playSound(freq, type = 'sine', duration = 0.1, volume = 0.1) {
+    if (!soundEnabled) return;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    
+    gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + duration);
+}
+
 function onMouseDown(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -220,6 +247,7 @@ function onMouseDown(event) {
             const bonus = 50 * combo;
             score += bonus;
             createFloatingText(`+${bonus} GOLD! 🌟`, event.clientX, event.clientY);
+            playSound(880, 'square', 0.2, 0.1);
             removeGoldenPrism(object);
         }
 
@@ -227,8 +255,10 @@ function onMouseDown(event) {
         const currentTime = Date.now();
         if (currentTime - lastClickTime < 1000) {
             combo++;
+            playSound(440 + combo * 50, 'triangle', 0.1, 0.1);
         } else {
             combo = 1;
+            playSound(440, 'triangle', 0.1, 0.1);
         }
         lastClickTime = currentTime;
 
@@ -269,6 +299,7 @@ function onMouseDown(event) {
             score += superBonus;
             scoreElement.innerText = score;
             createFloatingText(`SUPER BURST! +${superBonus} 💥`, event.clientX, event.clientY);
+            playSound(1200, 'sawtooth', 0.3, 0.1);
             spawnSpark(object.position);
             
             scene.remove(object);
@@ -418,6 +449,10 @@ function updateEnergyUI() {
 function triggerMagicBurst() {
     magicEnergy = 0;
     updateEnergyUI();
+    
+    playSound(200, 'sine', 0.5, 0.2);
+    setTimeout(() => playSound(400, 'sine', 0.5, 0.2), 100);
+    setTimeout(() => playSound(600, 'sine', 0.5, 0.2), 200);
     
     cameraShake = 0.5;
     
