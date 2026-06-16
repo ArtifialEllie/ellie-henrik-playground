@@ -79,6 +79,16 @@ const skins = [
     { color: '#c0c0c0', name: 'Starlight Silver', cost: 4000 },
 ];
 
+const accessories = [
+    { name: 'Golden Collar', emoji: '👑', cost: 300, effect: 'gold_bonus' },
+    { name: 'Magic Hat', emoji: '🎩', cost: 600, effect: 'spawn_rate' },
+    { name: 'Sparkle Wings', emoji: '🦋', cost: 1000, effect: 'auto_pop_range' },
+    { name: 'Diamond Bow', emoji: '🎀', cost: 2000, effect: 'multiplier_boost' },
+    { name: 'Cosmic Cape', emoji: '🌌', cost: 5000, effect: 'frenzy_chance' },
+];
+
+let ownedAccessories = JSON.parse(localStorage.getItem('bubblePopAccessories')) || [];
+
 function openShop() {
     document.getElementById('shop-overlay').style.display = 'flex';
     renderShop();
@@ -124,6 +134,40 @@ function renderShop() {
             }
         };
         shopGrid.appendChild(item);
+    });
+
+    const accGrid = document.getElementById('accessory-grid');
+    accGrid.innerHTML = '';
+    accessories.forEach(acc => {
+        const isOwned = ownedAccessories.includes(acc.name);
+        const canAfford = totalGold >= acc.cost;
+        
+        const item = document.createElement('div');
+        item.className = `shop-item ${isOwned ? 'selected' : ''}`;
+        item.innerHTML = `
+            <div class="item-preview" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; background: none; border: 2px dashed #ccc; border-radius: 50%;">
+                ${acc.emoji}
+            </div>
+            <div style="font-size: 0.9rem; font-weight: bold;">${acc.name}</div>
+            <div class="item-cost">${isOwned ? 'Owned' : '✨ ' + acc.cost}</div>
+        `;
+        
+        item.onclick = () => {
+            if (isOwned) {
+                playSound(600, 'sine', 0.1);
+            } else if (canAfford) {
+                totalGold -= acc.cost;
+                localStorage.setItem('bubblePopTotalGold', totalGold);
+                totalGoldEl.innerText = totalGold;
+                ownedAccessories.push(acc.name);
+                localStorage.setItem('bubblePopAccessories', JSON.stringify(ownedAccessories));
+                renderShop();
+                playSound(880, 'sine', 0.2);
+            } else {
+                playSound(200, 'sawtooth', 0.1);
+            }
+        };
+        accGrid.appendChild(item);
     });
 }
 
@@ -457,25 +501,33 @@ class MagicalPet {
         this.floatOffset += 0.05 * this.floatDir;
         if (this.floatOffset > 10 || this.floatOffset < -10) this.floatDir *= -1;
 
-        // Pet Evolution Logic
-        let nextLevel = 1;
-        let nextEmoji = '🐱';
-        let nextInterval = 8000;
-        let nextRange = 150;
+    // Pet Evolution Logic
+    let nextLevel = 1;
+    let nextEmoji = '🐱';
+    let nextInterval = 8000;
+    let nextRange = 150;
 
-        if (score >= 5000) { nextLevel = 5; nextEmoji = '✨🌈'; nextInterval = 3000; nextRange = 300; }
-        else if (score >= 3000) { nextLevel = 4; nextEmoji = '🐉'; nextInterval = 4000; nextRange = 250; }
-        else if (score >= 1500) { nextLevel = 3; nextEmoji = '🦄'; nextInterval = 5000; nextRange = 200; }
-        else if (score >= 500) { nextLevel = 2; nextEmoji = '🦊'; nextInterval = 6000; nextRange = 175; }
+    if (score >= 5000) { nextLevel = 5; nextEmoji = '✨🌈'; nextInterval = 3000; nextRange = 300; }
+    else if (score >= 3000) { nextLevel = 4; nextEmoji = '🐉'; nextInterval = 4000; nextRange = 250; }
+    else if (score >= 1500) { nextLevel = 3; nextEmoji = '🦄'; nextInterval = 5000; nextRange = 200; }
+    else if (score >= 500) { nextLevel = 2; nextEmoji = '🦊'; nextInterval = 6000; nextRange = 175; }
 
-        if (nextLevel > this.level) {
-            this.level = nextLevel;
-            this.emoji = nextEmoji;
-            this.popInterval = nextInterval;
-            this.popRange = nextRange;
-            floatingTexts.push(new FloatingText(this.x, this.y, `PET EVOLVED! ${this.emoji}`, 'gold'));
-            playSound(800, 'sine', 0.3);
-        }
+    // Apply Accessory Bonuses
+    if (ownedAccessories.includes('Sparkle Wings')) {
+        nextRange += 50;
+    }
+    if (ownedAccessories.includes('Magic Hat')) {
+        nextInterval *= 0.8;
+    }
+
+    if (nextLevel > this.level) {
+        this.level = nextLevel;
+        this.emoji = nextEmoji;
+        this.popInterval = nextInterval;
+        this.popRange = nextRange;
+        floatingTexts.push(new FloatingText(this.x, this.y, `PET EVOLVED! ${this.emoji}`, 'gold'));
+        playSound(800, 'sine', 0.3);
+    }
  
         // Sugar Rush Logic
         if (this.sugarRushTimer > 0) {
@@ -688,15 +740,19 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC MIRROR! 🪞 +${mirrorBonus}`, '#e0f7fa'));
                 createPopEffect(b.x, b.y, '#e0f7fa');
                 triggerFrenzy();
-            } else if (b.type === 'gold') {
+            if (b.type === 'gold') {
                 playPopSound(true, false);
                 const bonus = 5 + (combo * 2);
+                let goldGain = bonus;
+                if (ownedAccessories.includes('Golden Collar')) {
+                    goldGain = Math.floor(goldGain * 1.5);
+                }
                 score += bonus;
-                totalGold += bonus;
+                totalGold += goldGain;
                 localStorage.setItem('bubblePopTotalGold', totalGold);
                 totalGoldEl.innerText = totalGold;
                 timeLeft += 2;
-                floatingTexts.push(new FloatingText(b.x, b.y, `+${bonus} TIME! ✨`, 'gold'));
+                floatingTexts.push(new FloatingText(b.x, b.y, `+${goldGain} GOLD! ✨`, 'gold'));
             } else if (b.type === 'rainbow-burst') {
                 playPopSound(true, false);
                 const rainbowBonus = 100;
