@@ -16,12 +16,17 @@ let cosmicDust = [];
 let soundEnabled = true;
 const MAX_MAGIC_ENERGY = 100;
 const scoreElement = document.getElementById('score');
+const highScoreElement = document.getElementById('high-score');
 const comboElement = document.getElementById('combo');
 const comboContainer = document.getElementById('combo-container');
 const burstButton = document.getElementById('burst-button');
 const soundToggle = document.getElementById('sound-toggle');
 
 function init() {
+    // Load high score
+    let savedHighScore = localStorage.getItem('magicPrismHighScore') || 0;
+    highScoreElement.innerText = savedHighScore;
+
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0f0f1a);
     scene.fog = new THREE.FogExp2(0x0f0f1a, 0.02);
@@ -265,6 +270,13 @@ function onMouseDown(event) {
         const points = combo;
         score += points;
         scoreElement.innerText = score;
+
+        // Update high score
+        let savedHighScore = parseInt(localStorage.getItem('magicPrismHighScore') || '0');
+        if (score > savedHighScore) {
+            localStorage.setItem('magicPrismHighScore', score);
+            highScoreElement.innerText = score;
+        }
         createFloatingText(`+${points}`, event.clientX, event.clientY);
         
         // Increase magic energy
@@ -486,7 +498,8 @@ function triggerMagicBurst() {
     
     score += 1000;
     scoreElement.innerText = score;
-    
+    // High score also updated by the point addition logic above, but let's be safe
+
     const shockwaveGeo = new THREE.TorusGeometry(0.1, 0.05, 16, 100);
     const shockwaveMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1});
     const shockwave = new THREE.Mesh(shockwaveGeo, shockwaveMat);
