@@ -15,18 +15,20 @@ let animationId;
 const PLAYER_RADIUS = 20;
 const DEWDROP_RADIUS = 10;
 const CLOUD_RADIUS = 25;
-const SPAWN_RATE = 0.02; // Chance per frame to spawn something
-const CLOUD_SPAWN_RATE = 0.01;
+const BASE_SPAWN_RATE = 0.02; 
+const BASE_CLOUD_SPAWN_RATE = 0.01;
 
 let player = {
     x: 0,
     y: 0,
     targetX: 0,
     targetY: 0,
-    color: '#ff69b4'
+    color: '#ff69b4',
+    trail: []
 };
 
 let entities = [];
+let particles = [];
 
 highScoreElement.innerText = `Best: ${highScore}`;
 
@@ -58,31 +60,48 @@ canvas.addEventListener('touchmove', (e) => {
     player.targetY = touch.clientY - rect.top;
 }, { passive: false });
 
+function createParticles(x, y, color) {
+    for (let i = 0; i < 12; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
+            radius: Math.random() * 3 + 1,
+            color: color,
+            life: 1.0,
+            decay: Math.random() * 0.02 + 0.02
+        });
+    }
+}
+
 function spawnEntity() {
     const type = Math.random() < 0.7 ? 'dewdrop' : 'cloud';
     const side = Math.floor(Math.random() * 4);
     let x, y, vx, vy;
+    
+    // Speed increases with score
+    const speedMult = 1 + (score * 0.02);
 
     if (side === 0) { // Top
         x = Math.random() * canvas.width;
         y = -30;
-        vx = (Math.random() - 0.5) * 2;
-        vy = Math.random() * 2 + 1;
+        vx = (Math.random() - 0.5) * 2 * speedMult;
+        vy = (Math.random() * 2 + 1) * speedMult;
     } else if (side === 1) { // Right
         x = canvas.width + 30;
         y = Math.random() * canvas.height;
-        vx = -(Math.random() * 2 + 1);
-        vy = (Math.random() - 0.5) * 2;
+        vx = -(Math.random() * 2 + 1) * speedMult;
+        vy = (Math.random() - 0.5) * 2 * speedMult;
     } else if (side === 2) { // Bottom
         x = Math.random() * canvas.width;
         y = canvas.height + 30;
-        vx = (Math.random() - 0.5) * 2;
-        vy = -(Math.random() * 2 + 1);
+        vx = (Math.random() - 0.5) * 2 * speedMult;
+        vy = -(Math.random() * 2 + 1) * speedMult;
     } else { // Left
         x = -30;
         y = Math.random() * canvas.height;
-        vx = Math.random() * 2 + 1;
-        vy = (Math.random() - 0.5) * 2;
+        vx = (Math.random() * 2 + 1) * speedMult;
+        vy = (Math.random() - 0.5) * 2 * speedMult;
     }
 
     entities.push({
@@ -96,11 +115,23 @@ function spawnEntity() {
 }
 
 function drawPlayer() {
+    // Draw trail
+    ctx.save();
+    player.trail.forEach((pos, i) => {
+        const opacity = i / player.trail.length;
+        const size = PLAYER_RADIUS * opacity;
+        ctx.fillStyle = player.color;
+        ctx.globalAlpha = opacity * 0.5;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.restore();
+
     ctx.save();
     ctx.shadowBlur = 20;
     ctx.shadowColor = player.color;
     
-    // Draw a cute glowing orb
     const gradient = ctx.createRadialGradient(player.x, player.y, 0, player.x, player.y, PLAYER_RADIUS);
     gradient.addColorStop(0, 'white');
     gradient.addColorStop(0.4, player.color);
@@ -126,7 +157,6 @@ function drawEntity(e) {
         ctx.arc(e.x, e.y, e.radius + Math.sin(e.pulse) * 2, 0, Math.PI * 2);
         ctx.fill();
     } else {
-        // Draw a fluffy cloud
         ctx.fillStyle = '#f0f0f0';
         ctx.shadowBlur = 5;
         ctx.shadowColor = 'rgba(0,0,0,0.1)';
@@ -138,7 +168,6 @@ function drawEntity(e) {
         ctx.arc(e.x, e.y - e.radius * 0.5, e.radius * 0.7, 0, Math.PI * 2);
         ctx.fill();
         
-        // Grumpy eyes
         ctx.fillStyle = '#555';
         ctx.beginPath();
         ctx.arc(e.x - 5, e.y - 2, 2, 0, Math.PI * 2);
@@ -148,20 +177,37 @@ function drawEntity(e) {
     ctx.restore();
 }
 
+function drawParticles() {
+    particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+}
+
 function update() {
-    // Smoothly move player towards target
     player.x += (player.targetX - player.x) * 0.15;
     player.y += (player.targetY - player.y) * 0.15;
+    
+    // Update trail
+    player.trail.push({x: player.x, y: player.y});
+    if (player.trail.length > 10) player.trail.shift();
 
-    if (Math.random() < SPAWN_RATE) spawnEntity();
-    if (Math.random() < CLOUD_SPAWN_RATE) spawnEntity(); // Slightly more variety
+    const currentSpawnRate = BASE_SPAWN_RATE * (1 + score * 0.01);
+    const currentCloudRate = BASE_CLOUD_SPAWN_RATE * (1 + score * 0.01);
+
+    if (Math.random() < currentSpawnRate) spawnEntity();
+    if (Math.random() < currentCloudRate) spawnEntity();
 
     entities.forEach((e, index) => {
         e.x += e.vx;
         e.y += e.vy;
         e.pulse += e.pulseSpeed;
 
-        // Collision detection
         const dx = e.x - player.x;
         const dy = e.y - player.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -170,8 +216,8 @@ function update() {
             if (e.type === 'dewdrop') {
                 score++;
                 scoreElement.innerText = `Score: ${score}`;
+                createParticles(e.x, e.y, e.color);
                 entities.splice(index, 1);
-                // Flash effect for score
                 scoreElement.style.transform = 'scale(1.2)';
                 setTimeout(() => scoreElement.style.transform = 'scale(1)', 100);
             } else {
@@ -179,10 +225,16 @@ function update() {
             }
         }
 
-        // Remove if off screen
         if (e.x < -100 || e.x > canvas.width + 100 || e.y < -100 || e.y > canvas.height + 100) {
             entities.splice(index, 1);
         }
+    });
+
+    particles.forEach((p, index) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= p.decay;
+        if (p.life <= 0) particles.splice(index, 1);
     });
 }
 
@@ -202,7 +254,6 @@ function gameOver() {
         <button id="start-btn-restart" class="start-btn">Start Magic! 🌈</button>
     `;
     
-    // The original button is replaced by the innerHTML, so we need to add event listener again
     const restartBtn = document.getElementById('start-btn-restart');
     restartBtn.onclick = () => {
         startGame();
@@ -217,6 +268,8 @@ function startGame() {
     score = 0;
     scoreElement.innerText = `Score: ${score}`;
     entities = [];
+    particles = [];
+    player.trail = [];
     gameActive = true;
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
@@ -232,6 +285,7 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     update();
+    drawParticles();
     drawPlayer();
     entities.forEach(drawEntity);
     
