@@ -31,26 +31,30 @@ class Player {
         this.x = canvas.width / 2 - this.width / 2;
         this.y = canvas.height - 100;
         this.color = '#ffffff';
+        this.bob = 0;
     }
 
     draw() {
+        this.bob = Math.sin(Date.now() / 200) * 8;
+        const drawY = this.y + this.bob;
+
         // Draw a fluffy cloud
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.x + 30, this.y + 30, 30, 0, Math.PI * 2);
-        ctx.arc(this.x + 60, this.y + 20, 35, 0, Math.PI * 2);
-        ctx.arc(this.x + 90, this.y + 30, 30, 0, Math.PI * 2);
-        ctx.arc(this.x + 60, this.y + 40, 30, 0, Math.PI * 2);
+        ctx.arc(this.x + 30, drawY + 30, 30, 0, Math.PI * 2);
+        ctx.arc(this.x + 60, drawY + 20, 35, 0, Math.PI * 2);
+        ctx.arc(this.x + 90, drawY + 30, 30, 0, Math.PI * 2);
+        ctx.arc(this.x + 60, drawY + 40, 30, 0, Math.PI * 2);
         ctx.fill();
         
         // Add a little smiley face to the cloud
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(this.x + 50, this.y + 25, 3, 0, Math.PI * 2);
-        ctx.arc(this.x + 70, this.y + 25, 3, 0, Math.PI * 2);
+        ctx.arc(this.x + 50, drawY + 25, 3, 0, Math.PI * 2);
+        ctx.arc(this.x + 70, drawY + 25, 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(this.x + 60, this.y + 35, 5, 0, Math.PI, false);
+        ctx.arc(this.x + 60, drawY + 35, 5, 0, Math.PI, false);
         ctx.stroke();
     }
 
@@ -62,18 +66,55 @@ class Player {
     }
 }
 
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.size = Math.random() * 5 + 2;
+        this.speedX = (Math.random() - 0.5) * 10;
+        this.speedY = (Math.random() - 0.5) * 10;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.02;
+    }
+
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life -= this.decay;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 class FallingItem {
     constructor() {
         this.radius = 15 + Math.random() * 10;
         this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
         this.y = -this.radius;
-        this.speed = 3 + Math.random() * 4;
-        this.type = Math.random() > 0.2 ? 'candy' : 'lemon';
         
-        if (this.type === 'candy') {
+        // Speed increases slightly as score goes up
+        const difficultyMultiplier = 1 + (score / 50);
+        this.speed = (3 + Math.random() * 4) * difficultyMultiplier;
+        
+        const rand = Math.random();
+        if (rand > 0.9) {
+            this.type = 'golden';
+            this.color = '#ffd700';
+            this.emoji = '🌟';
+        } else if (rand > 0.2) {
+            this.type = 'candy';
             this.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
             this.emoji = '🍬';
         } else {
+            this.type = 'lemon';
             this.color = '#fef08a';
             this.emoji = '🍋';
         }
@@ -93,6 +134,13 @@ class FallingItem {
 
 const player = new Player();
 const items = [];
+const particles = [];
+
+function createParticles(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+}
 
 function spawnItem() {
     if (!gameActive) return;
@@ -106,6 +154,14 @@ function update() {
 
     player.update(mouseX);
     player.draw();
+
+    // Update and draw particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw();
+        if (p.life <= 0) particles.splice(i, 1);
+    }
 
     for (let i = items.length - 1; i >= 0; i--) {
         const item = items[i];
@@ -121,12 +177,15 @@ function update() {
         ) {
             if (item.type === 'candy') {
                 score++;
-                scoreElement.textContent = score;
-                // Simple pop effect could be added here
+                createParticles(item.x, item.y, item.color);
+            } else if (item.type === 'golden') {
+                score += 5;
+                createParticles(item.x, item.y, '#ffd700', 20);
             } else {
                 score = Math.max(0, score - 5);
-                scoreElement.textContent = score;
+                createParticles(item.x, item.y, '#fef08a', 15);
             }
+            scoreElement.textContent = score;
             items.splice(i, 1);
         } else if (item.y > canvas.height + item.radius) {
             items.splice(i, 1);
