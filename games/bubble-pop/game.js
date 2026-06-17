@@ -33,6 +33,7 @@ let comboTimer;
 let isFrenzy = false;
 let isVortex = false;
 let isMagnetic = false;
+let gameSpeed = 1;
 let shieldActive = false;
 let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
@@ -351,8 +352,8 @@ class Bubble {
     }
 
     update() {
-        this.y -= this.speed;
-        this.x += this.vx;
+        this.y -= this.speed * gameSpeed;
+        this.x += this.vx * gameSpeed;
         
         if (this.x - this.radius < 0 || this.x + this.radius > canvasWidth) {
             this.vx *= -1;
@@ -777,10 +778,24 @@ function triggerDiscoParty() {
             b.vy += (Math.random() - 0.5) * 2;
         });
     }, 100);
-
+    
     setTimeout(() => {
         discoAlert.style.display = 'none';
         clearInterval(discoInterval);
+    }, 5000);
+}
+
+function triggerSlowMo() {
+    const slowMoAlert = document.getElementById('slow-mo-alert');
+    slowMoAlert.style.display = 'block';
+    slowMoAlert.style.color = '#81d4fa';
+    slowMoAlert.style.textShadow = '2px 2px #ffffff';
+    
+    gameSpeed = 0.3;
+    
+    setTimeout(() => {
+        gameSpeed = 1;
+        slowMoAlert.style.display = 'none';
     }, 5000);
 }
 
@@ -1149,6 +1164,7 @@ function handlePop(e) {
             if (Math.random() < 0.008) triggerVortex();
             if (Math.random() < 0.004) triggerCupcakeRain();
             if (Math.random() < 0.003) triggerDiscoParty();
+            if (Math.random() < 0.004) triggerSlowMo();
             
             updateCombo();
             scoreEl.innerText = score;
