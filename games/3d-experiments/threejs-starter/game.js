@@ -356,6 +356,13 @@ function onMouseDown(event) {
         
         object.material.color.setHex(Math.random() * 0xffffff);
         
+        // Geometry Evolution
+        if (object.level === 2) {
+            object.geometry = new THREE.IcosahedronGeometry(0.5, 0);
+        } else if (object.level === 3) {
+            object.geometry = new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8);
+        }
+
         if (object.level >= 4) {
             // Super Prism Burst!
             const superBonus = 100 * combo;
@@ -471,6 +478,32 @@ function spawnClickRing(position) {
         requestAnimationFrame(animateRing);
     }
     animateRing();
+}
+
+function spawnGravityWell() {
+    const geo = new THREE.SphereGeometry(0.8, 32, 32);
+    const mat = new THREE.MeshStandardMaterial({
+        color: 0x000000,
+        emissive: 0x4400ff,
+        emissiveIntensity: 2,
+        transparent: true,
+        opacity: 0.8
+    });
+    const well = new THREE.Mesh(geo, mat);
+    well.position.set(
+        (Math.random() - 0.5) * 15,
+        (Math.random() - 0.5) * 15,
+        (Math.random() - 0.5) * 15
+    );
+    scene.add(well);
+    gravityWells.push({
+        mesh: well,
+        startTime: Date.now(),
+        duration: 5000 + Math.random() * 5000
+    });
+
+    createFloatingText('🌀 GRAVITY WELL! 🌀', well.position.x * 10, well.position.y * 10);
+    playSound(100, 'sine', 0.5, 0.2);
 }
 
 function spawnGoldenPrism() {
@@ -668,6 +701,35 @@ function animate() {
         portal.rotation.z += 0.01;
         portal.scale.setScalar(1 + Math.sin(time * 3) * 0.05);
         portal.material.emissiveIntensity = 1 + Math.sin(time * 5) * 0.5;
+    }
+
+    // Gravity Well Logic
+    for (let i = gravityWells.length - 1; i >= 0; i--) {
+        const well = gravityWells[i];
+        const elapsed = Date.now() - well.startTime;
+        
+        if (elapsed > well.duration) {
+            scene.remove(well.mesh);
+            gravityWells.splice(i, 1);
+            continue;
+        }
+
+        well.mesh.rotation.y += 0.05;
+        well.mesh.scale.setScalar(1 + Math.sin(time * 5) * 0.1);
+
+        prisms.forEach(prism => {
+            const dist = prism.position.distanceTo(well.mesh.position);
+            if (dist < 8) {
+                const force = (8 - dist) * 0.001;
+                const dir = new THREE.Vector3().subVectors(well.mesh.position, prism.position).normalize();
+                
+                // Add some swirl
+                const swirl = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(force * 0.5);
+                
+                prism.position.add(dir.multiplyScalar(force));
+                prism.position.add(swirl);
+            }
+        });
     }
 
     // Cosmic Wind Logic
