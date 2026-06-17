@@ -14,7 +14,8 @@ let mouseTrail = [];
 let cameraShake = 0;
 let magicEnergy = 0;
 let cosmicDust = [];
-let soundEnabled = true;
+let gravityWells = [];
+soundEnabled = true;
 let windActive = false;
 let windDirection = new THREE.Vector3(0, 0, 0);
 let windTimer = 0;
@@ -218,6 +219,9 @@ function createPrisms() {
     
     // Periodically spawn golden prisms
     setInterval(spawnGoldenPrism, 5000);
+    
+    // Periodically spawn gravity wells
+    setInterval(spawnGravityWell, 15000);
 }
 
 function createSinglePrism(geometries) {
