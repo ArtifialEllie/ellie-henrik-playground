@@ -5,10 +5,7 @@ let scene, camera, renderer, ball, road, stars = [];
     let rings = [];
     let obstacles = [];
     let trail = [];
-<<<<<<< HEAD
-=======
     let powerups = [];
->>>>>>> origin/main
     let score = 0;
     let gameActive = false;
     let speed = 0.2;
@@ -243,10 +240,6 @@ function onWindowResize() {
 function update() {
     if (!gameActive) return;
 
-    // Smooth movement
-function update() {
-    if (!gameActive) return;
-
     // Super Mode Logic
     if (superMode) {
         superModeTimer--;
@@ -280,33 +273,6 @@ function update() {
     camera.position.z = ball.position.z + 10;
     camera.position.x = ball.position.x * 0.5;
     camera.lookAt(ball.position);
-<<<<<<< HEAD
-
-    // Create trail effect
-    const trailGeo = new THREE.SphereGeometry(0.3, 8, 8);
-    const trailMat = new THREE.MeshBasicMaterial({ 
-        color: 0xff69b4, 
-        transparent: true, 
-        opacity: 0.5 
-    });
-    const trailPiece = new THREE.Mesh(trailGeo, trailMat);
-    trailPiece.position.copy(ball.position);
-    scene.add(trailPiece);
-    trail.push(trailPiece);
-
-    // Update and fade trail pieces
-    for (let i = trail.length - 1; i >= 0; i--) {
-        trail[i].scale.multiplyScalar(0.95);
-        trail[i].material.opacity -= 0.02;
-        if (trail[i].material.opacity <= 0) {
-            scene.remove(trail[i]);
-            trail.splice(i, 1);
-        }
-    }
-
-=======
-    
->>>>>>> origin/main
     // Bound checking
     if (ball.position.x > ROAD_WIDTH/2) ball.position.x = ROAD_WIDTH/2;
     if (ball.position.x < -ROAD_WIDTH/2) ball.position.x = -ROAD_WIDTH/2;
