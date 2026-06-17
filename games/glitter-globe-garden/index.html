@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glitter Globe Garden ✨🌸</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-layer">
+            <div class="stat-box">
+                <span class="label">✨ Sparkles:</span>
+                <span id="sparkle-count">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="label">⏰ Time:</span>
+                <span id="timer">60</span>s
+            </div>
+        </div>
+
+        <div id="globe-container">
+            <div id="glitter-globe">
+                <div id="garden-plot"></div>
+                <div id="butterfly-layer"></div>
+                <div class="globe-reflection"></div>
+            </div>
+        </div>
+
+        <div id="controls">
+            <button id="plant-btn" class="magic-btn">🌱 Plant Sparkle Seed</button>
+            <button id="water-btn" class="magic-btn">💧 Water with Moonlight Dew</button>
+        </div>
+
+        <div id="game-over" class="hidden">
+            <div class="overlay-content">
+                <h1>Garden Bloom Complete! 🌸</h1>
+                <p>Your garden attracted <span id="final-butterflies">0</span> Stardust Butterflies!</p>
+                <p>Total Sparkle Power: <span id="final-sparkles">0</span></p>
+                <button id="restart-btn" class="magic-btn">✨ Start Again ✨</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
