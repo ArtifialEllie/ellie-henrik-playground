@@ -1,0 +1,100 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #1a0b2e;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#game-container {
+    position: relative;
+    box-shadow: 0 0 50px rgba(138, 43, 226, 0.5);
+    border: 8px solid #4b0082;
+    border-radius: 20px;
+}
+
+#ui {
+    position: absolute;
+    top: -60px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 2px 2px #000;
+}
+
+#gameCanvas {
+    display: block;
+    background: radial-gradient(circle, #2e1a47 0%, #1a0b2e 100%);
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 12px;
+    z-index: 10;
+    transition: opacity 0.5s ease;
+}
+
+#overlay-title {
+    font-size: 48px;
+    color: #ff00ff;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff; }
+    to { text-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff, 0 0 40px #ff00ff; }
+}
+
+#overlay-text {
+    font-size: 20px;
+    margin-bottom: 30px;
+    max-width: 80%;
+}
+
+#start-button {
+    padding: 15px 30px;
+    font-size: 24px;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+}
+
+#start-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #00ffff;
+}
+
+#controls-hint {
+    position: absolute;
+    bottom: -40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 18px;
+    opacity: 0.7;
+}
