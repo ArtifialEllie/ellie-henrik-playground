@@ -613,10 +613,10 @@ class MagicalPet {
     else if (score >= 500) { nextLevel = 2; nextEmoji = '🦊'; nextInterval = 6000; nextRange = 175; }
 
     // Apply Accessory Bonuses
-    if (ownedAccessories.includes('Sparkle Wings')) {
+    if (currentAccessory === '🦋') {
         nextRange += 50;
     }
-    if (ownedAccessories.includes('Magic Hat')) {
+    if (currentAccessory === '🎩') {
         nextInterval *= 0.8;
     }
 
