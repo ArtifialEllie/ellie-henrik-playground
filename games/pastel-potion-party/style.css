@@ -1,0 +1,229 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    color: #5d5d5d;
+}
+
+#game-container {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+    border: 5px solid #fff;
+}
+
+header h1 {
+    color: #ff9a9e;
+    text-shadow: 2px 2px 0px #fff;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+#score-board {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #a18cd1;
+}
+
+#game-area {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+#request-container {
+    background: #fff;
+    padding: 15px;
+    border-radius: 20px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#customer {
+    font-size: 4rem;
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+}
+
+#request-text {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+#target-potion {
+    width: 60px;
+    height: 80px;
+    border: 4px solid #5d5d5d;
+    border-radius: 0 0 20px 20px;
+    position: relative;
+    overflow: hidden;
+    background: #eee;
+}
+
+.liquid {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    transition: background-color 0.5s ease;
+}
+
+#mixing-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.cauldron {
+    width: 120px;
+    height: 100px;
+    background: #4a4a4a;
+    border-radius: 0 0 60px 60px;
+    position: relative;
+    border: 6px solid #333;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.cauldron .liquid {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 80%;
+    border-radius: 0 0 54px 54px;
+    transition: background-color 0.5s ease;
+}
+
+.bubbles {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 20px;
+    pointer-events: none;
+}
+
+.bubble {
+    position: absolute;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    animation: floatUp 2s infinite ease-in;
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-30px); opacity: 0; }
+}
+
+#current-mix-text {
+    font-weight: bold;
+    color: #777;
+}
+
+button {
+    background: #ffc0cb;
+    border: none;
+    border-radius: 15px;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 4px 0px #e5a8b0;
+    color: #5d5d5d;
+}
+
+button:hover {
+    background: #ffb6c1;
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(2px);
+    box-shadow: 0 0 0px #e5a8b0;
+}
+
+#reset-button {
+    background: #e0f7fa;
+    box-shadow: 0 4px 0px #b2ebf2;
+}
+
+#ingredients {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.ingredient {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.ingredient:hover {
+    transform: scale(1.1);
+}
+
+.drop {
+    width: 40px;
+    height: 40px;
+    background: var(--color);
+    border-radius: 0 50% 50% 50%;
+    transform: rotate(-45deg);
+    border: 3px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#feedback {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+#feedback-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#feedback-text {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    }
+
+.hidden {
+    display: none !important;
+}
+
+#next-customer {
+    background: #d1c4e9;
+    box-shadow: 0 4px 0px #b39ddb;
+}

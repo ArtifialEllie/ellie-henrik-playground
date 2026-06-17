@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Potion Party ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>Pastel Potion Party ✨</h1>
+            <div id="score-board">Score: <span id="score">0</span></div>
+        </header>
+
+        <div id="game-area">
+            <div id="request-container">
+                <div id="customer">🐰</div>
+                <p id="request-text">"I want a <strong><span id="target-color-name">...</span></strong> potion, please!"</p>
+                <div id="target-potion" class="potion-bottle">
+                    <div class="liquid" id="target-liquid"></div>
+                </div>
+            </div>
+
+            <div id="mixing-container">
+                <div id="main-cauldron" class="cauldron">
+                    <div class="liquid" id="main-liquid"></div>
+                    <div class="bubbles"></div>
+                </div>
+                <div id="current-mix-text">Current Mix: <span id="mix-rgb">rgb(255, 255, 255)</span></div>
+                <button id="brew-button">Brew Potion! 🌟</button>
+                <button id="reset-button">Clear 💧</button>
+            </div>
+
+            <div id="ingredients">
+                <div class="ingredient" data-color="red" style="--color: #ffb3ba;">
+                    <div class="drop"></div>
+                    <span>Ruby Red</span>
+                </div>
+                <div class="ingredient" data-color="blue" style="--color: #bae1ff;">
+                    <div class="drop"></div>
+                    <span>Sapphire Blue</span>
+                </div>
+                <div class="ingredient" data-color="yellow" style="--color: #ffffba;">
+                    <div class="drop"></div>
+                    <span>Sunshine Yellow</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="feedback" class="hidden">
+            <div id="feedback-content">
+                <p id="feedback-text"></p>
+                <button id="next-customer">Next Customer! ✨</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
