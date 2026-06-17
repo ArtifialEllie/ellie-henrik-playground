@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar Sparkle Slide ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Sparkles: <span id="score">0</span></div>
+            <div id="distance-board">Distance: <span id="distance">0</span>m</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <h1>Stellar Sparkle Slide ✨</h1>
+            <p>Slide through the cosmos! Collect crystals and avoid asteroids!</p>
+            <button id="start-button">Start Sliding! 🚀</button>
+        </div>
+        <div id="game-over">
+            <h1>Oh No! Your Sparkle Faded! 🌟</h1>
+            <p>You slid for <span id="final-distance">0</span> meters and collected <span id="final-score">0</span> crystals!</p>
+            <button id="restart-button">Try Again! 🌈</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
