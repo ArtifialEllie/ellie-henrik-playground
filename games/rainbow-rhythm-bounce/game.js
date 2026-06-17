@@ -7,10 +7,10 @@ const startBtn = document.getElementById('start-btn');
 
 // Game Settings
 const COLORS = {
-    RED: '#ff4d4d',
-    GREEN: '#4dff4d',
-    BLUE: '#4d4dff',
-    YELLOW: '#ffff4d'
+    RED: { r: 255, g: 77, b: 77, hex: '#ff4d4d' },
+    GREEN: { r: 77, g: 255, b: 77, hex: '#4dff4d' },
+    BLUE: { r: 77, g: 77, b: 255, hex: '#4d4dff' },
+    YELLOW: { r: 255, g: 255, b: 77, hex: '#ffff4d' }
 };
 const COLOR_KEYS = {
     'a': COLORS.RED,
@@ -28,6 +28,7 @@ let multiplier = 1;
 let gameActive = false;
 let ball, platform;
 let platforms = [];
+let particles = [];
 let lastTime = 0;
 
 class Ball {
@@ -40,7 +41,7 @@ class Ball {
         this.y = 100;
         this.radius = 15;
         this.dy = 0;
-        this.color = COLORS.RED;
+        this.currentColor = { ...COLORS.RED };
         this.targetColor = COLORS.RED;
     }
 
@@ -48,19 +49,23 @@ class Ball {
         this.dy += GRAVITY;
         this.y += this.dy;
 
-        // Simple lerp for color transition
-        this.color = this.targetColor;
+        // Smooth color transition
+        const lerpSpeed = 0.2;
+        this.currentColor.r += (this.targetColor.r - this.currentColor.r) * lerpSpeed;
+        this.currentColor.g += (this.targetColor.g - this.currentColor.g) * lerpSpeed;
+        this.currentColor.b += (this.targetColor.b - this.currentColor.b) * lerpSpeed;
     }
 
     draw() {
+        const colorStr = `rgb(${Math.round(this.currentColor.r)}, ${Math.round(this.currentColor.g)}, ${Math.round(this.currentColor.b)})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = colorStr;
         ctx.fill();
         
         // Glow effect
         ctx.shadowBlur = 15;
-        ctx.shadowColor = this.color;
+        ctx.shadowColor = colorStr;
         ctx.closePath();
         ctx.shadowBlur = 0;
     }
@@ -74,7 +79,8 @@ class Platform {
         this.height = 20;
         this.speed = speed;
         this.direction = Math.random() > 0.5 ? 1 : -1;
-        this.color = Object.values(COLORS)[Math.floor(Math.random() * 4)];
+        this.colorObj = Object.values(COLORS)[Math.floor(Math.random() * 4)];
+        this.color = this.colorObj.hex;
     }
 
     update() {
@@ -96,15 +102,44 @@ class Platform {
     }
 }
 
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.size = Math.random() * 5 + 2;
+        this.vx = (Math.random() - 0.5) * 10;
+        this.vy = (Math.random() - 0.5) * 10;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.02;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 function init() {
     canvas.width = 600;
     canvas.height = 800;
     ball = new Ball();
     platforms = [];
+    particles = [];
     
     // Initial platforms
-    for (let i = 0; i < 5; i++) {
-        platforms.push(new Platform(200 + i * 120, PLATFORM_SPEED_START));
+    for (let i = 0; i < 6; i++) {
+        platforms.push(new Platform(200 + i * 150, PLATFORM_SPEED_START));
     }
     
     score = 0;
@@ -114,8 +149,15 @@ function init() {
 }
 
 function spawnPlatform() {
-    const lastPlatformY = platforms[platforms.length - 1].y;
-    platforms.push(new Platform(lastPlatformY + 120, PLATFORM_SPEED_START + (score / 1000)));
+    const lastPlatformY = platforms.length > 0 ? platforms[platforms.length - 1].y : 200;
+    const speed = Math.min(PLATFORM_SPEED_MAX, PLATFORM_SPEED_START + (score / 1000));
+    platforms.push(new Platform(lastPlatformY + 150, speed));
+}
+
+function createBurst(x, y, color) {
+    for (let i = 0; i < 12; i++) {
+        particles.push(new Particle(x, y, color));
+    }
 }
 
 function checkCollision(ball, platform) {
@@ -145,7 +187,6 @@ function update(time) {
 
     ball.update();
     
-    // Camera follow (simple)
     const cameraOffset = ball.y > 300 ? ball.y - 300 : 0;
     ctx.save();
     ctx.translate(0, -cameraOffset);
@@ -155,36 +196,42 @@ function update(time) {
         p.draw();
         
         if (checkCollision(ball, p)) {
-            if (ball.color === p.color) {
+            if (ball.targetColor.hex === p.color) {
                 ball.dy = BOUNCE_STRENGTH;
                 score += 10 * multiplier;
                 multiplier++;
                 scoreElement.innerText = `Score: ${score}`;
                 multiplierElement.innerText = `x${multiplier}`;
                 
-                // Move platform down to keep them in loop
-                p.y += 120; // This is simplistic, but just to maintain density
-                // In a real "infinite" game, we'd shift everything
+                createBurst(ball.x, ball.y + ball.radius, p.color);
+                
+                // Reposition platform to maintain game flow
+                p.y += 600; 
+                p.x = Math.random() * (canvas.width - 100);
+                // Re-sort platforms to keep spawning logic consistent
+                platforms.sort((a, b) => a.y - b.y);
             } else {
                 gameOver();
             }
         }
     });
 
-    // The actual infinite logic: keep platforms spawning and moving
-    // We need to handle the y-coordinate of platforms relative to the ball
-    // Since we are moving the camera, we'll just spawn platforms below
-    if (platforms.length < 10) {
+    if (platforms[platforms.length - 1].y < cameraOffset + canvas.height) {
         spawnPlatform();
     }
     
-    // Remove off-screen platforms
-    platforms = platforms.filter(p => p.y > cameraOffset - 100);
+    platforms = platforms.filter(p => p.y > cameraOffset - 200);
+
+    particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        if (p.life <= 0) particles.splice(i, 1);
+    });
 
     ball.draw();
     ctx.restore();
 
-    if (ball.y > cameraOffset + canvas.height) {
+    if (ball.y > cameraOffset + canvas.height + 100) {
         gameOver();
     }
 
