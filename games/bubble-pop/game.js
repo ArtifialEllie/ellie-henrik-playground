@@ -349,6 +349,9 @@ class Bubble {
         } else if (rand > 0.227 && rand < 0.257) {
             this.type = 'magnetic-bubble';
             this.color = '#9c27b0';
+        } else if (rand > 0.207 && rand < 0.237) {
+            this.type = 'magic-mushroom';
+            this.color = '#ff69b4';
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -427,6 +430,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🪄', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'magic-mushroom') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🍄', this.x, this.y + currentRadius/3);
         } else if (this.type === 'hammer') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -1149,7 +1156,27 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGNETIC! 🧲 +${magBonus}`, '#9c27b0'));
                 createPopEffect(b.x, b.y, '#9c27b0');
                 triggerMagnetism();
-            } else            if (b.type === 'giant') {
+            } else if (b.type === 'magic-mushroom') {
+                playPopSound(true, false);
+                const mushBonus = 80;
+                score += mushBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MUSHROOM POP! 🍄 +${mushBonus}`, '#ff69b4'));
+                createPopEffect(b.x, b.y, '#ff69b4');
+                
+                // Spawn a cluster of "spore" bubbles
+                for (let j = 0; j < 8; j++) {
+                    const spore = new Bubble(false);
+                    spore.radius = 15;
+                    spore.x = b.x + (Math.random() - 0.5) * 100;
+                    spore.y = b.y + (Math.random() - 0.5) * 100;
+                    spore.speed = Math.random() * 2 + 1;
+                    spore.type = 'normal';
+                    spore.color = '#ffb6c1';
+                    // We can't easily change the point value for just these, 
+                    // but they provide more targets for the player.
+                    bubbles.push(spore);
+                }
+            } else if (b.type === 'giant') {
                 playSuperPopSound();
                 const giantBonus = 200;
                 score += giantBonus;
