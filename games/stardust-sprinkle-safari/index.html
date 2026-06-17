@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardust Sprinkle Safari ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Sprinkles: <span id="score">0</span></div>
+            <div id="message">Catch the stardust! ✨</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay" class="hidden">
+            <div id="game-over-card">
+                <h1>Safari Over! 🐾</h1>
+                <p>You collected <span id="final-score">0</span> magical sprinkles!</p>
+                <button id="restart-btn">Play Again! 🌈</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
