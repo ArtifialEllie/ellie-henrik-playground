@@ -259,27 +259,30 @@ class Bubble {
             this.type = 'time-warp';
             this.color = '#e1bee7';
         } else if (rand > 0.577) {
+            this.type = 'magic-burst';
+            this.color = '#b3e5fc';
+        } else if (rand > 0.527) {
             this.type = 'hammer';
             this.color = '#a1887f';
-        } else if (rand > 0.527) {
+        } else if (rand > 0.477) {
             this.type = 'giant';
             this.radius = Math.random() * 40 + 70;
             this.hits = 3;
             this.color = '#ffeb3b';
-        } else if (rand > 0.477) {
+        } else if (rand > 0.427) {
             this.type = 'shield';
             this.color = '#b2dfdb';
-        } else if (rand > 0.457) {
+        } else if (rand > 0.377) {
             this.type = 'magic-dust';
             this.color = '#ffffff';
             this.radius = 25;
-        } else if (rand > 0.427) {
+        } else if (rand > 0.327) {
             this.type = 'lucky-clover';
             this.color = '#81c784';
-        } else if (rand > 0.327 && rand < 0.357) {
+        } else if (rand > 0.277 && rand < 0.307) {
             this.type = 'pet-treat';
             this.color = '#ffca28';
-        } else if (rand > 0.307 && rand < 0.337) {
+        } else if (rand > 0.227 && rand < 0.257) {
             this.type = 'magnetic-bubble';
             this.color = '#9c27b0';
         } else if (rand < 0.05) {
@@ -400,6 +403,10 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🧲', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'magic-burst') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🎆', this.x, this.y + currentRadius/3);
         } else if (this.type === 'giant') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -830,6 +837,23 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC MIRROR! 🪞 +${mirrorBonus}`, '#e0f7fa'));
                 createPopEffect(b.x, b.y, '#e0f7fa');
                 triggerFrenzy();
+            } else if (b.type === 'magic-burst') {
+                playPopSound(true, false);
+                const burstBonus = 150;
+                score += burstBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC BURST! 🎆 +${burstBonus}`, '#b3e5fc'));
+                createPopEffect(b.x, b.y, '#b3e5fc');
+                
+                // Magic Burst effect: pops all bubbles of the same color
+                const currentColor = b.color;
+                bubbles.forEach(bub => {
+                    if (bub !== b && bub.color === currentColor) {
+                        createPopEffect(bub.x, bub.y, bub.color);
+                        score += 10;
+                        floatingTexts.push(new FloatingText(bub.x, bub.y, `+10`, bub.color));
+                        bub.hits = 0; // Mark for removal
+                    }
+                });
             }
             if (b.type === 'gold') {
                 playPopSound(true, false);
