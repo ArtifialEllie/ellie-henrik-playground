@@ -3,6 +3,7 @@ import * as THREE from 'three';
 // --- Game State ---
 let score = 0;
 const crystals = [];
+const particles = [];
 const crystalCount = 20;
 const movementSpeed = 0.2;
 const rotationSpeed = 0.03;
@@ -125,10 +126,36 @@ function animate() {
             // Visual feedback (flash the ship)
             ship.material.emissive.setHex(0x00ff00);
             setTimeout(() => ship.material.emissive.setHex(0x00ffff), 100);
+            spawnParticles(crystal.position);
         }
     });
     
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.mesh.position.add(p.velocity);
+        p.velocity.multiplyScalar(0.98);
+        p.life -= 0.02;
+        p.mesh.material.opacity = p.life;
+        if (p.life <= 0) {
+            scene.remove(p.mesh);
+            particles.splice(i, 1);
+        }
+    }
+    
     renderer.render(scene, camera);
+}
+
+function spawnParticles(position) {
+    const particleGeometry = new THREE.SphereGeometry(0.05, 4, 4);
+    const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true });
+    for (let i = 0; i < 10; i++) {
+        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+        particle.position.copy(position);
+        const velocity = new THREE.Vector3((Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.2);
+        scene.add(particle);
+        particles.push({ mesh: particle, velocity: velocity, life: 1.0 });
+    }
 }
 
 // Handle Window Resize
