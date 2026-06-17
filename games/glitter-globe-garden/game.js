@@ -55,11 +55,28 @@ class GlitterGlobeGarden {
         const flower = document.createElement('div');
         flower.className = 'flower';
         
-        // Random color from a pastel palette
+        // Rare chance for a golden flower
+        const isGolden = Math.random() < 0.1;
+        if (isGolden) {
+            flower.classList.add('golden-flower');
+            this.createFloatingText('🌟 GOLDEN FLOWER! 🌟', 'var(--gold)');
+        }
+        
+        // Create petals
         const colors = ['#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#ff9aa2'];
         const color = colors[Math.floor(Math.random() * colors.length)];
-        flower.style.backgroundColor = color;
-        flower.style.boxShadow = `0 0 10px ${color}`;
+        
+        for (let i = 0; i < 5; i++) {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            petal.style.backgroundColor = isGolden ? 'var(--gold)' : color;
+            petal.style.transform = `rotate(${i * 72}deg)`;
+            flower.appendChild(petal);
+        }
+
+        const center = document.createElement('div');
+        center.className = 'flower-center';
+        flower.appendChild(center);
 
         // Random position on the garden plot
         const x = Math.random() * 80 + 10;
@@ -68,7 +85,9 @@ class GlitterGlobeGarden {
         flower.style.top = `${y}%`;
 
         this.gardenPlot.appendChild(flower);
-        this.createFloatingText('🌱 Seed Planted!', 'var(--purple-dark)');
+        if (!isGolden) {
+            this.createFloatingText('🌱 Seed Planted!', 'var(--purple-dark)');
+        }
         this.triggerGlobeShake();
     }
 
