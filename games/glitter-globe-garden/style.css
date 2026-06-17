@@ -188,6 +188,17 @@ body {
     box-shadow: 0 0 5px orange;
 }
 
+.rainbow-flower .flower-center {
+    background: white;
+    box-shadow: 0 0 15px white;
+    animation: rainbow-pulse 1s infinite alternate;
+}
+
+@keyframes rainbow-pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.3); }
+}
+
 .golden-flower .petal {
     background: var(--gold) !important;
     box-shadow: 0 0 10px var(--gold);

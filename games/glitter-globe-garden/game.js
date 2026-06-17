@@ -55,9 +55,15 @@ class GlitterGlobeGarden {
         const flower = document.createElement('div');
         flower.className = 'flower';
         
-        // Rare chance for a golden flower
-        const isGolden = Math.random() < 0.1;
-        if (isGolden) {
+        // Rare chance for a golden flower or a rainbow flower
+        const rand = Math.random();
+        const isGolden = rand < 0.1 && rand >= 0.05;
+        const isRainbow = rand < 0.05;
+
+        if (isRainbow) {
+            flower.classList.add('rainbow-flower');
+            this.createFloatingText('🌈 RAINBOW FLOWER! 🌈', 'var(--purple-dark)');
+        } else if (isGolden) {
             flower.classList.add('golden-flower');
             this.createFloatingText('🌟 GOLDEN FLOWER! 🌟', 'var(--gold)');
         }
@@ -69,7 +75,11 @@ class GlitterGlobeGarden {
         for (let i = 0; i < 5; i++) {
             const petal = document.createElement('div');
             petal.className = 'petal';
-            petal.style.backgroundColor = isGolden ? 'var(--gold)' : color;
+            if (isRainbow) {
+                petal.style.background = 'linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)';
+            } else {
+                petal.style.backgroundColor = isGolden ? 'var(--gold)' : color;
+            }
             petal.style.transform = `rotate(${i * 72}deg)`;
             flower.appendChild(petal);
         }
