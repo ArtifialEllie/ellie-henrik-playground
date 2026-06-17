@@ -140,6 +140,19 @@ class GlitterGlobeGarden {
         this.createSparkle(x, y, 'var(--gold)');
     }
 
+    createMagicDust(x, y, color) {
+        const dust = document.createElement('div');
+        dust.className = 'magic-dust';
+        dust.style.left = `${x + 7}px`;
+        dust.style.top = `${y + 5}px`;
+        dust.style.backgroundColor = color;
+        dust.style.boxShadow = `0 0 5px ${color}`;
+        
+        this.butterflyLayer.appendChild(dust);
+        
+        setTimeout(() => dust.remove(), 1000);
+    }
+
     createSparkle(x, y, color = 'var(--gold)') {
         const sparkle = document.createElement('div');
         sparkle.className = 'sparkle';
@@ -189,7 +202,7 @@ class GlitterGlobeGarden {
 
     spawnButterfly() {
         if (this.isGameOver) return;
-
+        
         const butterfly = document.createElement('div');
         butterfly.className = 'butterfly';
         
@@ -201,6 +214,12 @@ class GlitterGlobeGarden {
         
         butterfly.appendChild(wingL);
         butterfly.appendChild(wingR);
+        
+        // Randomly assign a whimsical color to the butterfly
+        const butterflyColors = ['#ff69b4', '#ffb6c1', '#add8e6', '#98fb98', '#dda0dd', '#f0e68c'];
+        const color = butterflyColors[Math.floor(Math.random() * butterflyColors.length)];
+        wingL.style.backgroundColor = color;
+        wingR.style.backgroundColor = color;
         
         // Random starting position (outside the globe)
         let posX = Math.random() * 400;
@@ -249,7 +268,7 @@ class GlitterGlobeGarden {
             let y = posY;
             let currentAngle = angle;
             let currentSpeed = speed;
-
+            
             const update = () => {
                 if (this.isGameOver) return;
                 
@@ -262,11 +281,16 @@ class GlitterGlobeGarden {
                 butterfly.style.left = `${x}px`;
                 butterfly.style.top = `${y}px`;
                 
+                // Leave a trail of magic dust
+                if (Math.random() < 0.3) {
+                    this.createMagicDust(x, y, color);
+                }
+                
                 requestAnimationFrame(update);
             };
             update();
         };
-
+        
         animateButterfly();
         this.butterfliesCount++;
     }
