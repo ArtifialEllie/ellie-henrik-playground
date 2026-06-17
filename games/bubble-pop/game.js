@@ -704,6 +704,31 @@ function triggerCupcakeRain() {
     }, 6000);
 }
 
+function triggerDiscoParty() {
+    const discoAlert = document.getElementById('disco-alert');
+    discoAlert.style.display = 'block';
+    discoAlert.style.color = '#ff00ff';
+    discoAlert.style.textShadow = '4px 4px #00ffff';
+    
+    // Disco effect: bubbles dance and change color rapidly
+    const discoInterval = setInterval(() => {
+        if (!gameActive) {
+            clearInterval(discoInterval);
+            return;
+        }
+        bubbles.forEach(b => {
+            b.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            b.vx += (Math.random() - 0.5) * 2;
+            b.vy += (Math.random() - 0.5) * 2;
+        });
+    }, 100);
+
+    setTimeout(() => {
+        discoAlert.style.display = 'none';
+        clearInterval(discoInterval);
+    }, 5000);
+}
+
 function triggerMagnetism() {
     isMagnetic = true;
     const magnetAlert = document.createElement('div');
@@ -1066,6 +1091,7 @@ function handlePop(e) {
             if (Math.random() < 0.005) triggerGoldenRain();
             if (Math.random() < 0.008) triggerVortex();
             if (Math.random() < 0.004) triggerCupcakeRain();
+            if (Math.random() < 0.003) triggerDiscoParty();
             
             updateCombo();
             scoreEl.innerText = score;
