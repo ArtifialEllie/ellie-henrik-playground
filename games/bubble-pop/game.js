@@ -52,6 +52,11 @@ const quests = [
     { text: 'Get a Combo of 10! 🔥', goal: 10, reward: 200, rewardGold: 50, type: 'combo' },
     { text: 'Reach Level 5! 🌟', goal: 5, reward: 300, rewardGold: 100, type: 'level' },
     { text: 'Pop 50 bubbles! 🫧', goal: 50, reward: 500, rewardGold: 200 },
+    { text: 'Reach Level 10! 🌟', goal: 10, reward: 600, rewardGold: 300, type: 'level' },
+    { text: 'Get a Combo of 20! 🔥', goal: 20, reward: 700, rewardGold: 400, type: 'combo' },
+    { text: 'Reach a x5 Multiplier! 🚀', goal: 5, reward: 800, rewardGold: 500, type: 'multiplier' },
+    { text: 'Pop 100 bubbles! 🫧', goal: 100, reward: 1000, rewardGold: 600 },
+    { text: 'Collect 1000 Gold! ✨', goal: 1000, reward: 1200, rewardGold: 0, type: 'gold' },
 ];
 
 function updateQuest() {
@@ -69,6 +74,8 @@ function updateQuest() {
         progress = (combo / quest.goal) * 100;
     } else if (quest.type === 'level') {
         progress = (level / quest.goal) * 100;
+    } else if (quest.type === 'gold') {
+        progress = (totalGold / quest.goal) * 100;
     } else {
         // Default: total pops (approximated by score/avg points, or we track pops specifically)
         // For simplicity, let's use score for "Pop X bubbles" or track it.
