@@ -25,6 +25,7 @@ const highScoreElement = document.getElementById('high-score');
 const comboElement = document.getElementById('combo');
 const comboContainer = document.getElementById('combo-container');
 const companionStatus = document.getElementById('companion-status');
+const companionBubble = document.getElementById('companion-bubble');
 const burstButton = document.getElementById('burst-button');
 const soundToggle = document.getElementById('sound-toggle');
 
@@ -344,7 +345,17 @@ function onMouseDown(event) {
             
             // Ellie's companion reacts to combos!
             const emotions = ["Excited! 🌟", "Amazing! 🌈", "Wowza! ✨", "Magic! 🎀", "Incredible! 🍭"];
-            companionStatus.innerText = `Ellie's helper is feeling: ${emotions[Math.floor(Math.random() * emotions.length)]}`;
+            const emotion = emotions[Math.floor(Math.random() * emotions.length)];
+            companionStatus.innerText = `Ellie's helper is feeling: ${emotion}`;
+            
+            // Show bubble at click position
+            companionBubble.innerText = emotion;
+            companionBubble.style.display = 'block';
+            companionBubble.style.left = `${event.clientX + 10}px`;
+            companionBubble.style.top = `${event.clientY - 20}px`;
+            setTimeout(() => {
+                companionBubble.style.display = 'none';
+            }, 1000);
         }
 
         // Effect: pop and change color
