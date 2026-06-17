@@ -12,8 +12,11 @@ const totalGoldEl = document.getElementById('total-gold');
 const comboBar = document.getElementById('combo-bar');
 const comboText = document.getElementById('combo-text');
 const frenzyAlert = document.getElementById('frenzy-alert');
+const questText = document.getElementById('quest-text');
+const questFill = document.getElementById('quest-progress-fill');
 
 let score = 0;
+let totalPops = 0;
 let timeLeft = 30;
 let highscore = localStorage.getItem('bubblePopHighscore') || 0;
 let totalGold = parseInt(localStorage.getItem('bubblePopTotalGold')) || 0;
@@ -39,8 +42,60 @@ highscoreEl.innerText = highscore;
 totalGoldEl.innerText = totalGold;
 const colors = ['#ff80ab', '#81d4fa', '#ce93d8', '#b39ddb', '#fff59d', '#a5d6a7', '#ffccbc'];
 
-// Audio Setup
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// Quests System
+let currentQuest = 0;
+const quests = [
+    { text: 'Pop 10 bubbles! 🫧', goal: 10, reward: 50, rewardGold: 10 },
+    { text: 'Reach a x3 Multiplier! 🚀', goal: 3, reward: 100, rewardGold: 20, type: 'multiplier' },
+    { text: 'Pop 20 bubbles in total! 🫧', goal: 20, reward: 150, rewardGold: 30 },
+    { text: 'Get a Combo of 10! 🔥', goal: 10, reward: 200, rewardGold: 50, type: 'combo' },
+    { text: 'Reach Level 5! 🌟', goal: 5, reward: 300, rewardGold: 100, type: 'level' },
+    { text: 'Pop 50 bubbles! 🫧', goal: 50, reward: 500, rewardGold: 200 },
+];
+
+function updateQuest() {
+    const quest = quests[currentQuest];
+    if (!quest) {
+        questText.innerText = 'All Quests Complete! 🏆';
+        questFill.style.width = '100%';
+        return;
+    }
+
+    let progress = 0;
+    if (quest.type === 'multiplier') {
+        progress = (multiplier / quest.goal) * 100;
+    } else if (quest.type === 'combo') {
+        progress = (combo / quest.goal) * 100;
+    } else if (quest.type === 'level') {
+        progress = (level / quest.goal) * 100;
+    } else {
+        // Default: total pops (approximated by score/avg points, or we track pops specifically)
+        // For simplicity, let's use score for "Pop X bubbles" or track it.
+        // Since we don't have a popCount, let's add one.
+        progress = (totalPops / quest.goal) * 100;
+    }
+
+    questText.innerText = `Quest: ${quest.text}`;
+    questFill.style.width = `${Math.min(100, progress)}%`;
+
+    if (progress >= 100) {
+        completeQuest();
+    }
+}
+
+function completeQuest() {
+    const quest = quests[currentQuest];
+    score += quest.reward;
+    totalGold += quest.rewardGold;
+    localStorage.setItem('bubblePopTotalGold', totalGold);
+    totalGoldEl.innerText = totalGold;
+    
+    floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, `QUEST COMPLETE! +${quest.reward} 🌟`, 'gold'));
+    playSound(880, 'sine', 0.3);
+    
+    currentQuest++;
+    updateQuest();
+}
 function playSound(freq, type, duration, vol = 0.1) {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -1072,7 +1127,7 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGNETIC! 🧲 +${magBonus}`, '#9c27b0'));
                 createPopEffect(b.x, b.y, '#9c27b0');
                 triggerMagnetism();
-            } else if (b.type === 'giant') {
+            } else            if (b.type === 'giant') {
                 playSuperPopSound();
                 const giantBonus = 200;
                 score += giantBonus;
@@ -1086,6 +1141,8 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${points}`, b.color));
             }
             
+            totalPops++;
+            updateQuest();
             if (Math.random() < 0.03) triggerFrenzy();
             if (Math.random() < 0.01) triggerParty();
             if (Math.random() < 0.005) triggerGoldenRain();
@@ -1233,6 +1290,7 @@ function gameOver() {
 
 function resetGame() {
     score = 0;
+    totalPops = 0;
     timeLeft = 30;
     combo = 0;
     multiplier = 1;
@@ -1246,6 +1304,8 @@ function resetGame() {
     floatingTexts = [];
     gameActive = true;
     level = 1;
+    currentQuest = 0;
+    updateQuest();
     overlay.style.display = 'none';
     comboText.style.opacity = '0';
     
