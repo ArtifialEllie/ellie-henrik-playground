@@ -17,6 +17,11 @@ let score = 0;
 let highScore = localStorage.getItem('rrr_highscore') || 0;
 highScoreEl.innerText = `Best: ${highScore}`;
 
+let fever = 0;
+let feverActive = false;
+let feverTimer = 0;
+const FEVER_MAX = 100;
+
 let gameActive = false;
 let player = {
     x: canvas.width / 2,
@@ -134,6 +139,18 @@ function update() {
         if (p.life <= 0) particles.splice(index, 1);
     });
 
+    // Fever Logic
+    if (fever >= FEVER_MAX && !feverActive) {
+        activateFever();
+    }
+
+    if (feverActive) {
+        feverTimer--;
+        if (feverTimer <= 0) {
+            deactivateFever();
+        }
+    }
+
     // Collision check: Player & Stars
     stars.forEach((star, index) => {
         const dist = Math.hypot(player.x - star.x, player.y - star.y);
@@ -143,6 +160,12 @@ function update() {
             createParticle(star.x, star.y, star.color);
             stars.splice(index, 1);
             stars.push(createStar());
+
+            // Increase fever
+            if (!feverActive) {
+                fever = Math.min(FEVER_MAX, fever + 10);
+                updateFeverUI();
+            }
         }
     });
 
@@ -225,6 +248,39 @@ function draw() {
     requestAnimationFrame(draw);
 }
 
+function activateFever() {
+    feverActive = true;
+    feverTimer = 300; // 5 seconds at 60fps
+    player.speed = 8;
+    player.color = '#ffff00';
+    document.getElementById('fever-text').innerText = '🌈 FEVER MODE! 🌈';
+    document.getElementById('fever-text').style.color = '#ffea00';
+    
+    // Special effect: spawn a burst of stars
+    for (let i = 0; i < 10; i++) {
+        stars.push(createStar());
+    }
+}
+
+function deactivateFever() {
+    feverActive = false;
+    fever = 0;
+    player.speed = 5;
+    player.color = 'white';
+    updateFeverUI();
+    document.getElementById('fever-text').innerText = 'FEVER: 0%';
+    document.getElementById('fever-text').style.color = 'white';
+}
+
+function updateFeverUI() {
+    const fill = document.getElementById('fever-fill');
+    const text = document.getElementById('fever-text');
+    if (fill && text) {
+        fill.style.width = `${fever}%`;
+        text.innerText = `FEVER: ${Math.floor(fever)}%`;
+    }
+}
+
 function gameOver() {
     gameActive = false;
     if (score > highScore) {
@@ -248,6 +304,9 @@ function startGame() {
     obstacles = [];
     particles = [];
     frameCount = 0;
+    fever = 0;
+    feverActive = false;
+    updateFeverUI();
     
     for (let i = 0; i < 5; i++) {
         stars.push(createStar());
