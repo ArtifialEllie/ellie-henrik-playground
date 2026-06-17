@@ -187,6 +187,32 @@ function createPrisms() {
         createSinglePrism(geometries);
     }
 
+    // Special "Ellie Prism" logic
+    const elliePrismGeo = new THREE.TorusKnotGeometry(0.4, 0.15, 100, 16);
+    const elliePrismMat = new THREE.MeshPhongMaterial({
+        color: 0xff69b4,
+        shininess: 200,
+        emissive: 0xff1493,
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.9
+    });
+    const elliePrism = new THREE.Mesh(elliePrismGeo, elliePrismMat);
+    elliePrism.isElliePrism = true;
+    elliePrism.level = 1;
+    elliePrism.position.set(0, 0, 0);
+    scene.add(elliePrism);
+    prisms.push(elliePrism);
+    
+    // Animation for Ellie Prism
+    function animateElliePrism() {
+        elliePrism.rotation.y += 0.02;
+        elliePrism.rotation.z += 0.01;
+        elliePrism.position.y = Math.sin(Date.now() * 0.002) * 0.5;
+        requestAnimationFrame(animateElliePrism);
+    }
+    animateElliePrism();
+
     // Initial golden prism
     spawnGoldenPrism();
     
@@ -258,6 +284,23 @@ function onMouseDown(event) {
             createFloatingText(`+${bonus} GOLD! 🌟`, event.clientX, event.clientY);
             playSound(880, 'square', 0.2, 0.1);
             removeGoldenPrism(object);
+        } else if (object.isElliePrism) {
+            const ellieBonus = 200 * combo;
+            score += ellieBonus;
+            createFloatingText(`ELLIE MAGIC! +${ellieBonus} ✨🎀`, event.clientX, event.clientY);
+            playSound(1200, 'sine', 0.3, 0.1);
+            playSound(1500, 'sine', 0.3, 0.1);
+            
+            // Respawn Ellie Prism at random position
+            object.position.set(
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10
+            );
+            
+            // Extra magic energy
+            magicEnergy = Math.min(MAX_MAGIC_ENERGY, magicEnergy + 20 * combo);
+            updateEnergyUI();
         }
 
         // Combo logic
