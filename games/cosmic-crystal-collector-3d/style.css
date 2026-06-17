@@ -1,0 +1,32 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #0b0b1a;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: #ffccff;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#score {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#instructions {
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+#game-container {
+    width: 100vw;
+    height: 100vh;
+}
