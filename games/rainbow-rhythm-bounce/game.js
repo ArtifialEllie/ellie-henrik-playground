@@ -29,6 +29,8 @@ let gameActive = false;
 let ball, platform;
 let platforms = [];
 let particles = [];
+let floatingTexts = [];
+let stars = [];
 let lastTime = 0;
 
 class Ball {
@@ -41,6 +43,7 @@ class Ball {
         this.y = 100;
         this.radius = 15;
         this.dy = 0;
+        this.trail = [];
         this.currentColor = { ...COLORS.RED };
         this.targetColor = COLORS.RED;
     }
@@ -57,6 +60,16 @@ class Ball {
     }
 
     draw() {
+        // Draw trail
+        this.trail.forEach((pos, index) => {
+            const alpha = index / this.trail.length * 0.5;
+            const size = (index / this.trail.length) * this.radius;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${Math.round(this.currentColor.r)}, ${Math.round(this.currentColor.g)}, ${Math.round(this.currentColor.b)}, ${alpha})`;
+            ctx.fill();
+        });
+
         const colorStr = `rgb(${Math.round(this.currentColor.r)}, ${Math.round(this.currentColor.g)}, ${Math.round(this.currentColor.b)})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -68,6 +81,55 @@ class Ball {
         ctx.shadowColor = colorStr;
         ctx.closePath();
         ctx.shadowBlur = 0;
+    }
+}
+
+class FloatingText {
+    constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 1.0;
+        this.velocity = Math.random() * 1 + 1;
+    }
+
+    update() {
+        this.y -= this.velocity;
+        this.life -= 0.02;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+class Star {
+    constructor() {
+        this.reset();
+        this.y = Math.random() * 800;
+    }
+
+    reset() {
+        this.x = Math.random() * 600;
+        this.y = 810;
+        this.size = Math.random() * 2;
+        this.speed = Math.random() * 0.5 + 0.2;
+    }
+
+    update() {
+        this.y -= this.speed;
+        if (this.y < -10) this.reset();
+    }
+
+    draw() {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(this.x, this.y, this.size, this.size);
     }
 }
 
@@ -136,6 +198,8 @@ function init() {
     ball = new Ball();
     platforms = [];
     particles = [];
+    floatingTexts = [];
+    stars = [];
     
     // Initial platforms
     for (let i = 0; i < 6; i++) {
@@ -144,6 +208,12 @@ function init() {
     
     score = 0;
     multiplier = 1;
+
+    // Create stars
+    for(let i=0; i<100; i++) {
+        stars.push(new Star());
+    }
+    
     scoreElement.innerText = `Score: ${score}`;
     multiplierElement.innerText = `x${multiplier}`;
 }
@@ -187,6 +257,16 @@ function update(time) {
 
     ball.update();
     
+    // Update trail
+    ball.trail.push({x: ball.x, y: ball.y});
+    if (ball.trail.length > 10) ball.trail.shift();
+    
+    // Draw background stars
+    stars.forEach(s => {
+        s.update();
+        s.draw();
+    });
+    
     const cameraOffset = ball.y > 300 ? ball.y - 300 : 0;
     ctx.save();
     ctx.translate(0, -cameraOffset);
@@ -204,6 +284,9 @@ function update(time) {
                 multiplierElement.innerText = `x${multiplier}`;
                 
                 createBurst(ball.x, ball.y + ball.radius, p.color);
+                
+                const text = multiplier > 1 ? `x${multiplier} COMBO!` : 'Bouncy!';
+                floatingTexts.push(new FloatingText(ball.x, ball.y, text, p.color));
                 
                 // Reposition platform to maintain game flow
                 p.y += 600; 
@@ -226,6 +309,12 @@ function update(time) {
         p.update();
         p.draw();
         if (p.life <= 0) particles.splice(i, 1);
+    });
+
+    floatingTexts.forEach((ft, i) => {
+        ft.update();
+        ft.draw();
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
     });
 
     ball.draw();
