@@ -7,9 +7,16 @@ let comboTimer = 0;
 const crystals = [];
 const particles = [];
 const shipTrail = [];
-const crystalCount = 25;
-const movementSpeed = 0.2;
+const spaceDust = [];
+const nebulaClouds = [];
+const crystalCount = 30;
+let movementSpeed = 0.2;
+const baseMovementSpeed = 0.2;
+const turboSpeed = 0.5;
 const rotationSpeed = 0.03;
+let isTurbo = false;
+let gameWon = false;
+const winScore = 100;
 
 // --- Setup ---
 const scene = new THREE.Scene();
@@ -46,7 +53,6 @@ const shipBody = new THREE.Mesh(shipBodyGeometry, shipMaterial);
 shipBody.rotation.x = Math.PI / 2; 
 shipGroup.add(shipBody);
 
-// Add some "wings" to the ship for more whimsy
 const wingGeometry = new THREE.BoxGeometry(1, 0.1, 0.4);
 const wingMaterial = new THREE.MeshPhongMaterial({ color: 0x00ffff, emissive: 0x004444 });
 const wings = new THREE.Mesh(wingGeometry, wingMaterial);
@@ -55,10 +61,47 @@ shipGroup.add(wings);
 
 scene.add(shipGroup);
 
+// --- Nebula & Space Dust ---
+function createNebula() {
+    for (let i = 0; i < 8; i++) {
+        const geo = new THREE.SphereGeometry(Math.random() * 10 + 5, 16, 16);
+        const mat = new THREE.MeshBasicMaterial({ 
+            color: new THREE.Color().setHSL(Math.random(), 0.5, 0.1), 
+            transparent: true, 
+            opacity: 0.05 
+        });
+        const cloud = new THREE.Mesh(geo, mat);
+        cloud.position.set(
+            (Math.random() - 0.5) * 100,
+            (Math.random() - 0.5) * 100,
+            (Math.random() - 0.5) * 100
+        );
+        scene.add(cloud);
+        nebulaClouds.push(cloud);
+    }
+}
+createNebula();
+
+function createSpaceDust() {
+    const geo = new THREE.BufferGeometry();
+    const count = 1000;
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count * 3; i++) {
+        pos[i] = (Math.random() - 0.5) * 100;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, transparent: true, opacity: 0.3 });
+    const dust = new THREE.Points(geo, mat);
+    scene.add(dust);
+    spaceDust.push(dust);
+}
+createSpaceDust();
+
 // --- Crystals (The Magic Treats) ---
 const crystalGeometry = new THREE.OctahedronGeometry(0.4, 0);
 
 function createCrystal(isGolden = false) {
+    const group = new THREE.Group();
     const material = new THREE.MeshPhongMaterial({ 
         color: isGolden ? 0xffd700 : 0xff00ff, 
         emissive: isGolden ? 0xaa8800 : 0x440044, 
@@ -67,14 +110,23 @@ function createCrystal(isGolden = false) {
         opacity: 0.8 
     });
     const crystal = new THREE.Mesh(crystalGeometry, material);
-    crystal.position.set(
+    group.add(crystal);
+
+    // Add a whimsical ring
+    const ringGeo = new THREE.TorusGeometry(0.6, 0.02, 8, 24);
+    const ringMat = new THREE.MeshBasicMaterial({ color: isGolden ? 0xffffff : 0x00ffff, transparent: true, opacity: 0.5 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    group.add(ring);
+
+    group.position.set(
         (Math.random() - 0.5) * 50,
         (Math.random() - 0.5) * 50,
         (Math.random() - 0.5) * 50
     );
-    crystal.userData = { isGolden, points: isGolden ? 5 : 1, pulseSpeed: Math.random() * 0.05 };
-    scene.add(crystal);
-    return crystal;
+    group.userData = { isGolden, points: isGolden ? 5 : 1, pulseSpeed: Math.random() * 0.05 };
+    scene.add(group);
+    return group;
 }
 
 for (let i = 0; i < crystalCount; i++) {
@@ -98,27 +150,37 @@ window.addEventListener('keydown', (e) => { keys[e.code] = true; });
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
 function updatePlayer() {
+    isTurbo = keys['ShiftLeft'] || keys['ShiftRight'];
+    movementSpeed = isTurbo ? turboSpeed : baseMovementSpeed;
+
     if (keys['KeyW'] || keys['ArrowUp']) shipGroup.translateZ(-movementSpeed);
     if (keys['KeyS'] || keys['ArrowDown']) shipGroup.translateZ(movementSpeed);
     if (keys['KeyA'] || keys['ArrowLeft']) shipGroup.rotation.y += rotationSpeed;
     if (keys['KeyD'] || keys['ArrowRight']) shipGroup.rotation.y -= rotationSpeed;
     
-    // Tilt ship for a "whimsical" feel
     if (keys['KeyA'] || keys['ArrowLeft']) shipGroup.rotation.z = THREE.MathUtils.lerp(shipGroup.rotation.z, 0.3, 0.1);
     else if (keys['KeyD'] || keys['ArrowRight']) shipGroup.rotation.z = THREE.MathUtils.lerp(shipGroup.rotation.z, -0.3, 0.1);
     else shipGroup.rotation.z = THREE.MathUtils.lerp(shipGroup.rotation.z, 0, 0.1);
 
-    // Add to trail
-    shipTrail.push({
-        position: shipGroup.position.clone(),
-        life: 1.0,
-        mesh: createTrailParticle()
-    });
+    // Turbo effect: shrink ship slightly and increase trail frequency
+    const scale = isTurbo ? 0.9 : 1.0;
+    shipGroup.scale.lerp(new THREE.Vector3(scale, scale, scale), 0.1);
+
+    const trailInterval = isTurbo ? 1 : 2;
+    if (Math.floor(Date.now() / 16) % trailInterval === 0) {
+        shipTrail.push({
+            position: shipGroup.position.clone(),
+            life: 1.0,
+            mesh: createTrailParticle()
+        });
+    }
 }
 
 function createTrailParticle() {
-    const geo = new THREE.SphereGeometry(0.05, 4, 4);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true });
+    const geo = new THREE.SphereGeometry(0.06, 4, 4);
+    const hue = (Date.now() * 0.001) % 1;
+    const color = new THREE.Color().setHSL(hue, 0.8, 0.6);
+    const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.copy(shipGroup.position);
     scene.add(mesh);
@@ -131,58 +193,54 @@ function animate() {
     
     updatePlayer();
     
-    // Camera follows ship
     const relativeCameraOffset = new THREE.Vector3(0, 2, 5);
     const cameraOffset = relativeCameraOffset.applyMatrix4(shipGroup.matrixWorld);
     camera.position.lerp(cameraOffset, 0.1);
     camera.lookAt(shipGroup.position);
     
-    // Combo Timer
     if (comboTimer > 0) {
-        comboTimer -= 0.016; // approx 60fps
+        comboTimer -= 0.016; 
         if (comboTimer <= 0) {
             combo = 0;
             updateUI();
         }
     }
     
-    // Rotate and pulse crystals
-    crystals.forEach((crystal) => {
-        crystal.rotation.y += 0.02;
-        crystal.rotation.z += 0.01;
+    nebulaClouds.forEach(cloud => {
+        cloud.rotation.y += 0.001;
+    });
+
+    crystals.forEach((group) => {
+        group.rotation.y += 0.02;
+        group.rotation.z += 0.01;
         
-        // Pulsing effect
-        const s = 1 + Math.sin(Date.now() * crystal.userData.pulseSpeed) * 0.2;
-        crystal.scale.set(s, s, s);
+        const s = 1 + Math.sin(Date.now() * group.userData.pulseSpeed) * 0.2;
+        group.scale.set(s, s, s);
         
-        const distance = shipGroup.position.distanceTo(crystal.position);
-        if (distance < 1) {
-            // Collection
+        const distance = shipGroup.position.distanceTo(group.position);
+        if (distance < 1.2) {
             combo++;
-            comboTimer = 2.0; // 2 seconds to maintain combo
-            const pointsGained = crystal.userData.points * (1 + Math.floor(combo / 5) * 0.1);
+            comboTimer = 2.0;
+            const pointsGained = group.userData.points * (1 + Math.floor(combo / 5) * 0.1);
             score += pointsGained;
             
             updateUI();
             
-            // Reposition crystal
-            crystal.position.set(
+            group.position.set(
                 (Math.random() - 0.5) * 50,
                 (Math.random() - 0.5) * 50,
                 (Math.random() - 0.5) * 50
             );
             
-            // Visual feedback
-            shipBody.material.emissive.setHex(crystal.userData.isGolden ? 0xffd700 : 0x00ff00);
+            shipBody.material.emissive.setHex(group.userData.isGolden ? 0xffd700 : 0x00ff00);
             setTimeout(() => shipBody.material.emissive.setHex(0x00ffff), 100);
-            spawnParticles(crystal.position, crystal.userData.isGolden ? 0xffd700 : 0xff00ff);
+            spawnParticles(group.position, group.userData.isGolden ? 0xffd700 : 0xff00ff);
         }
     });
     
-    // Update trail
     for (let i = shipTrail.length - 1; i >= 0; i--) {
         const t = shipTrail[i];
-        t.life -= 0.02;
+        t.life -= 0.03;
         t.mesh.material.opacity = t.life;
         t.mesh.scale.setScalar(t.life);
         if (t.life <= 0) {
@@ -191,7 +249,6 @@ function animate() {
         }
     }
     
-    // Update particles
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.mesh.position.add(p.velocity);
@@ -204,17 +261,42 @@ function animate() {
         }
     }
     
+    if (score >= winScore && !gameWon) {
+        gameWon = true;
+        triggerWinCelebration();
+    }
+    
     renderer.render(scene, camera);
 }
 
 function updateUI() {
-    document.getElementById('score').innerText = `Crystals: ${Math.floor(score)}`;
+    const scoreEl = document.getElementById('score');
+    scoreEl.innerText = `Crystals: ${Math.floor(score)} / ${winScore}`;
+    
+    // Add a little "pop" effect to score
+    scoreEl.style.transform = 'scale(1.2)';
+    setTimeout(() => scoreEl.style.transform = 'scale(1)', 100);
+
     const comboEl = document.getElementById('combo');
     if (combo > 1) {
         comboEl.innerText = `COMBO x${combo}! ✨`;
         comboEl.style.display = 'block';
+        comboEl.style.animation = 'bounce 0.5s infinite';
     } else {
         comboEl.style.display = 'none';
+    }
+}
+
+function triggerWinCelebration() {
+    const instructions = document.getElementById('instructions');
+    instructions.innerText = "YOU ARE A COSMIC MASTER! 🌟✨🌈";
+    instructions.style.fontSize = "30px";
+    instructions.style.color = "#ffff00";
+    instructions.style.textShadow = "0 0 20px #ffff00";
+
+    // Burst of particles
+    for (let i = 0; i < 100; i++) {
+        spawnParticles(shipGroup.position, new THREE.Color().setHSL(Math.random(), 1, 0.5));
     }
 }
 
@@ -230,7 +312,6 @@ function spawnParticles(position, color) {
     }
 }
 
-// Handle Window Resize
 window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera.aspect = window.innerWidth / window.innerHeight;
