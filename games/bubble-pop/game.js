@@ -816,7 +816,6 @@ function handlePop(e) {
                 createBigExplosion(b.x, b.y);
                 createPopEffect(b.x, b.y, 'magenta');
                 triggerFrenzy();
-            } else if (b.type === 'golden-ticket') {
             } else if (b.type === 'magic-wand') {
                 playPopSound(true, false);
                 const wandBonus = 250;
@@ -831,6 +830,7 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC MIRROR! 🪞 +${mirrorBonus}`, '#e0f7fa'));
                 createPopEffect(b.x, b.y, '#e0f7fa');
                 triggerFrenzy();
+            }
             if (b.type === 'gold') {
                 playPopSound(true, false);
                 const bonus = 5 + (combo * 2);
