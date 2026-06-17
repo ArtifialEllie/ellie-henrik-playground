@@ -79,6 +79,7 @@ const skins = [
     { color: '#f8bbd0', name: 'Cherry Blossom', cost: 2000 },
     { color: 'cosmic', name: 'Cosmic Glitter', cost: 3000 },
     { color: '#c0c0c0', name: 'Starlight Silver', cost: 4000 },
+    { color: 'holographic', name: 'Holographic Dream', cost: 5000 },
 ];
 
 const accessories = [
@@ -335,6 +336,10 @@ class Bubble {
             this.color = `hsl(${Date.now() / 20 % 360}, 80%, 60%)`;
             ctx.shadowBlur = 15;
             ctx.shadowColor = this.color;
+        } else if (currentSkin === 'holographic') {
+            this.color = `hsl(${Date.now() / 15 % 360}, 100%, 80%)`;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'white';
         }
         
         if (this.type === 'giant') {
