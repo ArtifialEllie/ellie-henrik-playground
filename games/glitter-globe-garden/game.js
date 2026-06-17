@@ -89,6 +89,13 @@ class GlitterGlobeGarden {
             this.createFloatingText('🌱 Seed Planted!', 'var(--purple-dark)');
         }
         this.triggerGlobeShake();
+
+        // Flowers now grow over time when watered!
+        setTimeout(() => {
+            if (this.wateringLevel > 0) {
+                flower.classList.add('grown');
+            }
+        }, 2000);
     }
 
     waterGarden() {
