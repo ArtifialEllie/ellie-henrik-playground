@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marshmallow Moon Maze ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <h1>Marshmallow Moon Maze</h1>
+            <p>Help the fluffy marshmallow find the Moon Cookie! 🌙🍪</p>
+            <div id="stats">
+                <span>Moves: <span id="move-count">0</span></span>
+                <span>Time: <span id="timer">0</span>s</span>
+            </div>
+            <button id="reset-btn">New Maze! 🌈</button>
+        </div>
+        <canvas id="mazeCanvas"></canvas>
+        <div id="win-screen" class="hidden">
+            <div class="win-content">
+                <h2>YAY! You found it! 🎉</h2>
+                <p>The marshmallow is happy and full of moon-magic!</p>
+                <button id="play-again-btn">Play Again ✨</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
