@@ -14,6 +14,8 @@ let mouseTrail = [];
 let cameraShake = 0;
 let magicEnergy = 0;
 let cosmicDust = [];
+let constellationPrisms = [];
+let constellationLines = [];
 let gravityWells = [];
 soundEnabled = true;
 let windActive = false;
@@ -111,6 +113,9 @@ function init() {
     }
     
     animate();
+    
+    // Periodically try to spawn a constellation
+    setInterval(trySpawnConstellation, 20000);
 }
 
 function onMouseMove(event) {
@@ -280,10 +285,13 @@ function onMouseDown(event) {
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(prisms);
 
-    if (intersects.length > 0) {
-        const object = intersects[0].object;
-        
-        // Check if it's a golden prism
+        if (intersects.length > 0) {
+            const object = intersects[0].object;
+            
+            // Check for constellation clicks first! ✨
+            checkConstellationClick(object);
+            
+            // Check if it's a golden prism
         if (goldenPrisms.includes(object)) {
             const bonus = 50 * combo;
             score += bonus;
@@ -661,6 +669,103 @@ function triggerMagicBurst() {
         requestAnimationFrame(animateShockwave);
     }
     animateShockwave();
+}
+
+function trySpawnConstellation() {
+    if (Math.random() > 0.4) return;
+    
+    const constellationSize = 3 + Math.floor(Math.random() * 3);
+    const selectedPrisms = [];
+    
+    // Pick random prisms from the existing list
+    const available = [...prisms];
+    for (let i = 0; i < constellationSize && available.length > 0; i++) {
+        const idx = Math.floor(Math.random() * available.length);
+        selectedPrisms.push(available.splice(idx, 1)[0]);
+    }
+    
+    if (selectedPrisms.length < 3) return;
+    
+    constellationPrisms = selectedPrisms;
+    
+    // Create glowing lines connecting them
+    const lineMaterial = new THREE.LineBasicMaterial({ 
+        color: 0xffccff, 
+        transparent: true, 
+        opacity: 0.8,
+        linewidth: 2 
+    });
+    
+    for (let i = 0; i < constellationPrisms.length; i++) {
+        const nextIdx = (i + 1) % constellationPrisms.length;
+        const points = [
+            constellationPrisms[i].position,
+            constellationPrisms[nextIdx].position
+        ];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, lineMaterial);
+        scene.add(line);
+        constellationLines.push(line);
+    }
+    
+    document.getElementById('constellation-container').style.display = 'block';
+    playSound(600, 'sine', 0.4, 0.1);
+    playSound(800, 'sine', 0.4, 0.1);
+    
+    setTimeout(() => {
+        clearConstellation();
+        document.getElementById('constellation-container').style.display = 'none';
+    }, 8000);
+}
+
+function clearConstellation() {
+    constellationLines.forEach(line => scene.remove(line));
+    constellationLines = [];
+    constellationPrisms = [];
+}
+
+function checkConstellationClick(object) {
+    if (constellationPrisms.includes(object)) {
+        // Remove from constellation list
+        constellationPrisms = constellationPrisms.filter(p => p !== object);
+        
+        // Update lines to reflect the missing point (simple approach: clear and rebuild or just clear)
+        // To keep it simple, we'll just clear the lines if too many are gone, or we can rebuild.
+        rebuildConstellationLines();
+        
+        if (constellationPrisms.length === 0) {
+            const bonus = 500 * (combo || 1);
+            score += bonus;
+            scoreElement.innerText = score;
+            createFloatingText(`CONSTELLATION COMPLETE! +${bonus} 🌟✨`, window.innerWidth/2, window.innerHeight/2);
+            
+            cameraShake = 0.3;
+            playSound(1000, 'sine', 0.5, 0.2);
+            playSound(1200, 'sine', 0.5, 0.2);
+            playSound(1400, 'sine', 0.5, 0.2);
+            
+            document.getElementById('constellation-container').style.display = 'none';
+            magicEnergy = Math.min(MAX_MAGIC_ENERGY, magicEnergy + 30);
+            updateEnergyUI();
+        }
+    }
+}
+
+function rebuildConstellationLines() {
+    constellationLines.forEach(line => scene.remove(line));
+    constellationLines = [];
+    
+    if (constellationPrisms.length < 2) return;
+    
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffccff, transparent: true, opacity: 0.8 });
+    for (let i = 0; i < constellationPrisms.length; i++) {
+        const nextIdx = (i + 1) % constellationPrisms.length;
+        const points = [constellationPrisms[i].position, constellationPrisms[nextIdx].position];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, lineMaterial);
+        scene.add(line);
+        constellationLines.push(line);
+    }
 }
 
 function triggerChainReaction(originPrism) {
