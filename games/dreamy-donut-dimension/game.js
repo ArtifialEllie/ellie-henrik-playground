@@ -1,4 +1,8 @@
 const donuts = ['🍩', '🧁', '🍪', '🍰', '🥞'];
+const specials = {
+    golden: { emoji: '🌟🍩', points: 5, chance: 0.1 },
+    bad: { emoji: '🍋', points: -3, chance: 0.15 }
+};
 const colors = ['#FFC0CB', '#FFB6C1', '#FF69B4', '#FF1493', '#DB7093'];
 
 let score = 0;
@@ -18,9 +22,25 @@ function createDonut() {
     if (!gameActive) return;
 
     const donut = document.createElement('div');
-    const type = donuts[Math.floor(Math.random() * donuts.length)];
+    let type = '';
+    let pointsValue = 1;
+    let specialClass = '';
+
+    const rand = Math.random();
+    if (rand < specials.golden.chance) {
+        type = specials.golden.emoji;
+        pointsValue = specials.golden.points;
+        specialClass = 'golden-donut';
+    } else if (rand < specials.golden.chance + specials.bad.chance) {
+        type = specials.bad.emoji;
+        pointsValue = specials.bad.points;
+        specialClass = 'bad-donut';
+    } else {
+        type = donuts[Math.floor(Math.random() * donuts.length)];
+        pointsValue = 1;
+    }
     
-    donut.className = 'donut';
+    donut.className = `donut ${specialClass}`;
     donut.textContent = type;
     
     // Random position
@@ -39,10 +59,12 @@ function createDonut() {
     donut.onclick = (e) => {
         if (!gameActive) return;
         
-        score++;
+        score += pointsValue;
+        if (score < 0) score = 0; // Don't go below 0
         scoreElement.textContent = score;
         
-        createParticles(e.clientX, e.clientY);
+        showFloatingText(e.clientX, e.clientY, pointsValue);
+        createParticles(e.clientX, e.clientY, pointsValue > 0 ? 'pink' : 'yellow');
         donut.remove();
     };
 
@@ -56,7 +78,19 @@ function createDonut() {
     }, 2000 + Math.random() * 2000);
 }
 
-function createParticles(x, y) {
+function showFloatingText(x, y, points) {
+    const text = document.createElement('div');
+    text.className = 'floating-text';
+    text.textContent = points > 0 ? `+${points}` : points;
+    text.style.left = `${x}px`;
+    text.style.top = `${y}px`;
+    text.style.color = points > 0 ? '#ff1493' : '#ff0000';
+    
+    gameArea.appendChild(text);
+    setTimeout(() => text.remove(), 800);
+}
+
+function createParticles(x, y, colorType) {
     for (let i = 0; i < 8; i++) {
         const p = document.createElement('div');
         p.className = 'particle';
@@ -69,7 +103,7 @@ function createParticles(x, y) {
         p.style.top = `${y}px`;
         p.style.width = '8px';
         p.style.height = '8px';
-        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.background = colorType === 'pink' ? colors[Math.floor(Math.random() * colors.length)] : '#ffff00';
         
         gameArea.appendChild(p);
         setTimeout(() => p.remove(), 600);

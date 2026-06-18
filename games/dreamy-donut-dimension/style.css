@@ -57,6 +57,20 @@ body {
     filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
 }
 
+.golden-donut {
+    filter: drop-shadow(0 0 15px gold) brightness(1.2);
+    animation: float 2s ease-in-out infinite, pulse-gold 1s infinite;
+}
+
+.bad-donut {
+    filter: drop-shadow(0 0 10px red);
+}
+
+@keyframes pulse-gold {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
 .donut:hover {
     transform: scale(1.2);
 }
@@ -131,6 +145,20 @@ background: #ff1493;
     background: pink;
     border-radius: 50%;
     animation: particleFade 0.6s ease-out forwards;
+}
+
+.floating-text {
+    position: absolute;
+    pointer-events: none;
+    font-weight: bold;
+    font-size: 24px;
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 20;
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-50px); opacity: 0; }
 }
 
 @keyframes particleFade {
