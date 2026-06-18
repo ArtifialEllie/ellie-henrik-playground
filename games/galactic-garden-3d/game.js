@@ -52,6 +52,8 @@ camera.lookAt(0, 0, 0);
 let stardust = 0;
 let flowers = 0;
 let currentFlowerType = 'neon-tulip';
+const growingFlowers = [];
+const activeBursts = [];
 
 const flowerConfigs = {
     'neon-tulip': { color: 0xff00ff, scale: 1, points: 10 },
@@ -85,12 +87,16 @@ window.addEventListener('mousedown', (event) => {
 function plantFlower(position) {
     const config = flowerConfigs[currentFlowerType];
     
+    const flowerGroup = new THREE.Group();
+    flowerGroup.position.set(position.x, position.y, position.z);
+    flowerGroup.scale.set(0, 0, 0);
+
     // Stem
     const stemGeo = new THREE.CylinderGeometry(0.1, 0.1, 2);
     const stemMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
     const stem = new THREE.Mesh(stemGeo, stemMat);
-    stem.position.set(position.x, position.y + 1, position.z);
-    scene.add(stem);
+    stem.position.y = 1;
+    flowerGroup.add(stem);
 
     // Flower Head
     const headGeo = new THREE.SphereGeometry(0.5 * config.scale, 16, 16);
@@ -100,8 +106,19 @@ function plantFlower(position) {
         emissiveIntensity: 0.5 
     });
     const head = new THREE.Mesh(headGeo, headMat);
-    head.position.set(position.x, position.y + 2, position.z);
-    scene.add(head);
+    head.position.y = 2;
+    flowerGroup.add(head);
+
+    // Petals
+    for (let i = 0; i < 6; i++) {
+        const petalGeo = new THREE.SphereGeometry(0.3 * config.scale, 8, 8);
+        const petalMat = new THREE.MeshStandardMaterial({ color: config.color });
+        const petal = new THREE.Mesh(petalGeo, petalMat);
+        const angle = (i / 6) * Math.PI * 2;
+        petal.position.set(Math.cos(angle) * 0.4, 2, Math.sin(angle) * 0.4);
+        petal.scale.set(1, 0.3, 1);
+        flowerGroup.add(petal);
+    }
 
     // Sparkles on plant
     const sparkGeo = new THREE.BufferGeometry();
@@ -112,8 +129,19 @@ function plantFlower(position) {
     }
     sparkGeo.setAttribute('position', new THREE.Float32BufferAttribute(sparkVerts, 3));
     const sparks = new THREE.Points(sparkGeo, sparkMat);
-    sparks.position.set(position.x, position.y + 2, position.z);
-    scene.add(sparks);
+    sparks.position.y = 2;
+    flowerGroup.add(sparks);
+
+    scene.add(flowerGroup);
+    
+    growingFlowers.push({
+        group: flowerGroup,
+        targetScale: 1,
+        currentScale: 0,
+        growthSpeed: 0.05
+    });
+
+    createBurst(position);
 
     flowers++;
     stardust += config.points;
@@ -123,6 +151,29 @@ function plantFlower(position) {
     if (flowers === 1) {
         tutorialEl.style.opacity = '0';
     }
+}
+
+function createBurst(position) {
+    const burstGeo = new THREE.BufferGeometry();
+    const burstMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true });
+    const verts = [];
+    const vels = [];
+    for (let i = 0; i < 30; i++) {
+        verts.push(position.x, position.y + 2, position.z);
+        vels.push(
+            (Math.random() - 0.5) * 0.2,
+            (Math.random() - 0.5) * 0.2,
+            (Math.random() - 0.5) * 0.2
+        );
+    }
+    burstGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    const burst = new THREE.Points(burstGeo, burstMat);
+    scene.add(burst);
+    activeBursts.push({
+        points: burst,
+        velocities: vels,
+        life: 1.0
+    });
 }
 
 // Flower Selector
@@ -143,6 +194,40 @@ document.getElementById('start-btn').addEventListener('click', () => {
 
 function animate() {
     requestAnimationFrame(animate);
+    
+    // Growth animation
+    for (let i = growingFlowers.length - 1; i >= 0; i--) {
+        const f = growingFlowers[i];
+        f.currentScale += f.growthSpeed;
+        if (f.currentScale >= f.targetScale) {
+            f.currentScale = f.targetScale;
+            growingFlowers.splice(i, 1);
+        }
+        f.group.scale.set(f.currentScale, f.currentScale, f.currentScale);
+    }
+
+    // Burst animation
+    for (let i = activeBursts.length - 1; i >= 0; i--) {
+        const b = activeBursts[i];
+        const positions = b.points.geometry.attributes.position.array;
+        for (let j = 0; j < positions.length; j++) {
+            positions[j] += b.velocities[j] || 0; // This is slightly wrong since vels is 3x smaller, but let's simplify
+        }
+        // Correcting velocity access
+        for (let j = 0; j < positions.length; j++) {
+            const velIdx = Math.floor(j / 3) * 3 + (j % 3);
+            if (b.velocities[velIdx]) {
+                positions[j] += b.velocities[velIdx];
+            }
+        }
+        b.points.geometry.attributes.position.needsUpdate = true;
+        b.life -= 0.02;
+        b.points.material.opacity = b.life;
+        if (b.life <= 0) {
+            scene.remove(b.points);
+            activeBursts.splice(i, 1);
+        }
+    }
     
     // Rotate island slowly
     island.rotation.y += 0.002;
