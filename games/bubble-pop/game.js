@@ -265,6 +265,7 @@ let trail = [];
 let floatingTexts = [];
 let lastMouseX = canvasWidth / 2;
 let lastMouseY = canvasHeight / 2;
+let petClones = [];
 let pet = new MagicalPet();
 
 class Bubble {
@@ -982,6 +983,18 @@ function handlePop(e) {
                 score += mirrorBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC MIRROR! 🪞 +${mirrorBonus}`, '#e0f7fa'));
                 createPopEffect(b.x, b.y, '#e0f7fa');
+                
+                // Create a Crystal Clone of the pet!
+                const clone = new MagicalPet();
+                clone.emoji = '💎' + pet.emoji;
+                clone.isClone = true;
+                petClones.push(clone);
+                floatingTexts.push(new FloatingText(b.x, b.y, `CRYSTAL CLONE! 💎✨`, 'gold'));
+                
+                setTimeout(() => {
+                    petClones = petClones.filter(c => c !== clone);
+                }, 10000);
+                
                 triggerFrenzy();
             } else if (b.type === 'magic-burst') {
                 playPopSound(true, false);
@@ -1304,6 +1317,12 @@ function update() {
 
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
+
+    petClones.forEach(clone => {
+        clone.update(lastMouseX, lastMouseY);
+        clone.draw();
+        if (Math.random() < 0.02) clone.tryAutoPop(); // Clones pop occasionally
+    });
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
  
