@@ -15,6 +15,8 @@ let score = 0;
 let gemsCollected = 0;
 let cameraY = 0;
 let superBounceTimer = 0;
+let combo = 0;
+let comboTimer = 0;
 
 const PLAYER_RADIUS = 20;
 const GRAVITY = 0.25;
@@ -24,6 +26,7 @@ const PLATFORM_WIDTH = 70;
 const PLATFORM_HEIGHT = 15;
 const GEM_RADIUS = 8;
 const POWERUP_RADIUS = 12;
+const COMBO_TIMEOUT = 120; // 2 seconds at 60fps
 
 let player = {
     x: 0,
@@ -97,6 +100,8 @@ function initGame() {
     gemsCollected = 0;
     cameraY = 0;
     superBounceTimer = 0;
+    combo = 0;
+    comboTimer = 0;
     player.x = canvas.width / 2;
     player.y = canvas.height - 100;
     player.vx = 0;
@@ -162,6 +167,16 @@ function update() {
                 player.y + player.radius < plat.y + plat.height + player.vy) {
                 
                 player.vy = superBounceTimer > 0 ? SUPER_BOUNCE_FORCE : BOUNCE_FORCE;
+                
+                // Combo system
+                combo++;
+                comboTimer = COMBO_TIMEOUT;
+                
+                // Extra bounce for high combos
+                if (combo > 10) {
+                    player.vy -= 1; // Slightly higher bounce every 10 combos
+                }
+
                 // Add a little sparkle effect on bounce
                 createSparkles(player.x, player.y + player.radius, plat.color);
             }
@@ -215,6 +230,12 @@ function update() {
     });
     
     if (superBounceTimer > 0) superBounceTimer--;
+    
+    if (comboTimer > 0) {
+        comboTimer--;
+    } else {
+        combo = 0;
+    }
     
     particles = particles.filter(p => p.life > 0);
     
@@ -306,6 +327,18 @@ function draw() {
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.closePath();
+
+    // Draw Combo Text
+    if (combo > 1) {
+        ctx.fillStyle = '#ff85a2';
+        ctx.font = 'bold 20px Fredoka One';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${combo}x Combo! ✨`, player.x + 40, player.y);
+        
+        // Small floating heart for combos
+        ctx.font = '12px Arial';
+        ctx.fillText('❤️', player.x + 60, player.y - 10);
+    }
     
     ctx.restore();
 }
