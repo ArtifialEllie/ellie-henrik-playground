@@ -2,7 +2,8 @@ const donuts = ['🍩', '🧁', '🍪', '🍰', '🥞'];
 const specials = {
     golden: { emoji: '🌟🍩', points: 5, chance: 0.1 },
     bad: { emoji: '🍋', points: -3, chance: 0.15 },
-    rainbow: { emoji: '🌈🍩', points: 2, chance: 0.05 }
+    rainbow: { emoji: '🌈🍩', points: 2, chance: 0.05 },
+    freeze: { emoji: '❄️🍩', points: 1, chance: 0.05 }
 };
 const colors = ['#FFC0CB', '#FFB6C1', '#FF69B4', '#FF1493', '#DB7093'];
 
@@ -43,6 +44,10 @@ function createDonut() {
         type = specials.rainbow.emoji;
         pointsValue = specials.rainbow.points;
         specialClass = 'rainbow-donut';
+    } else if (rand < specials.golden.chance + specials.bad.chance + specials.rainbow.chance + specials.freeze.chance) {
+        type = specials.freeze.emoji;
+        pointsValue = specials.freeze.points;
+        specialClass = 'freeze-donut';
     } else {
         type = donuts[Math.floor(Math.random() * donuts.length)];
         pointsValue = 1;
@@ -79,9 +84,13 @@ function createDonut() {
         
         showFloatingText(e.clientX, e.clientY, finalPoints, combo >= 5 ? `Combo x${comboMultiplier}!` : null);
         createParticles(e.clientX, e.clientY, finalPoints > 0 ? 'pink' : 'yellow');
+        spawnPopEmoji(e.clientX, e.clientY);
         
         if (specialClass === 'rainbow-donut') {
             activateSugarRush();
+        }
+        if (specialClass === 'freeze-donut') {
+            activateFreeze();
         }
         
         donut.remove();
@@ -101,7 +110,7 @@ function activateSugarRush() {
     if (sugarRushActive) return;
     sugarRushActive = true;
     
-    document.body.style.animationDuration = '2s';
+    document.body.classList.add('sugar-rush-mode');
     
     const originalIntervalRate = 700;
     clearInterval(spawnInterval);
@@ -109,10 +118,19 @@ function activateSugarRush() {
     
     setTimeout(() => {
         sugarRushActive = false;
-        document.body.style.animationDuration = '15s';
+        document.body.classList.remove('sugar-rush-mode');
         clearInterval(spawnInterval);
         spawnInterval = setInterval(createDonut, originalIntervalRate);
     }, 5000);
+}
+
+function activateFreeze() {
+    const donutsOnScreen = document.querySelectorAll('.donut');
+    donutsOnScreen.forEach(d => {
+        d.style.animationPlayState = 'paused';
+        setTimeout(() => d.style.animationPlayState = 'running', 3000);
+    });
+    showFloatingText(window.innerWidth / 2, window.innerHeight / 2, 0, '❄️ TIME FREEZE! ❄️');
 }
 
 function showFloatingText(x, y, points, extraText = null) {
@@ -133,6 +151,17 @@ function showFloatingText(x, y, points, extraText = null) {
     
     gameArea.appendChild(text);
     setTimeout(() => text.remove(), 800);
+}
+
+function spawnPopEmoji(x, y) {
+    const emojis = ['✨', '💖', '🍭', '🍬', '🌟'];
+    const emoji = document.createElement('div');
+    emoji.className = 'pop-emoji';
+    emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    emoji.style.left = `${x}px`;
+    emoji.style.top = `${y}px`;
+    gameArea.appendChild(emoji);
+    setTimeout(() => emoji.remove(), 500);
 }
 
 function createParticles(x, y, colorType) {

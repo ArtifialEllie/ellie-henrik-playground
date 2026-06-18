@@ -67,6 +67,11 @@ body {
     animation: float 2s ease-in-out infinite, pulse-gold 1s infinite;
 }
 
+.freeze-donut {
+    filter: drop-shadow(0 0 15px #00ffff) brightness(1.1);
+    animation: float 2.5s ease-in-out infinite;
+}
+
 .bad-donut {
     filter: drop-shadow(0 0 10px red);
 }
@@ -142,6 +147,19 @@ background: #ff1493;
 
 .hidden {
     display: none !important;
+}
+
+.sugar-rush-mode {
+    animation: gradientBG 2s ease infinite !important;
+    box-shadow: inset 0 0 100px rgba(255, 255, 255, 0.5);
+}
+
+.pop-emoji {
+    position: absolute;
+    pointer-events: none;
+    font-size: 30px;
+    animation: floatUp 0.5s ease-out forwards;
+    z-index: 30;
 }
 
 .particle {
