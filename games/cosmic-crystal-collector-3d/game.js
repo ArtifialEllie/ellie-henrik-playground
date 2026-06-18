@@ -10,6 +10,7 @@ const shipTrail = [];
 const spaceDust = [];
 const nebulaClouds = [];
 const crystalCount = 30;
+const voidCrystalCount = 10;
 let movementSpeed = 0.2;
 const baseMovementSpeed = 0.2;
 const turboSpeed = 0.5;
@@ -133,6 +134,36 @@ for (let i = 0; i < crystalCount; i++) {
     crystals.push(createCrystal(Math.random() > 0.9));
 }
 
+// --- Void Crystals (The Grumpy Space-Rocks) ---
+const voidCrystalGeometry = new THREE.IcosahedronGeometry(0.5, 0);
+const voidCrystals = [];
+
+function createVoidCrystal() {
+    const group = new THREE.Group();
+    const material = new THREE.MeshPhongMaterial({ 
+        color: 0x110022, 
+        emissive: 0x000000, 
+        shininess: 10, 
+        transparent: true, 
+        opacity: 0.9 
+    });
+    const crystal = new THREE.Mesh(voidCrystalGeometry, material);
+    group.add(crystal);
+
+    group.position.set(
+        (Math.random() - 0.5) * 60,
+        (Math.random() - 0.5) * 60,
+        (Math.random() - 0.5) * 60
+    );
+    group.userData = { pulseSpeed: Math.random() * 0.03 };
+    scene.add(group);
+    return group;
+}
+
+for (let i = 0; i < voidCrystalCount; i++) {
+    voidCrystals.push(createVoidCrystal());
+}
+
 // --- Starry Background ---
 const starGeometry = new THREE.BufferGeometry();
 const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
@@ -193,6 +224,11 @@ function animate() {
     
     updatePlayer();
     
+    // --- Turbo Warp Effect ---
+    const targetFov = isTurbo ? 90 : 75;
+    camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 0.1);
+    camera.updateProjectionMatrix();
+
     const relativeCameraOffset = new THREE.Vector3(0, 2, 5);
     const cameraOffset = relativeCameraOffset.applyMatrix4(shipGroup.matrixWorld);
     camera.position.lerp(cameraOffset, 0.1);
@@ -238,6 +274,33 @@ function animate() {
         }
     });
     
+    for (let i = shipTrail.length - 1; i >= 0; i--) {
+    // --- Void Crystal Logic ---
+    voidCrystals.forEach((group) => {
+        group.rotation.x += 0.01;
+        group.rotation.z += 0.01;
+        
+        const s = 1 + Math.sin(Date.now() * group.userData.pulseSpeed) * 0.1;
+        group.scale.set(s, s, s);
+
+        const distance = shipGroup.position.distanceTo(group.position);
+        if (distance < 1.5) {
+            combo = 0;
+            score = Math.max(0, score - 2);
+            updateUI();
+            
+            group.position.set(
+                (Math.random() - 0.5) * 60,
+                (Math.random() - 0.5) * 60,
+                (Math.random() - 0.5) * 60
+            );
+            
+            shipBody.material.emissive.setHex(0xff0000);
+            setTimeout(() => shipBody.material.emissive.setHex(0x00ffff), 200);
+            spawnParticles(group.position, 0x440044);
+        }
+    });
+
     for (let i = shipTrail.length - 1; i >= 0; i--) {
         const t = shipTrail[i];
         t.life -= 0.03;
