@@ -6,6 +6,8 @@ let combo = 0;
 let comboTimer = 0;
 let isInvincible = false;
 let invincibleTimer = 0;
+let isFrenzy = false;
+let frenzyTimer = 0;
 const crystals = [];
 const particles = [];
 const shipTrail = [];
@@ -50,21 +52,35 @@ scene.add(blueLight);
 // --- Buffs & Collectibles ---
 function createCollectible() {
     const group = new THREE.Group();
-    const geo = new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8);
-    const mat = new THREE.MeshPhongMaterial({ 
-        color: 0x00ff00, 
-        emissive: 0x004400, 
-        shininess: 100 
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    group.add(mesh);
+    const type = Math.random() > 0.7 ? 'frenzy' : 'magnet';
+    
+    if (type === 'frenzy') {
+        const geo = new THREE.IcosahedronGeometry(0.4, 1);
+        const mat = new THREE.MeshPhongMaterial({ 
+            color: 0xff00ff, 
+            emissive: 0x880088, 
+            shininess: 100 
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        group.add(mesh);
+        group.userData = { type: 'frenzy', duration: 6.0 };
+    } else {
+        const geo = new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8);
+        const mat = new THREE.MeshPhongMaterial({ 
+            color: 0x00ff00, 
+            emissive: 0x004400, 
+            shininess: 100 
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        group.add(mesh);
+        group.userData = { type: 'magnet', duration: 8.0 };
+    }
     
     group.position.set(
         (Math.random() - 0.5) * 60,
         (Math.random() - 0.5) * 60,
         (Math.random() - 0.5) * 60
     );
-    group.userData = { type: 'magnet', duration: 8.0 };
     scene.add(group);
     return group;
 }
@@ -271,6 +287,14 @@ function animate() {
             updateUI();
         }
     }
+    
+    if (frenzyTimer > 0) {
+        frenzyTimer -= 0.016;
+        if (frenzyTimer <= 0) {
+            isFrenzy = false;
+            updateUI();
+        }
+    }
 
     if (comboTimer > 0) {
         comboTimer -= 0.016; 
@@ -312,7 +336,7 @@ function animate() {
         if (distance < 1.2) {
             combo++;
             comboTimer = 2.0;
-            const pointsGained = group.userData.points * (1 + Math.floor(combo / 5) * 0.1);
+            const pointsGained = group.userData.points * (1 + Math.floor(combo / 5) * 0.1) * (isFrenzy ? 3 : 1);
             score += pointsGained;
             
             updateUI();
@@ -370,11 +394,16 @@ function animate() {
         
         const distance = shipGroup.position.distanceTo(col.position);
         if (distance < 1.2) {
-            activeBuff = col.userData.type;
-            buffTimer = col.userData.duration;
+            if (col.userData.type === 'frenzy') {
+                isFrenzy = true;
+                frenzyTimer = col.userData.duration;
+            } else {
+                activeBuff = col.userData.type;
+                buffTimer = col.userData.duration;
+            }
             updateUI();
             
-            spawnParticles(col.position, 0x00ff00);
+            spawnParticles(col.position, col.userData.type === 'frenzy' ? 0xff00ff : 0x00ff00);
             scene.remove(col);
             collectibles.splice(index, 1);
             
@@ -437,6 +466,13 @@ function updateUI() {
         buffEl.style.display = 'block';
     } else {
         buffEl.style.display = 'none';
+    }
+
+    const frenzyEl = document.getElementById('frenzy-status');
+    if (isFrenzy) {
+        frenzyEl.style.display = 'block';
+    } else {
+        frenzyEl.style.display = 'none';
     }
 }
 
