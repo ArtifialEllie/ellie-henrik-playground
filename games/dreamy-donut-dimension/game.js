@@ -7,6 +7,7 @@ const specials = {
 const colors = ['#FFC0CB', '#FFB6C1', '#FF69B4', '#FF1493', '#DB7093'];
 
 let score = 0;
+let combo = 0;
 let timeLeft = 30;
 let gameActive = false;
 let sugarRushActive = false;
@@ -15,6 +16,7 @@ let timerInterval;
 
 const gameArea = document.getElementById('game-area');
 const scoreElement = document.getElementById('score');
+const comboElement = document.getElementById('combo');
 const timerElement = document.getElementById('timer');
 const overlay = document.getElementById('overlay');
 const finalScoreElement = document.getElementById('final-score');
@@ -65,12 +67,18 @@ function createDonut() {
     donut.onclick = (e) => {
         if (!gameActive) return;
         
-        score += pointsValue;
-        if (score < 0) score = 0; // Don't go below 0
-        scoreElement.textContent = score;
+        // Combo logic
+        combo++;
+        const comboMultiplier = 1 + Math.floor(combo / 5) * 0.5;
+        const finalPoints = Math.ceil(pointsValue * comboMultiplier);
         
-        showFloatingText(e.clientX, e.clientY, pointsValue);
-        createParticles(e.clientX, e.clientY, pointsValue > 0 ? 'pink' : 'yellow');
+        score += finalPoints;
+        if (score < 0) score = 0;
+        scoreElement.textContent = score;
+        comboElement.textContent = combo;
+        
+        showFloatingText(e.clientX, e.clientY, finalPoints, combo >= 5 ? `Combo x${comboMultiplier}!` : null);
+        createParticles(e.clientX, e.clientY, finalPoints > 0 ? 'pink' : 'yellow');
         
         if (specialClass === 'rainbow-donut') {
             activateSugarRush();
@@ -107,13 +115,21 @@ function activateSugarRush() {
     }, 5000);
 }
 
-function showFloatingText(x, y, points) {
+function showFloatingText(x, y, points, extraText = null) {
     const text = document.createElement('div');
     text.className = 'floating-text';
     text.textContent = points > 0 ? `+${points}` : points;
     text.style.left = `${x}px`;
     text.style.top = `${y}px`;
     text.style.color = points > 0 ? '#ff1493' : '#ff0000';
+    
+    if (extraText) {
+        const extra = document.createElement('div');
+        extra.textContent = extraText;
+        extra.style.fontSize = '14px';
+        extra.style.color = 'gold';
+        text.appendChild(extra);
+    }
     
     gameArea.appendChild(text);
     setTimeout(() => text.remove(), 800);
@@ -141,12 +157,15 @@ function createParticles(x, y, colorType) {
 
 function startGame() {
     score = 0;
+    combo = 0;
     timeLeft = 30;
     gameActive = true;
     scoreElement.textContent = score;
+    comboElement.textContent = combo;
     timerElement.textContent = timeLeft;
     overlay.classList.add('hidden');
     gameArea.innerHTML = '';
+
 
     spawnInterval = setInterval(createDonut, 700);
     timerInterval = setInterval(() => {
