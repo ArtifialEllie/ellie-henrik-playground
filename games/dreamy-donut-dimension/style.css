@@ -57,6 +57,11 @@ body {
     filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
 }
 
+.rainbow-donut {
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) hue-rotate(90deg);
+    animation: float 1s ease-in-out infinite, pulse-gold 0.5s infinite;
+}
+
 .golden-donut {
     filter: drop-shadow(0 0 15px gold) brightness(1.2);
     animation: float 2s ease-in-out infinite, pulse-gold 1s infinite;

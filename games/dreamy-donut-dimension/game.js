@@ -1,13 +1,15 @@
 const donuts = ['🍩', '🧁', '🍪', '🍰', '🥞'];
 const specials = {
     golden: { emoji: '🌟🍩', points: 5, chance: 0.1 },
-    bad: { emoji: '🍋', points: -3, chance: 0.15 }
+    bad: { emoji: '🍋', points: -3, chance: 0.15 },
+    rainbow: { emoji: '🌈🍩', points: 2, chance: 0.05 }
 };
 const colors = ['#FFC0CB', '#FFB6C1', '#FF69B4', '#FF1493', '#DB7093'];
 
 let score = 0;
 let timeLeft = 30;
 let gameActive = false;
+let sugarRushActive = false;
 let spawnInterval;
 let timerInterval;
 
@@ -35,6 +37,10 @@ function createDonut() {
         type = specials.bad.emoji;
         pointsValue = specials.bad.points;
         specialClass = 'bad-donut';
+    } else if (rand < specials.golden.chance + specials.bad.chance + specials.rainbow.chance) {
+        type = specials.rainbow.emoji;
+        pointsValue = specials.rainbow.points;
+        specialClass = 'rainbow-donut';
     } else {
         type = donuts[Math.floor(Math.random() * donuts.length)];
         pointsValue = 1;
@@ -65,6 +71,11 @@ function createDonut() {
         
         showFloatingText(e.clientX, e.clientY, pointsValue);
         createParticles(e.clientX, e.clientY, pointsValue > 0 ? 'pink' : 'yellow');
+        
+        if (specialClass === 'rainbow-donut') {
+            activateSugarRush();
+        }
+        
         donut.remove();
     };
 
@@ -76,6 +87,24 @@ function createDonut() {
             donut.remove();
         }
     }, 2000 + Math.random() * 2000);
+}
+
+function activateSugarRush() {
+    if (sugarRushActive) return;
+    sugarRushActive = true;
+    
+    document.body.style.animationDuration = '2s';
+    
+    const originalIntervalRate = 700;
+    clearInterval(spawnInterval);
+    spawnInterval = setInterval(createDonut, 300);
+    
+    setTimeout(() => {
+        sugarRushActive = false;
+        document.body.style.animationDuration = '15s';
+        clearInterval(spawnInterval);
+        spawnInterval = setInterval(createDonut, originalIntervalRate);
+    }, 5000);
 }
 
 function showFloatingText(x, y, points) {
