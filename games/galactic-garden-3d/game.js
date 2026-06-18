@@ -51,6 +51,7 @@ camera.lookAt(0, 0, 0);
 // Game State
 let stardust = 0;
 let flowers = 0;
+let level = 1;
 let currentFlowerType = 'neon-tulip';
 const growingFlowers = [];
 const activeBursts = [];
@@ -64,6 +65,7 @@ const flowerConfigs = {
 
 const stardustEl = document.getElementById('stardust');
 const flowerCountEl = document.getElementById('flower-count');
+const levelEl = document.getElementById('level');
 const tutorialEl = document.getElementById('tutorial');
 
 // Input Handling
@@ -148,6 +150,13 @@ function plantFlower(position) {
     flowerCountEl.innerText = flowers;
     stardustEl.innerText = stardust;
     
+    // Level up every 10 flowers
+    if (flowers % 10 === 0) {
+        level++;
+        levelEl.innerText = level;
+        createLevelUpBurst();
+    }
+
     if (flowers === 1) {
         tutorialEl.style.opacity = '0';
     }
@@ -167,6 +176,46 @@ function createBurst(position) {
         );
     }
     burstGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    const burst = new THREE.Points(burstGeo, burstMat);
+    scene.add(burst);
+    activeBursts.push({
+        points: burst,
+        velocities: vels,
+        life: 1.0
+    });
+}
+
+function createLevelUpBurst() {
+    // Create a big, colorful explosion of particles at the center of the island
+    const burstGeo = new THREE.BufferGeometry();
+    const burstMat = new THREE.PointsMaterial({ 
+        size: 0.15, 
+        transparent: true, 
+        vertexColors: true 
+    });
+    const verts = [];
+    const vels = [];
+    const colors = [];
+    const colorPalette = [0xff00ff, 0x00ffff, 0xffff00, 0x00ff00, 0xff0000];
+    
+    for (let i = 0; i < 200; i++) {
+        verts.push(0, 0, 0);
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const speed = 0.1 + Math.random() * 0.3;
+        
+        vels.push(
+            Math.sin(phi) * Math.cos(theta) * speed,
+            Math.cos(phi) * speed,
+            Math.sin(phi) * Math.sin(theta) * speed
+        );
+        
+        const color = new THREE.Color(colorPalette[Math.floor(Math.random() * colorPalette.length)]);
+        colors.push(color.r, color.g, color.b);
+    }
+    
+    burstGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    burstGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     const burst = new THREE.Points(burstGeo, burstMat);
     scene.add(burst);
     activeBursts.push({
