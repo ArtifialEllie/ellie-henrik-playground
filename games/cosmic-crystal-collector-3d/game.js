@@ -11,6 +11,7 @@ const particles = [];
 const shipTrail = [];
 const spaceDust = [];
 const nebulaClouds = [];
+const collectibles = [];
 const crystalCount = 30;
 const voidCrystalCount = 10;
 let movementSpeed = 0.2;
@@ -19,6 +20,8 @@ const turboSpeed = 0.5;
 const rotationSpeed = 0.03;
 let isTurbo = false;
 let gameWon = false;
+let activeBuff = null;
+let buffTimer = 0;
 const winScore = 100;
 
 // --- Setup ---
@@ -43,6 +46,31 @@ scene.add(pointLight);
 const blueLight = new THREE.PointLight(0x00ffff, 2, 50);
 blueLight.position.set(-5, -5, -5);
 scene.add(blueLight);
+
+// --- Buffs & Collectibles ---
+function createCollectible() {
+    const group = new THREE.Group();
+    const geo = new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8);
+    const mat = new THREE.MeshPhongMaterial({ 
+        color: 0x00ff00, 
+        emissive: 0x004400, 
+        shininess: 100 
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    group.add(mesh);
+    
+    group.position.set(
+        (Math.random() - 0.5) * 60,
+        (Math.random() - 0.5) * 60,
+        (Math.random() - 0.5) * 60
+    );
+    group.userData = { type: 'magnet', duration: 8.0 };
+    scene.add(group);
+    return group;
+}
+
+// Spawn one magnet orb to start
+collectibles.push(createCollectible());
 
 // --- Player (The Sparkle-Ship) ---
 const shipGroup = new THREE.Group();
@@ -236,6 +264,14 @@ function animate() {
     camera.position.lerp(cameraOffset, 0.1);
     camera.lookAt(shipGroup.position);
     
+    if (buffTimer > 0) {
+        buffTimer -= 0.016;
+        if (buffTimer <= 0) {
+            activeBuff = null;
+            updateUI();
+        }
+    }
+
     if (comboTimer > 0) {
         comboTimer -= 0.016; 
         if (comboTimer <= 0) {
@@ -260,6 +296,15 @@ function animate() {
         group.rotation.y += 0.02;
         group.rotation.z += 0.01;
         
+        if (activeBuff === 'magnet') {
+            const dir = new THREE.Vector3().subVectors(shipGroup.position, group.position);
+            const dist = dir.length();
+            if (dist < 15) {
+                dir.normalize().multiplyScalar(0.05);
+                group.position.add(dir);
+            }
+        }
+
         const s = 1 + Math.sin(Date.now() * group.userData.pulseSpeed) * 0.2;
         group.scale.set(s, s, s);
         
@@ -319,6 +364,25 @@ function animate() {
         }
     });
 
+    collectibles.forEach((col, index) => {
+        col.rotation.y += 0.05;
+        col.rotation.x += 0.02;
+        
+        const distance = shipGroup.position.distanceTo(col.position);
+        if (distance < 1.2) {
+            activeBuff = col.userData.type;
+            buffTimer = col.userData.duration;
+            updateUI();
+            
+            spawnParticles(col.position, 0x00ff00);
+            scene.remove(col);
+            collectibles.splice(index, 1);
+            
+            // Spawn another one later
+            setTimeout(() => collectibles.push(createCollectible()), 15000);
+        }
+    });
+
     for (let i = shipTrail.length - 1; i >= 0; i--) {
         const t = shipTrail[i];
         t.life -= 0.03;
@@ -365,6 +429,14 @@ function updateUI() {
         comboEl.style.animation = 'bounce 0.5s infinite';
     } else {
         comboEl.style.display = 'none';
+    }
+
+    const buffEl = document.getElementById('buff-status');
+    if (activeBuff) {
+        buffEl.innerText = `MAGNify! 🧲 ${Math.ceil(buffTimer)}s`;
+        buffEl.style.display = 'block';
+    } else {
+        buffEl.style.display = 'none';
     }
 }
 
