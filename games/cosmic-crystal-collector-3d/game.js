@@ -4,6 +4,8 @@ import * as THREE from 'three';
 let score = 0;
 let combo = 0;
 let comboTimer = 0;
+let isInvincible = false;
+let invincibleTimer = 0;
 const crystals = [];
 const particles = [];
 const shipTrail = [];
@@ -241,6 +243,14 @@ function animate() {
             updateUI();
         }
     }
+
+    if (invincibleTimer > 0) {
+        invincibleTimer -= 0.016;
+        if (invincibleTimer <= 0) {
+            isInvincible = false;
+            shipBody.material.emissive.setHex(0x00ffff);
+        }
+    }
     
     nebulaClouds.forEach(cloud => {
         cloud.rotation.y += 0.001;
@@ -269,12 +279,17 @@ function animate() {
             );
             
             shipBody.material.emissive.setHex(group.userData.isGolden ? 0xffd700 : 0x00ff00);
-            setTimeout(() => shipBody.material.emissive.setHex(0x00ffff), 100);
+            setTimeout(() => shipBody.material.emissive.setHex(isInvincible ? 0xffd700 : 0x00ffff), 100);
             spawnParticles(group.position, group.userData.isGolden ? 0xffd700 : 0xff00ff);
+
+            if (group.userData.isGolden) {
+                isInvincible = true;
+                invincibleTimer = 5.0;
+                shipBody.material.emissive.setHex(0xffd700);
+            }
         }
     });
     
-    for (let i = shipTrail.length - 1; i >= 0; i--) {
     // --- Void Crystal Logic ---
     voidCrystals.forEach((group) => {
         group.rotation.x += 0.01;
@@ -285,9 +300,14 @@ function animate() {
 
         const distance = shipGroup.position.distanceTo(group.position);
         if (distance < 1.5) {
-            combo = 0;
-            score = Math.max(0, score - 2);
-            updateUI();
+            if (!isInvincible) {
+                combo = 0;
+                score = Math.max(0, score - 2);
+                updateUI();
+                
+                shipBody.material.emissive.setHex(0xff0000);
+                setTimeout(() => shipBody.material.emissive.setHex(isInvincible ? 0xffd700 : 0x00ffff), 200);
+            }
             
             group.position.set(
                 (Math.random() - 0.5) * 60,
@@ -295,8 +315,6 @@ function animate() {
                 (Math.random() - 0.5) * 60
             );
             
-            shipBody.material.emissive.setHex(0xff0000);
-            setTimeout(() => shipBody.material.emissive.setHex(0x00ffff), 200);
             spawnParticles(group.position, 0x440044);
         }
     });
