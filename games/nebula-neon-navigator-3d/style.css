@@ -1,0 +1,73 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    color: #fff;
+    user-select: none;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#score {
+    font-size: 2rem;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+    margin-bottom: 10px;
+}
+
+#instructions {
+    font-size: 1.2rem;
+    color: #aaa;
+}
+
+#game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 40px;
+    border-radius: 30px;
+    border: 5px solid #ff00ff;
+    box-shadow: 0 0 30px #ff00ff;
+    z-index: 20;
+}
+
+#game-over h1 {
+    font-size: 4rem;
+    margin: 0;
+    color: #00ffff;
+    text-shadow: 0 0 20px #00ffff;
+}
+
+#game-over p {
+    font-size: 1.5rem;
+    margin: 20px 0;
+}
+
+#restart-btn {
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    color: white;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    font-family: inherit;
+}
+
+#restart-btn:hover {
+    transform: scale(1.1);
+}
+
+.hidden {
+    display: none;
+}
