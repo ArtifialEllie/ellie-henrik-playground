@@ -15,6 +15,7 @@ let score = 0;
 let gemsCollected = 0;
 let cameraY = 0;
 let superBounceTimer = 0;
+let dashTimer = 0;
 let combo = 0;
 let comboTimer = 0;
 
@@ -22,8 +23,10 @@ const PLAYER_RADIUS = 20;
 const GRAVITY = 0.25;
 const BOUNCE_FORCE = -10;
 const SUPER_BOUNCE_FORCE = -18;
+const CLOUD_BOUNCE_FORCE = -22;
 const PLATFORM_WIDTH = 70;
 const PLATFORM_HEIGHT = 15;
+const CLOUD_WIDTH = 40;
 const GEM_RADIUS = 8;
 const POWERUP_RADIUS = 12;
 const COMBO_TIMEOUT = 120; // 2 seconds at 60fps
@@ -63,12 +66,15 @@ function spawnPlatform(y, isFirst = false) {
     const colors = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff'];
     const color = colors[Math.floor(Math.random() * colors.length)];
     
+    const isCloud = Math.random() > 0.85; // 15% chance to be a fluffy cloud platform
+    
     platforms.push({
         x: x,
         y: y,
-        width: PLATFORM_WIDTH,
+        width: isCloud ? CLOUD_WIDTH : PLATFORM_WIDTH,
         height: PLATFORM_HEIGHT,
-        color: color
+        color: isCloud ? '#ffffff' : color,
+        type: isCloud ? 'cloud' : 'normal'
     });
 }
 
@@ -166,7 +172,15 @@ function update() {
                 player.y + player.radius > plat.y && 
                 player.y + player.radius < plat.y + plat.height + player.vy) {
                 
-                player.vy = superBounceTimer > 0 ? SUPER_BOUNCE_FORCE : BOUNCE_FORCE;
+                let bounceForce = BOUNCE_FORCE;
+                if (plat.type === 'cloud') {
+                    bounceForce = CLOUD_BOUNCE_FORCE;
+                    createSparkles(player.x, player.y + player.radius, '#ffffff', 12);
+                } else if (superBounceTimer > 0) {
+                    bounceForce = SUPER_BOUNCE_FORCE;
+                }
+                
+                player.vy = bounceForce;
                 
                 // Combo system
                 combo++;
@@ -178,7 +192,7 @@ function update() {
                 }
 
                 // Add a little sparkle effect on bounce
-                createSparkles(player.x, player.y + player.radius, plat.color);
+                createSparkles(player.x, player.y + player.radius, plat.color, 8);
             }
         });
     }
@@ -293,7 +307,19 @@ function draw() {
     // Draw Platforms
     platforms.forEach(plat => {
         ctx.beginPath();
-        ctx.roundRect(plat.x, plat.y, plat.width, plat.height, 10);
+        if (plat.type === 'cloud') {
+            // Draw a fluffy cloud shape
+            const cx = plat.x + plat.width / 2;
+            const cy = plat.y + plat.height / 2;
+            const r = plat.width / 4;
+            ctx.arc(cx - r, cy, r, Math.PI * 0.5, Math.PI * 1.5);
+            ctx.arc(cx, cy - r, r, Math.PI, Math.PI * 2);
+            ctx.arc(cx + r, cy, r, Math.PI * 1.5, Math.PI * 0.5);
+            ctx.lineTo(plat.x, plat.y + plat.height);
+            ctx.lineTo(plat.x + plat.width, plat.y + plat.height);
+        } else {
+            ctx.roundRect(plat.x, plat.y, plat.width, plat.height, 10);
+        }
         ctx.fillStyle = plat.color;
         ctx.fill();
         ctx.closePath();
