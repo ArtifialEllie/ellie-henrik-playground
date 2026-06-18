@@ -143,6 +143,7 @@ const skins = [
     { color: 'cosmic', name: 'Cosmic Glitter', cost: 3000 },
     { color: '#c0c0c0', name: 'Starlight Silver', cost: 4000 },
     { color: 'holographic', name: 'Holographic Dream', cost: 5000 },
+    { color: 'diamond', name: 'Diamond Dust 💎', cost: 10000 },
 ];
 
 const accessories = [
@@ -351,6 +352,10 @@ class Bubble {
         } else if (rand > 0.227 && rand < 0.257) {
             this.type = 'magnetic-bubble';
             this.color = '#9c27b0';
+        } else if (rand > 0.187 && rand < 0.217) {
+            this.type = 'prism';
+            this.color = '#e0f7fa';
+            this.radius = 30;
         } else if (rand > 0.207 && rand < 0.237) {
             this.type = 'magic-mushroom';
             this.color = '#ff69b4';
