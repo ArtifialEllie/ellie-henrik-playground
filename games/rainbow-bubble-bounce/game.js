@@ -37,13 +37,17 @@ let player = {
     vx: 0,
     vy: 0,
     radius: PLAYER_RADIUS,
-    color: 'rgba(162, 210, 255, 0.7)'
+    color: 'rgba(162, 210, 255, 0.7)',
+    scaleX: 1,
+    scaleY: 1
 };
 
 let platforms = [];
 let gems = [];
 let powerups = [];
 let particles = [];
+let bgBubbles = [];
+let playerTrail = [];
 let keys = {};
 
 // Initialize canvas size
@@ -117,6 +121,8 @@ function initGame() {
     gems = [];
     powerups = [];
     particles = [];
+    bgBubbles = [];
+    playerTrail = [];
     
     // Start platform
     platforms.push({
@@ -132,6 +138,18 @@ function initGame() {
         spawnPlatform(canvas.height - i * 100);
         spawnGem(canvas.height - i * 100 - 50);
         spawnPowerup(canvas.height - i * 100 - 50);
+    }
+
+    // Initialize background bubbles
+    for (let i = 0; i < 20; i++) {
+        bgBubbles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 30 + 10,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            opacity: Math.random() * 0.3 + 0.1
+        });
     }
     
     gameActive = true;
@@ -155,6 +173,27 @@ function update() {
     
     player.vy += GRAVITY;
     player.y += player.vy;
+
+    // Squish and stretch effect
+    player.scaleX = 1 + Math.abs(player.vx) * 0.02;
+    player.scaleY = 1 - Math.abs(player.vx) * 0.02 + (player.vy < 0 ? -player.vy * 0.01 : 0);
+    if (player.scaleY < 0.7) player.scaleY = 0.7;
+    if (player.scaleY > 1.3) player.scaleY = 1.3;
+
+    // Update player trail
+    playerTrail.push({x: player.x, y: player.y, life: 1.0});
+    if (playerTrail.length > 15) playerTrail.shift();
+    playerTrail.forEach(t => t.life -= 0.05);
+    
+    // Background bubble movement
+    bgBubbles.forEach(b => {
+        b.x += b.vx;
+        b.y += b.vy;
+        if (b.x < -b.radius) b.x = canvas.width + b.radius;
+        if (b.x > canvas.width + b.radius) b.x = -b.radius;
+        if (b.y < -b.radius) b.y = canvas.height + b.radius;
+        if (b.y > canvas.height + b.radius) b.y = -b.radius;
+    });
     
     // Camera follow (only moves up)
     if (player.y < canvas.height / 2 + cameraY) {
@@ -163,7 +202,6 @@ function update() {
         score += Math.floor(diff);
     }
     
-    // Platform collision
     // Platform collision
     if (player.vy > 0) {
         platforms.forEach(plat => {
@@ -196,7 +234,7 @@ function update() {
             }
         });
     }
-
+    
     // Gem collection
     gems.forEach(gem => {
         if (!gem.collected && 
@@ -206,7 +244,7 @@ function update() {
             createSparkles(gem.x, gem.y, '#ffd700');
         }
     });
-
+    
     // Powerup collection
     powerups.forEach(pu => {
         if (!pu.collected && 
@@ -263,6 +301,15 @@ function draw() {
     ctx.save();
     ctx.translate(0, -cameraY);
     
+    // Draw Background Bubbles
+    bgBubbles.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${b.opacity})`;
+        ctx.fill();
+        ctx.closePath();
+    });
+
     // Draw Gems
     gems.forEach(gem => {
         if (!gem.collected) {
@@ -280,6 +327,8 @@ function draw() {
             ctx.shadowColor = '#ffd700';
         }
     });
+    
+    ctx.shadowBlur = 0; // Reset shadow for other elements
 
     // Draw Powerups
     powerups.forEach(pu => {
@@ -304,6 +353,8 @@ function draw() {
         }
     });
     
+    ctx.shadowBlur = 0; // Reset shadow
+    
     // Draw Platforms
     platforms.forEach(plat => {
         ctx.beginPath();
@@ -326,6 +377,15 @@ function draw() {
         ctx.shadowBlur = 0;
     });
     
+    // Draw Player Trail
+    playerTrail.forEach(t => {
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, player.radius * t.life, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(162, 210, 255, ${t.life * 0.4})`;
+        ctx.fill();
+        ctx.closePath();
+    });
+
     // Draw Particles
     particles.forEach(p => {
         ctx.beginPath();
@@ -338,11 +398,15 @@ function draw() {
     ctx.globalAlpha = 1.0;
     
     // Draw Player Bubble
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    ctx.scale(player.scaleX, player.scaleY);
+    
     ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+    ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
     const gradient = ctx.createRadialGradient(
-        player.x - 5, player.y - 5, 2,
-        player.x, player.y, player.radius
+        -5, -5, 2,
+        0, 0, player.radius
     );
     gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
     gradient.addColorStop(0.5, 'rgba(162, 210, 255, 0.5)');
@@ -353,7 +417,8 @@ function draw() {
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.closePath();
-
+    ctx.restore();
+    
     // Draw Combo Text
     if (combo > 1) {
         ctx.fillStyle = '#ff85a2';
