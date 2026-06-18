@@ -33,6 +33,7 @@ let player = {
 
 let platforms = [];
 let gems = [];
+let particles = [];
 let keys = {};
 
 // Initialize canvas size
@@ -86,6 +87,7 @@ function initGame() {
     
     platforms = [];
     gems = [];
+    particles = [];
     
     // Start platform
     platforms.push({
@@ -141,7 +143,7 @@ function update() {
                 
                 player.vy = BOUNCE_FORCE;
                 // Add a little sparkle effect on bounce
-                createSparkles(player.x, player.y + player.radius);
+                createSparkles(player.x, player.y + player.radius, plat.color);
             }
         });
     }
@@ -152,6 +154,7 @@ function update() {
             Math.hypot(player.x - gem.x, player.y - gem.y) < player.radius + gem.radius) {
             gem.collected = true;
             gemsCollected++;
+            createSparkles(gem.x, gem.y, '#ffd700');
         }
     });
     
@@ -169,6 +172,14 @@ function update() {
     // Clean up old platforms/gems
     platforms = platforms.filter(p => p.y > cameraY - 200);
     gems = gems.filter(g => g.y > cameraY - 200);
+    
+    // Update particles
+    particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.02;
+    });
+    particles = particles.filter(p => p.life > 0);
     
     heightEl.textContent = Math.floor(score / 10);
     gemsEl.textContent = gemsCollected;
@@ -208,6 +219,17 @@ function draw() {
         ctx.shadowBlur = 0;
     });
     
+    // Draw Particles
+    particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.fill();
+        ctx.closePath();
+    });
+    ctx.globalAlpha = 1.0;
+    
     // Draw Player Bubble
     ctx.beginPath();
     ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
@@ -228,9 +250,27 @@ function draw() {
     ctx.restore();
 }
 
-function createSparkles(x, y) {
-    // Simple sparkle effect - could be expanded
-    console.log('Sparkle! ✨');
+function createSparkles(x, y, color = '#fff') {
+    particles.push({
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 10,
+        vy: (Math.random() - 0.5) * 10,
+        life: 1.0,
+        color: color,
+        size: Math.random() * 5 + 2
+    });
+    for (let i = 0; i < 5; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            life: 1.0,
+            color: color,
+            size: Math.random() * 5 + 2
+        });
+    }
 }
 
 function gameOver() {

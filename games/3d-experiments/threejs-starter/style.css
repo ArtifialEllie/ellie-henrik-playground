@@ -144,6 +144,16 @@ p {
 }
 
 @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff; }
     50% { box-shadow: 0 0 40px #ff00ff, 0 0 60px #00ffff; }
+    100% { box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff; }
+}
+
+.frenzy-mode {
+    animation: frenzy-bg 0.2s linear infinite;
+}
+
+@keyframes frenzy-bg {
+    0% { background-color: #ff00ff; }
+    50% { background-color: #00ffff; }
+    100% { background-color: #ffff00; }
 }

@@ -344,6 +344,11 @@ function onMouseDown(event) {
             comboContainer.style.animation = 'pop 0.3s ease-out';
             
             // Ellie's companion reacts to combos!
+            if (combo >= 10 && !isFrenzyMode) {
+                startRainbowFrenzy();
+            }
+
+
             const emotions = ["Excited! 🌟", "Amazing! 🌈", "Wowza! ✨", "Magic! 🎀", "Incredible! 🍭"];
             const emotion = emotions[Math.floor(Math.random() * emotions.length)];
             companionStatus.innerText = `Ellie's helper is feeling: ${emotion}`;
@@ -403,6 +408,43 @@ function onMouseDown(event) {
         spawnSpark(object.position);
     }
 }
+
+function startRainbowFrenzy() {
+    isFrenzyMode = true;
+    frenzyTimer = 600; 
+    createFloatingText('🌈 RAINBOW FRENZY!! 🌈', window.innerWidth / 2, window.innerHeight / 2);
+    playSound(1000, 'sine', 0.5, 0.2);
+    playSound(1200, 'sine', 0.5, 0.2);
+    playSound(1400, 'sine', 0.5, 0.2);
+    
+    document.body.classList.add('frenzy-mode');
+}
+
+function endRainbowFrenzy() {
+    isFrenzyMode = false;
+    document.body.classList.remove('frenzy-mode');
+}
+
+function spawnFrenzyPrism() {
+    const geo = new THREE.OctahedronGeometry(0.2, 0);
+    const mat = new THREE.MeshPhongMaterial({ 
+        color: Math.random() * 0xffffff, 
+        emissive: 0x444444,
+        transparent: true,
+        opacity: 0.8
+    });
+    const prism = new THREE.Mesh(geo, mat);
+    
+    prism.position.set(
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20
+    );
+    
+    scene.add(prism);
+    frenzyPrisms.push({ mesh: prism, velocity: new THREE.Vector3((Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1) });
+}
+
 
 function getAvailableGeometries() {
     return [
@@ -664,6 +706,26 @@ function animate() {
     requestAnimationFrame(animate);
     
     const time = Date.now() * 0.001;
+
+    if (isFrenzyMode) {
+        frenzyTimer--;
+        if (frenzyTimer <= 0) {
+            endRainbowFrenzy();
+        }
+        if (Math.random() < 0.1) {
+            spawnFrenzyPrism();
+        }
+    }
+
+    for (let i = frenzyPrisms.length - 1; i >= 0; i--) {
+        const fp = frenzyPrisms[i];
+        fp.mesh.position.add(fp.velocity);
+        fp.mesh.rotation.x += 0.1;
+        if (fp.mesh.position.length() > 15) {
+            scene.remove(fp.mesh);
+            frenzyPrisms.splice(i, 1);
+        }
+    }
     
     // Camera Shake
     if (cameraShake > 0) {
