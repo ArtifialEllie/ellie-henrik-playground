@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardust Symphony Conductor ✨🎶</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-container">Score: <span id="score">0</span></div>
+            <div id="multiplier-container">Multiplier: <span id="multiplier">x1</span></div>
+        </div>
+        <div id="start-screen">
+            <h1>Stardust Symphony Conductor</h1>
+            <p>Conduct the galaxy! Click the falling stars exactly when they hit the rhythm ring!</p>
+            <button id="start-button">Start Symphony! 🌟</button>
+        </div>
+        <div id="game-canvas-container">
+            <canvas id="gameCanvas"></canvas>
+            <div id="rhythm-ring"></div>
+        </div>
+        <div id="game-over-screen" class="hidden">
+            <h1>Symphony Finished!</h1>
+            <p>Your final score: <span id="final-score">0</span></p>
+            <button id="restart-button">Play Again! 🌈</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
