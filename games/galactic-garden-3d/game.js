@@ -32,6 +32,19 @@ const island = new THREE.Mesh(islandGeometry, islandMaterial);
 island.position.y = -1;
 scene.add(island);
 
+// Cosmic Ring (Like Saturn!)
+const ringGeo = new THREE.TorusGeometry(15, 0.2, 16, 100);
+const ringMat = new THREE.MeshStandardMaterial({ 
+    color: 0xffd700, 
+    emissive: 0xffd700, 
+    emissiveIntensity: 0.5,
+    transparent: true,
+    opacity: 0.6 
+});
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.rotation.x = Math.PI / 2;
+scene.add(ring);
+
 // Floating particles around island
 const particleGeometry = new THREE.BufferGeometry();
 const particleMaterial = new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.05 });
@@ -280,6 +293,7 @@ function animate() {
     
     // Rotate island slowly
     island.rotation.y += 0.002;
+    ring.rotation.z += 0.005; // Make the ring spin too!
     particleSystem.rotation.y += 0.005;
     stars.rotation.y += 0.0001;
     
