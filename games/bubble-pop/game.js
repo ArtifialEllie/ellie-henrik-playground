@@ -594,6 +594,8 @@ class MagicalPet {
         this.popRange = 150;
         this.sugarRushTimer = 0;
         this.isSugarRush = false;
+        this.shieldTimer = 0;
+        this.shieldRadius = 80;
     }
 
     update(mouseX, mouseY) {
@@ -607,6 +609,10 @@ class MagicalPet {
         // Floating animation
         this.floatOffset += 0.05 * this.floatDir;
         if (this.floatOffset > 10 || this.floatOffset < -10) this.floatDir *= -1;
+
+        if (this.shieldTimer > 0) {
+            this.shieldTimer--;
+        }
 
     // Pet Evolution Logic
     let nextLevel = 1;
@@ -686,6 +692,17 @@ class MagicalPet {
         if (currentAccessory) {
             ctx.font = `${this.size * 0.7}px Arial`;
             ctx.fillText(currentAccessory, this.x + this.size * 0.3, this.y + this.floatOffset - this.size * 0.2);
+        }
+
+        if (this.shieldTimer > 0) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y + this.floatOffset, this.shieldRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(179, 235, 242, 0.6)';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.closePath();
         }
     }
 }
@@ -1050,6 +1067,11 @@ function handlePop(e) {
                 shieldActive = true;
                 floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELD ACTIVE! 🛡️', '#b2dfdb'));
                 createPopEffect(b.x, b.y, '#b2dfdb');
+                
+                // Give the pet a shield too!
+                pet.shieldTimer = 300; 
+                floatingTexts.push(new FloatingText(pet.x, pet.y, 'PET SHIELD! 🛡️✨', '#b2dfdb'));
+
                 setTimeout(() => {
                     shieldActive = false;
                 }, 7000);
