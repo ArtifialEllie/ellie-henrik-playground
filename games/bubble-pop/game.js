@@ -287,11 +287,12 @@ class Bubble {
             this.radius = 40;
             this.hits = 1;
         } else if (rand > 0.995) {
+            this.type = 'mystery-box';
+            this.color = '#ffeb3b';
+            this.radius = 35;
+        } else if (rand > 0.992) {
             this.type = 'golden-ticket';
             this.color = '#FFD700';
-        } else if (rand > 0.992) {
-            this.type = 'magic-mirror';
-            this.color = '#e0f7fa';
         } else if (rand > 0.987) {
             this.type = 'magic-wand';
             this.color = '#da70d6';
@@ -482,14 +483,11 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🎆', this.x, this.y + currentRadius/3);
-        } else if (this.type === 'giant') {
+        } else if (this.type === 'mystery-box') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🌟', this.x, this.y + currentRadius/3);
-            // Draw health bar
-            ctx.fillStyle = 'white';
-            ctx.fillRect(this.x - 20, this.y - currentRadius - 10, 40 * (this.hits/3), 5);
-        } else if (this.type === 'pet-treat') {
+            ctx.fillText('🎁', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'golden-ticket') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🦴', this.x, this.y + currentRadius/3);
@@ -933,7 +931,24 @@ function handlePop(e) {
             }
             createPopEffect(b.x, b.y, b.color);
             
-            if (b.type === 'golden-ticket') {
+            if (b.type === 'mystery-box') {
+                playPopSound(true, false);
+                const mysteryOutcomes = [
+                    { text: 'JACKPOT! 💰', action: () => { totalGold += 1000; localStorage.setItem('bubblePopTotalGold', totalGold); totalGoldEl.innerText = totalGold; }, bonus: 2000, color: 'gold' },
+                    { text: 'TIME WARP! ⏰', action: () => { timeLeft += 20; }, bonus: 500, color: '#81d4fa' },
+                    { text: 'PARTY TIME! 🥳', action: () => triggerParty(), bonus: 1000, color: '#ff4081' },
+                    { text: 'GOLDEN RAIN! ✨', action: () => triggerGoldenRain(), bonus: 1000, color: '#ffd700' },
+                    { text: 'DISCO FEVER! 💃', action: () => triggerDiscoParty(), bonus: 1500, color: '#ff00ff' },
+                    { text: 'OOPS! PRANKED! 😜', action: () => { score = Math.max(0, score - 500); }, bonus: -500, color: '#9e9e9e' },
+                ];
+                const outcome = mysteryOutcomes[Math.floor(Math.random() * mysteryOutcomes.length)];
+                score += outcome.bonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MYSTERY BOX: ${outcome.text}`, outcome.color));
+                outcome.action();
+                createBigExplosion(b.x, b.y);
+                createPopEffect(b.x, b.y, outcome.color);
+                triggerFrenzy();
+            } else if (b.type === 'golden-ticket') {
                 playPopSound(true, false);
                 const ticketBonus = 1000;
                 score += ticketBonus;
