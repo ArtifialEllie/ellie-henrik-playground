@@ -1,225 +1,311 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
-const livesElement = document.getElementById('lives');
-const overlay = document.getElementById('overlay');
+const highScoreElement = document.getElementById('high-score');
 const startBtn = document.getElementById('start-btn');
-const messageDiv = document.getElementById('message');
-
-canvas.width = 800;
-canvas.height = 600;
+const overlay = document.getElementById('overlay');
 
 let score = 0;
-let lives = 3;
-let gameRunning = false;
-let particles = [];
-let items = [];
-let enemies = [];
-let player = {
-    x: 400,
-    y: 500,
-    width: 30,
-    height: 30,
-    speed: 5,
-    color: '#00f2ff'
-};
+let highScore = localStorage.getItem('neon-nebula-high-score') || 0;
+let gameActive = false;
+let player;
+let stars = [];
+let crystals = [];
+let obstacles = [];
+let animationId;
 
-const keys = {};
+highScoreElement.innerText = `Best: ${highScore}`;
 
-window.addEventListener('keydown', e => keys[e.code] = true);
-window.addEventListener('keyup', e => keys[e.code] = false);
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
 
-class Particle {
-    constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.size = Math.random() * 3 + 1;
-        this.speedX = (Math.random() - 0.5) * 3;
-        this.speedY = (Math.random() - 0.5) * 3;
-        this.life = 1.0;
-        this.decay = Math.random() * 0.02 + 0.01;
+window.addEventListener('resize', resize);
+resize();
+
+class Player {
+    constructor() {
+        this.width = 40;
+        this.height = 30;
+        this.x = canvas.width / 2;
+        this.y = canvas.height - 100;
+        this.vx = 0;
+        this.speed = 0.6;
+        this.friction = 0.92;
+        this.color = '#00f2ff';
     }
 
-    update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        this.life -= this.decay;
+    update(input) {
+        if (input.left) this.vx -= this.speed;
+        if (input.right) this.vx += this.speed;
+        
+        this.vx *= this.friction;
+        this.x += this.vx;
+
+        if (this.x < this.width / 2) {
+            this.x = this.width / 2;
+            this.vx = 0;
+        }
+        if (this.x > canvas.width - this.width / 2) {
+            this.x = canvas.width - this.width / 2;
+            this.vx = 0;
+        }
     }
 
     draw() {
-        ctx.globalAlpha = this.life;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        
+        // Ship body
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.moveTo(0, -this.height / 2);
+        ctx.lineTo(-this.width / 2, this.height / 2);
+        ctx.lineTo(this.width / 2, this.height / 2);
+        ctx.closePath();
         ctx.fill();
-        ctx.globalAlpha = 1.0;
+        
+        // Neon glow
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.color;
+        ctx.stroke();
+        
+        // Engine flame
+        if (Math.abs(this.vx) > 0.1) {
+            ctx.fillStyle = '#ff00ff';
+            ctx.beginPath();
+            ctx.moveTo(-5, this.height / 2);
+            ctx.lineTo(0, this.height / 2 + Math.random() * 10);
+            ctx.lineTo(5, this.height / 2);
+            ctx.fill();
+        }
+        
+        ctx.restore();
     }
 }
 
-class SpaceItem {
-    constructor(type) {
-        this.type = type; // 'stardust' or 'debris'
-        this.width = type === 'stardust' ? 15 : 25;
-        this.height = this.width;
-        this.x = Math.random() * (canvas.width - this.width);
-        this.y = -this.height;
-        this.speed = Math.random() * 2 + 2 + (score / 100);
-        this.color = type === 'stardust' ? '#ffeb3b' : '#ff4444';
-        this.glow = type === 'stardust' ? '#fff176' : '#cf6679';
+class Star {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2;
+        this.speed = Math.random() * 3 + 1;
     }
 
     update() {
         this.y += this.speed;
+        if (this.y > canvas.height) {
+            this.y = -10;
+            this.x = Math.random() * canvas.width;
+        }
     }
 
     draw() {
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+class Crystal {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * (canvas.width - 20);
+        this.y = -20;
+        this.size = 15;
+        this.speed = Math.random() * 2 + 3;
+        this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+    }
+
+    update() {
+        this.y += this.speed;
+        if (this.y > canvas.height) {
+            this.reset();
+        }
+    }
+
+    draw() {
+        ctx.save();
         ctx.shadowBlur = 15;
-        ctx.shadowColor = this.glow;
+        ctx.shadowColor = this.color;
         ctx.fillStyle = this.color;
-        if (this.type === 'stardust') {
-            // Draw a star
-            ctx.beginPath();
-            for (let i = 0; i < 5; i++) {
-                ctx.lineTo(Math.cos((18 + i * 72) / 180 * Math.PI) * this.width / 2 + this.x + this.width / 2,
-                           Math.sin((18 + i * 72) / 180 * Math.PI) * this.width / 2 + this.y + this.height / 2);
-                ctx.lineTo(Math.cos((54 + i * 72) / 180 * Math.PI) * this.width / 4 + this.x + this.width / 2,
-                           Math.sin((54 + i * 72) / 180 * Math.PI) * this.width / 4 + this.y + this.height / 2);
-            }
-            ctx.closePath();
-            ctx.fill();
-        } else {
-            // Draw a rocky debris
-            ctx.beginPath();
-            ctx.rect(this.x, this.y, this.width, this.height);
-            ctx.fill();
-        }
-        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y - this.size);
+        ctx.lineTo(this.x + this.size, this.y);
+        ctx.lineTo(this.x, this.y + this.size);
+        ctx.lineTo(this.x - this.size, this.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
     }
 }
 
-function spawnItem() {
-    if (!gameRunning) return;
-    const type = Math.random() < 0.7 ? 'stardust' : 'debris';
-    items.push(new SpaceItem(type));
-    setTimeout(spawnItem, Math.max(300, 1000 - score * 2));
-}
+class Obstacle {
+    constructor() {
+        this.reset();
+    }
 
-function updatePlayer() {
-    if (keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
-    if (keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
-    if (keys['ArrowUp'] || keys['KeyW']) player.y -= player.speed;
-    if (keys['ArrowDown'] || keys['KeyS']) player.y += player.speed;
+    reset() {
+        this.x = Math.random() * (canvas.width - 40);
+        this.y = -100;
+        this.width = 40 + Math.random() * 60;
+        this.height = 20 + Math.random() * 30;
+        this.speed = Math.random() * 2 + 4;
+        this.color = '#ff3366';
+    }
 
-    player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-    player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
-}
-
-function drawPlayer() {
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = player.color;
-    ctx.fillStyle = player.color;
-    
-    // Draw a simple spaceship shape
-    ctx.beginPath();
-    ctx.moveTo(player.x + player.width / 2, player.y);
-    ctx.lineTo(player.x + player.width, player.y + player.height);
-    ctx.lineTo(player.x, player.y + player.height);
-    ctx.closePath();
-    ctx.fill();
-    
-    ctx.shadowBlur = 0;
-}
-
-function checkCollisions() {
-    for (let i = items.length - 1; i >= 0; i--) {
-        const item = items[i];
-        if (player.x < item.x + item.width &&
-            player.x + player.width > item.x &&
-            player.y < item.y + item.height &&
-            player.y + player.height > item.y) {
-            
-            if (item.type === 'stardust') {
-                score += 10;
-                scoreElement.innerText = `Score: ${score}`;
-                for (let i = 0; i < 8; i++) particles.push(new Particle(item.x + item.width/2, item.y + item.height/2, '#ffeb3b'));
-            } else {
-                lives--;
-                livesElement.innerText = `Lives: ${'❤️'.repeat(lives)}`;
-                for (let i = 0; i < 15; i++) particles.push(new Particle(player.x + player.width/2, player.y + player.height/2, '#ff4444'));
-                if (lives <= 0) endGame();
-            }
-            items.splice(i, 1);
+    update() {
+        this.y += this.speed;
+        if (this.y > canvas.height) {
+            this.reset();
         }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.color;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.restore();
     }
 }
 
-function endGame() {
-    gameRunning = false;
+const input = { left: false, right: false };
+
+window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'a') input.left = true;
+    if (e.key === 'ArrowRight' || e.key === 'd') input.right = true;
+});
+
+window.addEventListener('keyup', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'a') input.left = false;
+    if (e.key === 'ArrowRight' || e.key === 'd') input.right = false;
+});
+
+// Touch controls for mobile
+window.addEventListener('touchstart', e => {
+    const touchX = e.touches[0].clientX;
+    if (touchX < window.innerWidth / 2) input.left = true;
+    else input.right = true;
+});
+
+window.addEventListener('touchend', e => {
+    input.left = false;
+    input.right = false;
+});
+
+function spawnCrystals() {
+    crystals = [];
+    for (let i = 0; i < 5; i++) {
+        crystals.push(new Crystal());
+    }
+}
+
+function spawnObstacles() {
+    obstacles = [];
+    for (let i = 0; i < 3; i++) {
+        obstacles.push(new Obstacle());
+    }
+}
+
+function checkCollision(rect1, rect2) {
+    return rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y;
+}
+
+function checkCollisionCircle(circle1, circle2) {
+    return Math.hypot(circle1.x - circle2.x, circle1.y - circle2.y) < (circle1.r + circle2.r);
+}
+
+function gameOver() {
+    gameActive = false;
     overlay.style.opacity = '1';
     overlay.style.pointerEvents = 'auto';
-    messageDiv.innerHTML = `
-        <h1>Game Over!</h1>
-        <p>You navigated the nebula and collected ${score} stardust!</p>
-        <button id="restart-btn">Try Again ✨</button>
-    `;
-    document.getElementById('restart-btn').onclick = () => {
-        resetGame();
-        startGame();
-    };
+    document.getElementById('title').innerText = 'Nebula Crash! 💥';
+    document.getElementById('subtitle').innerText = `You collected ${score} crystals!`;
+    startBtn.innerText = 'Try Again! 🚀';
 }
 
-function resetGame() {
+function initGame() {
     score = 0;
-    lives = 3;
-    scoreElement.innerText = `Score: 0`;
-    livesElement.innerText = `Lives: ❤️❤️❤️`;
-    player.x = 400;
-    player.y = 500;
-    items = [];
-    particles = [];
-}
-
-function startGame() {
-    resetGame();
-    gameRunning = true;
+    scoreElement.innerText = `Crystals: ${score}`;
+    player = new Player();
+    stars = [];
+    for (let i = 0; i < 100; i++) {
+        stars.push(new Star());
+    }
+    spawnCrystals();
+    spawnObstacles();
+    gameActive = true;
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
-    spawnItem();
-    requestAnimationFrame(gameLoop);
+    animationId = requestAnimationFrame(gameLoop);
 }
 
 function gameLoop() {
-    if (!gameRunning) return;
+    if (!gameActive) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw some background stars for depth
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-    for (let i = 0; i < 50; i++) {
-        ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1, 1);
-    }
-
-    updatePlayer();
-    drawPlayer();
-
-    items.forEach((item, index) => {
-        item.update();
-        if (item.y > canvas.height) items.splice(index, 1);
-        item.draw();
+    // Draw stars
+    stars.forEach(star => {
+        star.update();
+        star.draw();
     });
 
-    particles.forEach((p, index) => {
-        p.update();
-        if (p.life <= 0) particles.splice(index, 1);
-        p.draw();
+    // Update and draw player
+    player.update(input);
+    player.draw();
+
+    // Update and draw crystals
+    crystals.forEach(crystal => {
+        crystal.update();
+        crystal.draw();
+        
+        if (Math.hypot(player.x - crystal.x, player.y - crystal.y) < 30) {
+            score++;
+            scoreElement.innerText = `Crystals: ${score}`;
+            crystal.reset();
+            
+            // Add a little "pop" effect would be nice
+        }
     });
 
-    checkCollisions();
+    // Update and draw obstacles
+    obstacles.forEach(obstacle => {
+        obstacle.update();
+        obstacle.draw();
+        
+        if (checkCollision(
+            { x: player.x - player.width / 2, y: player.y - player.height / 2, width: player.width, height: player.height },
+            { x: obstacle.x, y: obstacle.y, width: obstacle.width, height: obstacle.height }
+        )) {
+            gameOver();
+        }
+    });
 
-    requestAnimationFrame(gameLoop);
+    animationId = requestAnimationFrame(gameLoop);
 }
 
-startBtn.onclick = () => {
-    startGame();
-};
+startBtn.addEventListener('click', () => {
+    initGame();
+});
+
+// Save high score
+window.addEventListener('beforeunload', () => {
+    if (score > highScore) {
+        localStorage.setItem('neon-nebula-high-score', score);
+    }
+});
