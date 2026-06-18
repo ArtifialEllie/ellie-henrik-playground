@@ -8,6 +8,7 @@ const specials = {
 const colors = ['#FFC0CB', '#FFB6C1', '#FF69B4', '#FF1493', '#DB7093'];
 
 let score = 0;
+let highScore = localStorage.getItem('donutHighScore') || 0;
 let combo = 0;
 let timeLeft = 30;
 let gameActive = false;
@@ -19,6 +20,7 @@ const gameArea = document.getElementById('game-area');
 const scoreElement = document.getElementById('score');
 const comboElement = document.getElementById('combo');
 const timerElement = document.getElementById('timer');
+const highScoreElement = document.getElementById('high-score');
 const overlay = document.getElementById('overlay');
 const finalScoreElement = document.getElementById('final-score');
 const restartBtn = document.getElementById('restart-btn');
@@ -191,9 +193,11 @@ function startGame() {
     gameActive = true;
     scoreElement.textContent = score;
     comboElement.textContent = combo;
+    highScoreElement.textContent = highScore;
     timerElement.textContent = timeLeft;
     overlay.classList.add('hidden');
     gameArea.innerHTML = '';
+
 
 
     spawnInterval = setInterval(createDonut, 700);
@@ -210,6 +214,12 @@ function endGame() {
     gameActive = false;
     clearInterval(spawnInterval);
     clearInterval(timerInterval);
+    
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('donutHighScore', highScore);
+    }
+    
     finalScoreElement.textContent = score;
     overlay.classList.remove('hidden');
 }

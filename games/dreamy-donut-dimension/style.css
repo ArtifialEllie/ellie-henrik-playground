@@ -32,7 +32,7 @@ body {
     z-index: 10;
 }
 
-#score-board, #timer-board {
+#score-board, #timer-board, #high-score-board {
     background: rgba(255, 255, 255, 0.8);
     padding: 10px 20px;
     border-radius: 25px;
