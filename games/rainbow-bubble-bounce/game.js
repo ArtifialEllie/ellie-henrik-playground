@@ -14,13 +14,16 @@ let gameActive = false;
 let score = 0;
 let gemsCollected = 0;
 let cameraY = 0;
+let superBounceTimer = 0;
 
 const PLAYER_RADIUS = 20;
 const GRAVITY = 0.25;
 const BOUNCE_FORCE = -10;
+const SUPER_BOUNCE_FORCE = -18;
 const PLATFORM_WIDTH = 70;
 const PLATFORM_HEIGHT = 15;
 const GEM_RADIUS = 8;
+const POWERUP_RADIUS = 12;
 
 let player = {
     x: 0,
@@ -33,6 +36,7 @@ let player = {
 
 let platforms = [];
 let gems = [];
+let powerups = [];
 let particles = [];
 let keys = {};
 
@@ -76,10 +80,23 @@ function spawnGem(y) {
     });
 }
 
+function spawnPowerup(y) {
+    if (Math.random() > 0.1) return; // 10% chance to spawn a powerup
+    const x = Math.random() * (canvas.width - POWERUP_RADIUS * 2);
+    powerups.push({
+        x: x,
+        y: y,
+        radius: POWERUP_RADIUS,
+        collected: false,
+        type: 'super-bounce'
+    });
+}
+
 function initGame() {
     score = 0;
     gemsCollected = 0;
     cameraY = 0;
+    superBounceTimer = 0;
     player.x = canvas.width / 2;
     player.y = canvas.height - 100;
     player.vx = 0;
@@ -87,6 +104,7 @@ function initGame() {
     
     platforms = [];
     gems = [];
+    powerups = [];
     particles = [];
     
     // Start platform
@@ -102,6 +120,7 @@ function initGame() {
     for (let i = 1; i < 15; i++) {
         spawnPlatform(canvas.height - i * 100);
         spawnGem(canvas.height - i * 100 - 50);
+        spawnPowerup(canvas.height - i * 100 - 50);
     }
     
     gameActive = true;
@@ -134,6 +153,7 @@ function update() {
     }
     
     // Platform collision
+    // Platform collision
     if (player.vy > 0) {
         platforms.forEach(plat => {
             if (player.x + player.radius > plat.x && 
@@ -141,13 +161,13 @@ function update() {
                 player.y + player.radius > plat.y && 
                 player.y + player.radius < plat.y + plat.height + player.vy) {
                 
-                player.vy = BOUNCE_FORCE;
+                player.vy = superBounceTimer > 0 ? SUPER_BOUNCE_FORCE : BOUNCE_FORCE;
                 // Add a little sparkle effect on bounce
                 createSparkles(player.x, player.y + player.radius, plat.color);
             }
         });
     }
-    
+
     // Gem collection
     gems.forEach(gem => {
         if (!gem.collected && 
@@ -155,6 +175,18 @@ function update() {
             gem.collected = true;
             gemsCollected++;
             createSparkles(gem.x, gem.y, '#ffd700');
+        }
+    });
+
+    // Powerup collection
+    powerups.forEach(pu => {
+        if (!pu.collected && 
+            Math.hypot(player.x - pu.x, player.y - pu.y) < player.radius + pu.radius) {
+            pu.collected = true;
+            if (pu.type === 'super-bounce') {
+                superBounceTimer = 300; // Approx 5 seconds at 60fps
+                createSparkles(pu.x, pu.y, '#ff00ff', 20);
+            }
         }
     });
     
@@ -167,11 +199,13 @@ function update() {
     while (platforms[platforms.length - 1].y > cameraY - 100) {
         spawnPlatform(platforms[platforms.length - 1].y - 100);
         spawnGem(platforms[platforms.length - 1].y - 100 - 50);
+        spawnPowerup(platforms[platforms.length - 1].y - 100 - 50);
     }
     
     // Clean up old platforms/gems
     platforms = platforms.filter(p => p.y > cameraY - 200);
     gems = gems.filter(g => g.y > cameraY - 200);
+    powerups = powerups.filter(pu => pu.y > cameraY - 200);
     
     // Update particles
     particles.forEach(p => {
@@ -179,6 +213,9 @@ function update() {
         p.y += p.vy;
         p.life -= 0.02;
     });
+    
+    if (superBounceTimer > 0) superBounceTimer--;
+    
     particles = particles.filter(p => p.life > 0);
     
     heightEl.textContent = Math.floor(score / 10);
@@ -206,6 +243,29 @@ function draw() {
             // Glow
             ctx.shadowBlur = 15;
             ctx.shadowColor = '#ffd700';
+        }
+    });
+
+    // Draw Powerups
+    powerups.forEach(pu => {
+        if (!pu.collected) {
+            ctx.beginPath();
+            ctx.arc(pu.x, pu.y, pu.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff00ff';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.closePath();
+            
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#ff00ff';
+            
+            // Tiny star in the middle
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(pu.x, pu.y, 3, 0, Math.PI * 2);
+            ctx.fill();
         }
     });
     
@@ -250,17 +310,8 @@ function draw() {
     ctx.restore();
 }
 
-function createSparkles(x, y, color = '#fff') {
-    particles.push({
-        x: x,
-        y: y,
-        vx: (Math.random() - 0.5) * 10,
-        vy: (Math.random() - 0.5) * 10,
-        life: 1.0,
-        color: color,
-        size: Math.random() * 5 + 2
-    });
-    for (let i = 0; i < 5; i++) {
+function createSparkles(x, y, color = '#fff', count = 6) {
+    for (let i = 0; i < count; i++) {
         particles.push({
             x: x,
             y: y,
