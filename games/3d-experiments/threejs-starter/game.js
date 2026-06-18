@@ -14,6 +14,7 @@ let mouseTrail = [];
 let cameraShake = 0;
 let magicEnergy = 0;
 let cosmicDust = [];
+let stardustParticles = [];
 let constellationPrisms = [];
 let constellationLines = [];
 let gravityWells = [];
@@ -116,6 +117,9 @@ function init() {
     
     // Periodically try to spawn a constellation
     setInterval(trySpawnConstellation, 20000);
+    
+    // Periodically spawn stardust rain ✨
+    setInterval(spawnStardustRain, 15000);
 }
 
 function onMouseMove(event) {
@@ -807,6 +811,35 @@ function removeGoldenPrism(prism) {
     goldenPrisms = goldenPrisms.filter(p => p !== prism);
 }
 
+function spawnStardustRain() {
+    const particleCount = 50;
+    const colors = [0xffccff, 0x00ffff, 0xffff00, 0xff69b4];
+    
+    for (let i = 0; i < particleCount; i++) {
+        const geo = new THREE.SphereGeometry(0.03, 8, 8);
+        const mat = new THREE.MeshBasicMaterial({ 
+            color: colors[Math.floor(Math.random() * colors.length)],
+            transparent: true,
+            opacity: 0.8
+        });
+        const particle = new THREE.Mesh(geo, mat);
+        
+        particle.position.set(
+            (Math.random() - 0.5) * 20,
+            10 + Math.random() * 10,
+            (Math.random() - 0.5) * 20
+        );
+        
+        scene.add(particle);
+        stardustParticles.push({ 
+            mesh: particle, 
+            velocity: new THREE.Vector3((Math.random() - 0.5) * 0.02, -0.05 - Math.random() * 0.05, (Math.random() - 0.5) * 0.02) 
+        });
+    }
+    createFloatingText('✨ STARDUST RAIN! ✨', window.innerWidth/2, window.innerHeight/2);
+    playSound(1200, 'sine', 0.3, 0.05);
+}
+
 function animate() {
     requestAnimationFrame(animate);
     
@@ -831,7 +864,19 @@ function animate() {
             frenzyPrisms.splice(i, 1);
         }
     }
-    
+
+    for (let i = stardustParticles.length - 1; i >= 0; i--) {
+        const p = stardustParticles[i];
+        p.mesh.position.add(p.velocity);
+        if (p.mesh.position.y < -10) {
+            scene.remove(p.mesh);
+            stardustParticles.splice(i, 1);
+        } else {
+            p.mesh.rotation.x += 0.01;
+            p.mesh.rotation.y += 0.01;
+        }
+    }
+
     // Camera Shake
     if (cameraShake > 0) {
         camera.position.x += (Math.random() - 0.5) * cameraShake;
