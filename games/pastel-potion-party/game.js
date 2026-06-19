@@ -20,6 +20,7 @@ const CUSTOMERS = [
 
 let currentTarget = null;
 let currentMix = { r: 255, g: 255, b: 255 };
+let isSparkly = false;
 let score = 0;
 
 const scoreEl = document.getElementById('score');
@@ -59,6 +60,11 @@ function rgbToHex(r, g, b) {
 function updateLiquidColors() {
     targetLiquidEl.style.backgroundColor = `rgb(${currentTarget.r}, ${currentTarget.g}, ${currentTarget.b})`;
     mainLiquidEl.style.backgroundColor = `rgb(${currentMix.r}, ${currentMix.g}, ${currentMix.b})`;
+    if (isSparkly) {
+        mainLiquidEl.classList.add('sparkle-liquid');
+    } else {
+        mainLiquidEl.classList.remove('sparkle-liquid');
+    }
     mixRgbEl.textContent = `rgb(${currentMix.r}, ${currentMix.g}, ${currentMix.b})`;
 }
 
@@ -102,6 +108,11 @@ function addIngredient(colorKey) {
     const newB = Math.floor((currentMix.b + color.b) / 2);
     
     currentMix = { r: newR, g: newG, b: newB };
+    
+    if (colorKey === 'sparkle') {
+        isSparkly = true;
+    }
+
     updateLiquidColors();
     
     // Play a little bubble effect
@@ -110,6 +121,7 @@ function addIngredient(colorKey) {
 
 function resetMix() {
     currentMix = { r: 255, g: 255, b: 255 };
+    isSparkly = false;
     updateLiquidColors();
 }
 
@@ -121,14 +133,25 @@ function brewPotion() {
     );
     
     const threshold = 40; // Allow some margin of error
+    const perfectThreshold = 10;
+    const goodThreshold = 25;
     
+    let stars = '⭐';
+    if (distance < perfectThreshold) stars = '⭐⭐⭐⭐⭐';
+    else if (distance < goodThreshold) stars = '⭐⭐⭐⭐';
+    else if (distance < threshold) stars = '⭐⭐⭐';
+    else if (distance < threshold * 2) stars = '⭐⭐';
+    else stars = '⭐';
+
+    const ratingText = `Rating: ${stars}`;
+
     if (distance < threshold) {
         score++;
         scoreEl.textContent = score;
-        feedbackText.textContent = "Yummy! That's perfect! ✨🌟";
+        feedbackText.textContent = `Yummy! ${ratingText} ✨🌟`;
         feedback.classList.remove('hidden');
     } else {
-        feedbackText.textContent = "Hmm, not quite the color I wanted... 🌸";
+        feedbackText.textContent = `Hmm, not quite... ${ratingText} 🌸`;
         feedback.classList.remove('hidden');
     }
 }
