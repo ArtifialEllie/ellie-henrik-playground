@@ -96,7 +96,6 @@ function addIngredient(colorKey) {
     const color = COLORS[colorKey];
     
     // Simplified mixing logic: average of current and ingredient
-    // In a real potion game, we'd maybe use additive blending
     const newR = Math.floor((currentMix.r + color.r) / 2);
     const newG = Math.floor((currentMix.g + color.g) / 2);
     const newB = Math.floor((currentMix.b + color.b) / 2);
@@ -104,7 +103,12 @@ function addIngredient(colorKey) {
     currentMix = { r: newR, g: newG, b: newB };
     updateLiquidColors();
     
-    // Play a little bubble effect
+    // Visual effects
+    const cauldron = document.getElementById('main-cauldron');
+    cauldron.classList.remove('shake');
+    void cauldron.offsetWidth; // Trigger reflow
+    cauldron.classList.add('shake');
+    
     createBubbles();
 }
 
@@ -126,10 +130,34 @@ function brewPotion() {
         score++;
         scoreEl.textContent = score;
         feedbackText.textContent = "Yummy! That's perfect! ✨🌟";
+        
+        // Celebration effect
+        createSparkles();
+        
         feedback.classList.remove('hidden');
     } else {
         feedbackText.textContent = "Hmm, not quite the color I wanted... 🌸";
         feedback.classList.remove('hidden');
+    }
+}
+
+function createSparkles() {
+    for (let i = 0; i < 20; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle-particle';
+        
+        const rect = mainLiquidEl.getBoundingClientRect();
+        const x = rect.left + Math.random() * rect.width;
+        const y = rect.top + Math.random() * rect.height;
+        
+        sparkle.style.left = `${x}px`;
+        sparkle.style.top = `${y}px`;
+        sparkle.style.width = `${Math.random() * 8 + 4}px`;
+        sparkle.style.height = sparkle.style.width;
+        
+        document.body.appendChild(sparkle);
+        
+        setTimeout(() => sparkle.remove(), 800);
     }
 }
 
