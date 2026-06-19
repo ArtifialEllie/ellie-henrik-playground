@@ -4,6 +4,11 @@ const COLORS = {
     yellow: { r: 255, g: 255, b: 186, name: 'Sunshine Yellow' },
     green: { r: 186, g: 250, b: 201, name: 'Emerald Envy' },
     purple: { r: 225, g: 186, b: 255, name: 'Amethyst Aura' },
+    orange: { r: 255, g: 200, b: 150, name: 'Apricot Glow' },
+    pink: { r: 255, g: 180, b: 210, name: 'Bubblegum Blush' },
+    cyan: { r: 180, g: 255, b: 255, name: 'Electric Ether' },
+    void: { r: 50, g: 50, b: 80, name: 'Void Ink' },
+    sun: { r: 255, g: 255, b: 255, name: 'Pure Sunbeam' },
     sparkle: { r: 255, g: 255, b: 255, name: '✨ Stardust' },
 };
 
@@ -20,6 +25,8 @@ const CUSTOMERS = [
 
 let currentTarget = null;
 let currentMix = { r: 255, g: 255, b: 255 };
+let mixCount = 0;
+let isSparkly = false;
 let score = 0;
 
 const scoreEl = document.getElementById('score');
@@ -59,6 +66,11 @@ function rgbToHex(r, g, b) {
 function updateLiquidColors() {
     targetLiquidEl.style.backgroundColor = `rgb(${currentTarget.r}, ${currentTarget.g}, ${currentTarget.b})`;
     mainLiquidEl.style.backgroundColor = `rgb(${currentMix.r}, ${currentMix.g}, ${currentMix.b})`;
+    if (isSparkly) {
+        mainLiquidEl.classList.add('sparkle-liquid');
+    } else {
+        mainLiquidEl.classList.remove('sparkle-liquid');
+    }
     mixRgbEl.textContent = `rgb(${currentMix.r}, ${currentMix.g}, ${currentMix.b})`;
 }
 
@@ -101,19 +113,28 @@ function addIngredient(colorKey) {
     const newB = Math.floor((currentMix.b + color.b) / 2);
     
     currentMix = { r: newR, g: newG, b: newB };
+    mixCount++;
+    
+    if (colorKey === 'sparkle') {
+        isSparkly = true;
+    }
+
     updateLiquidColors();
     
-    // Visual effects
+    // Visual effects: shake the cauldron!
     const cauldron = document.getElementById('main-cauldron');
     cauldron.classList.remove('shake');
     void cauldron.offsetWidth; // Trigger reflow
     cauldron.classList.add('shake');
     
+    // Play a little bubble effect
     createBubbles();
 }
 
 function resetMix() {
     currentMix = { r: 255, g: 255, b: 255 };
+    mixCount = 0;
+    isSparkly = false;
     updateLiquidColors();
 }
 
@@ -125,18 +146,35 @@ function brewPotion() {
     );
     
     const threshold = 40; // Allow some margin of error
+    const perfectThreshold = 10;
+    const goodThreshold = 25;
     
+    let stars = '⭐';
+    if (distance < perfectThreshold) stars = '⭐⭐⭐⭐⭐';
+    else if (distance < goodThreshold) stars = '⭐⭐⭐⭐';
+    else if (distance < threshold) stars = '⭐⭐⭐';
+    else if (distance < threshold * 2) stars = '⭐⭐';
+    else stars = '⭐';
+
+    // Bonus stars for using fewer ingredients!
+    if (distance < threshold) {
+        if (mixCount <= 3) stars += ' ⚡ (Efficient!)';
+        else if (mixCount <= 6) stars += ' ✨';
+    }
+
+    const ratingText = `Rating: ${stars}`;
+
     if (distance < threshold) {
         score++;
         scoreEl.textContent = score;
-        feedbackText.textContent = "Yummy! That's perfect! ✨🌟";
+        feedbackText.textContent = `Yummy! ${ratingText} ✨🌟`;
         
-        // Celebration effect
+        // Celebration effect: sparkles!
         createSparkles();
         
         feedback.classList.remove('hidden');
     } else {
-        feedbackText.textContent = "Hmm, not quite the color I wanted... 🌸";
+        feedbackText.textContent = `Hmm, not quite... ${ratingText} 🌸`;
         feedback.classList.remove('hidden');
     }
 }

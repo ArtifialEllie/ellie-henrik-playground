@@ -18,6 +18,7 @@ let stardustParticles = [];
 let constellationPrisms = [];
 let constellationLines = [];
 let gravityWells = [];
+let companion, companionRing, companionTarget = new THREE.Vector3();
 soundEnabled = true;
 let windActive = false;
 let windDirection = new THREE.Vector3(0, 0, 0);
@@ -120,6 +121,8 @@ function init() {
     
     // Periodically spawn stardust rain ✨
     setInterval(spawnStardustRain, 15000);
+
+    createCompanion();
 }
 
 function onMouseMove(event) {
@@ -148,6 +151,9 @@ function onMouseMove(event) {
         mesh: particle,
         life: 1.0
     });
+
+    // Update companion target to follow mouse
+    companionTarget.copy(pos);
 }
 
 function createOrbitals() {
@@ -246,6 +252,12 @@ function createSinglePrism(geometries) {
         flatShading: true,
         reflectivity: 1
     });
+    
+    if (Math.random() < 0.1) {
+        prism.isMirrorPrism = true;
+        prism.material.color.setHex(0xffffff);
+        prism.material.emissive = new THREE.Color(0xaaaaaa);
+    }
     const prism = new THREE.Mesh(geometry, material);
     prism.level = 1;
     prism.position.set(
@@ -293,9 +305,17 @@ function onMouseDown(event) {
             const object = intersects[0].object;
             
             // Check for constellation clicks first! ✨
-            checkConstellationClick(object);
-            
-            // Check if it's a golden prism
+           checkConstellationClick(object);
+           
+           // Check if it's a golden prism
+        if (object.isMirrorPrism) {
+            for (let i = 0; i < 2; i++) {
+                createSinglePrism(getAvailableGeometries());
+            }
+            createFloatingText('MIRROR CLONE! 🪞', event.clientX, event.clientY);
+            playSound(1000, 'sine', 0.1, 0.1);
+        }
+
         if (goldenPrisms.includes(object)) {
             const bonus = 50 * combo;
             score += bonus;
@@ -845,6 +865,12 @@ function animate() {
     
     const time = Date.now() * 0.001;
 
+    // Dynamic Background based on combo
+    const bgHue = (0.7 + (combo * 0.02)) % 1.0;
+    const targetBgColor = new THREE.Color().setHSL(bgHue, 0.4, 0.05);
+    scene.background.lerp(targetBgColor, 0.02);
+    scene.fog.color.lerp(targetBgColor, 0.02);
+
     if (isFrenzyMode) {
         frenzyTimer--;
         if (frenzyTimer <= 0) {
@@ -931,6 +957,8 @@ function animate() {
         portal.material.emissiveIntensity = 1 + Math.sin(time * 5) * 0.5;
     }
 
+    updateCompanion();
+
     // Gravity Well Logic
     for (let i = gravityWells.length - 1; i >= 0; i--) {
         const well = gravityWells[i];
@@ -997,6 +1025,53 @@ function animate() {
 
     controls.update();
     renderer.render(scene, camera);
+}
+
+function createCompanion() {
+    const group = new THREE.Group();
+    
+    // Companion body (a cute little sphere/blob)
+    const bodyGeo = new THREE.SphereGeometry(0.2, 32, 32);
+    const bodyMat = new THREE.MeshPhongMaterial({ 
+        color: 0xff69b4, 
+        emissive: 0xff1493, 
+        emissiveIntensity: 0.5,
+        shininess: 100 
+    });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    group.add(body);
+
+    // Little eyes
+    const eyeGeo = new THREE.SphereGeometry(0.04, 8, 8);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+    eyeL.position.set(0.08, 0.08, 0.15);
+    const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+    eyeR.position.set(-0.08, 0.08, 0.15);
+    group.add(eyeL, eyeR);
+
+    // A little ring around the companion
+    const ringGeo = new THREE.TorusGeometry(0.3, 0.02, 16, 100);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+    companionRing = new THREE.Mesh(ringGeo, ringMat);
+    companionRing.rotation.x = Math.PI / 2;
+    group.add(companionRing);
+
+    companion = group;
+    scene.add(companion);
+}
+
+function updateCompanion() {
+    if (!companion) return;
+    
+    // Smoothly move companion towards target
+    companion.position.lerp(companionTarget, 0.05);
+    
+    // Make it float and rotate
+    const time = Date.now() * 0.001;
+    companion.position.y += Math.sin(time * 2) * 0.002;
+    companion.rotation.y += 0.01;
+    companionRing.rotation.z += 0.02;
 }
 
 init();

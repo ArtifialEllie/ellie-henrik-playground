@@ -264,6 +264,7 @@ let bubbles = [];
 let particles = [];
 let trail = [];
 let floatingTexts = [];
+let magicFlowers = [];
 let lastMouseX = canvasWidth / 2;
 let lastMouseY = canvasHeight / 2;
 let petClones = [];
@@ -587,9 +588,47 @@ class TrailParticle {
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
+        ctx.closePath();
     }
 }
 
+class MagicFlower {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = 0;
+        this.maxSize = Math.random() * 20 + 20;
+        this.growthSpeed = 0.5;
+        this.life = 1.0;
+        this.decay = 0.005;
+        this.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
+        this.angle = Math.random() * Math.PI * 2;
+    }
+    update() {
+        if (this.size < this.maxSize) this.size += this.growthSpeed;
+        this.life -= this.decay;
+        this.angle += 0.02;
+    }
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        for (let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.ellipse(0, this.size / 2, this.size / 4, this.size / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.rotate((Math.PI * 2) / 5);
+        }
+        ctx.fillStyle = 'yellow';
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size / 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        ctx.globalAlpha = 1.0;
+    }
+}
 class MagicalPet {
     constructor() {
         this.x = canvasWidth / 2;
@@ -1064,12 +1103,13 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW BURST! 🌈 +${rainbowBonus}`, 'magenta'));
                 triggerFrenzy();
                 createPopEffect(b.x, b.y, 'rainbow');
-            } else if (b.type === 'heart') {
+            } else            if (b.type === 'heart') {
                 playPopSound();
                 const heartBonus = 50;
                 score += heartBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
                 createHeartEffect(b.x, b.y);
+                magicFlowers.push(new MagicFlower(b.x, b.y));
             } else if (b.type === 'lucky-star') {
                 playPopSound(true, false);
                 const starBonus = 40;
@@ -1407,6 +1447,14 @@ function update() {
         floatingTexts[i].draw();
         if (floatingTexts[i].life <= 0) {
             floatingTexts.splice(i, 1);
+        }
+    }
+
+    for (let i = magicFlowers.length - 1; i >= 0; i--) {
+        magicFlowers[i].update();
+        magicFlowers[i].draw();
+        if (magicFlowers[i].life <= 0) {
+            magicFlowers.splice(i, 1);
         }
     }
 
