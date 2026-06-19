@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Mirror Maze ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div class="stat">Stardust: <span id="score">0</span> / <span id="total-stardust">0</span></div>
+            <div id="status-msg">Find the Crystal Portal! 🌈</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay" class="hidden">
+            <div class="modal">
+                <h1 id="overlay-title">You Found the Portal! ✨</h1>
+                <p id="overlay-text">Your sparkle is blinding!</p>
+                <button id="restart-btn">Play Again 🍭</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
