@@ -252,6 +252,12 @@ function createSinglePrism(geometries) {
         flatShading: true,
         reflectivity: 1
     });
+    
+    if (Math.random() < 0.1) {
+        prism.isMirrorPrism = true;
+        prism.material.color.setHex(0xffffff);
+        prism.material.emissive = new THREE.Color(0xaaaaaa);
+    }
     const prism = new THREE.Mesh(geometry, material);
     prism.level = 1;
     prism.position.set(
@@ -299,9 +305,17 @@ function onMouseDown(event) {
             const object = intersects[0].object;
             
             // Check for constellation clicks first! ✨
-            checkConstellationClick(object);
-            
-            // Check if it's a golden prism
+           checkConstellationClick(object);
+           
+           // Check if it's a golden prism
+        if (object.isMirrorPrism) {
+            for (let i = 0; i < 2; i++) {
+                createSinglePrism(getAvailableGeometries());
+            }
+            createFloatingText('MIRROR CLONE! 🪞', event.clientX, event.clientY);
+            playSound(1000, 'sine', 0.1, 0.1);
+        }
+
         if (goldenPrisms.includes(object)) {
             const bonus = 50 * combo;
             score += bonus;
@@ -850,6 +864,12 @@ function animate() {
     requestAnimationFrame(animate);
     
     const time = Date.now() * 0.001;
+
+    // Dynamic Background based on combo
+    const bgHue = (0.7 + (combo * 0.02)) % 1.0;
+    const targetBgColor = new THREE.Color().setHSL(bgHue, 0.4, 0.05);
+    scene.background.lerp(targetBgColor, 0.02);
+    scene.fog.color.lerp(targetBgColor, 0.02);
 
     if (isFrenzyMode) {
         frenzyTimer--;
