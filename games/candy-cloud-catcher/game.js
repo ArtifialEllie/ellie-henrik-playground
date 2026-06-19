@@ -184,6 +184,10 @@ function update() {
             } else {
                 score = Math.max(0, score - 5);
                 createParticles(item.x, item.y, '#fef08a', 15);
+                
+                // Screen shake effect when hitting a lemon
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 500);
             }
             scoreElement.textContent = score;
             items.splice(i, 1);
