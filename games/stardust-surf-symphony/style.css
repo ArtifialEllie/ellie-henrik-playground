@@ -1,0 +1,97 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #0a0a2a;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    color: white;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#score-board {
+    font-size: 24px;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+    margin-bottom: 10px;
+}
+
+#message {
+    font-size: 18px;
+    color: #ffccff;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+#gameCanvas {
+    display: block;
+    background: linear-gradient(to bottom, #050515, #1a0a3a);
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    text-align: center;
+}
+
+#overlay h1 {
+    font-size: 48px;
+    color: #ff00ff;
+    text-shadow: 0 0 20px #ff00ff;
+    margin-bottom: 20px;
+}
+
+#overlay p {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+#restart-btn {
+    padding: 15px 30px;
+    font-size: 20px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 15px #ff00ff;
+}
+
+#restart-btn:hover {
+    transform: scale(.11);
+    box-shadow: 0 0 25px #ff00ff;
+}
+
+.hidden {
+    display: none !important;
+}
