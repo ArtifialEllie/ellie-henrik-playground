@@ -25,6 +25,7 @@ const CUSTOMERS = [
 
 let currentTarget = null;
 let currentMix = { r: 255, g: 255, b: 255 };
+let mixCount = 0;
 let isSparkly = false;
 let score = 0;
 
@@ -113,6 +114,7 @@ function addIngredient(colorKey) {
     const newB = Math.floor((currentMix.b + color.b) / 2);
     
     currentMix = { r: newR, g: newG, b: newB };
+    mixCount++;
     
     if (colorKey === 'sparkle') {
         isSparkly = true;
@@ -126,6 +128,7 @@ function addIngredient(colorKey) {
 
 function resetMix() {
     currentMix = { r: 255, g: 255, b: 255 };
+    mixCount = 0;
     isSparkly = false;
     updateLiquidColors();
 }
@@ -147,6 +150,12 @@ function brewPotion() {
     else if (distance < threshold) stars = '⭐⭐⭐';
     else if (distance < threshold * 2) stars = '⭐⭐';
     else stars = '⭐';
+
+    // Bonus stars for using fewer ingredients!
+    if (distance < threshold) {
+        if (mixCount <= 3) stars += ' ⚡ (Efficient!)';
+        else if (mixCount <= 6) stars += ' ✨';
+    }
 
     const ratingText = `Rating: ${stars}`;
 
