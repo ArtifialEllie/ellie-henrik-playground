@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celestial Chord Crystals ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="multiplier">x1</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="start-screen">
+            <h1>Celestial Chord Crystals</h1>
+            <p>Click the falling crystals to create a cosmic symphony!</p>
+            <button id="start-button">Begin the Harmony ✨</button>
+        </div>
+        <div id="game-over-screen" class="hidden">
+            <h1>Symphony Ended</h1>
+            <p id="final-score">Your Score: 0</p>
+            <button id="restart-button">Play Again 🌈</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
