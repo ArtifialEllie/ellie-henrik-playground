@@ -346,6 +346,10 @@ class Bubble {
         } else if (rand > 0.327) {
             this.type = 'lucky-clover';
             this.color = '#81c784';
+        } else if (rand > 0.307 && rand < 0.327) {
+            this.type = 'burst-bubble';
+            this.color = '#ffeb3b';
+            this.radius = 35;
         } else if (rand > 0.277 && rand < 0.307) {
             this.type = 'pet-treat';
             this.color = '#ffca28';
@@ -1252,6 +1256,23 @@ function handlePop(e) {
                     // but they provide more targets for the player.
                     bubbles.push(spore);
                 }
+            } else if (b.type === 'burst-bubble') {
+                playPopSound(true, false);
+                const burstBonus = 150;
+                score += burstBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `BURST BUBBLE! 💥 +${burstBonus}`, '#ffeb3b'));
+                createPopEffect(b.x, b.y, '#ffeb3b');
+                
+                // Burst effect: pops 3 random nearby bubbles
+                const nearby = bubbles.filter(bub => bub !== b && Math.hypot(bub.x - b.x, bub.y - b.y) < 200);
+                const targets = nearby.sort(() => 0.5 - Math.random()).slice(0, 3);
+                
+                targets.forEach(target => {
+                    createPopEffect(target.x, target.y, target.color);
+                    score += 10;
+                    floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
+                    target.hits = 0; // Mark for removal
+                });
             } else if (b.type === 'giant') {
                 playSuperPopSound();
                 const giantBonus = 200;
