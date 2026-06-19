@@ -14,16 +14,37 @@ let multiplier = 1;
 let gameActive = false;
 let stars = [];
 let particles = [];
+let backgroundStars = [];
 let lastStarTime = 0;
 let starSpawnRate = 1500; 
 let gameTimer = 0;
 const GAME_DURATION = 60000; // 60 seconds
+
+const STAR_TYPES = {
+    NORMAL: { points: 1, speedMult: 1, colorFunc: () => `hsl(${Math.random() * 360}, 100%, 70%)` },
+    GOLDEN: { points: 3, speedMult: 1.5, color: '#ffd700' },
+    VOID: { points: -5, speedMult: 0.7, color: '#4b0082' }
+};
 
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     rhythmRing.style.width = '100px';
     rhythmRing.style.height = '100px';
+    initBackground();
+}
+
+function initBackground() {
+    backgroundStars = [];
+    for (let i = 0; i < 150; i++) {
+        backgroundStars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2,
+            opacity: Math.random(),
+            speed: Math.random() * 0.05
+        });
+    }
 }
 
 window.addEventListener('resize', resize);
@@ -35,30 +56,43 @@ class Star {
     }
 
     reset() {
+        const rand = Math.random();
+        if (rand > 0.9) {
+            this.type = 'GOLDEN';
+        } else if (rand > 0.75) {
+            this.type = 'VOID';
+        } else {
+            this.type = 'NORMAL';
+        }
+
+        const typeCfg = STAR_TYPES[this.type];
         const side = Math.floor(Math.random() * 4);
         const size = 10 + Math.random() * 20;
         this.size = size;
-        this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
         
+        this.color = typeCfg.color || typeCfg.colorFunc();
+        
+        const speedMult = typeCfg.speedMult;
+
         if (side === 0) { // Top
             this.x = Math.random() * canvas.width;
             this.y = -this.size;
             this.vx = (canvas.width / 2 - this.x) * 0.01;
-            this.vy = Math.random() * 2 + 2;
+            this.vy = (Math.random() * 2 + 2) * speedMult;
         } else if (side === 1) { // Right
             this.x = canvas.width + this.size;
             this.y = Math.random() * canvas.height;
-            this.vx = -(Math.random() * 2 + 2);
+            this.vx = -(Math.random() * 2 + 2) * speedMult;
             this.vy = (canvas.height / 2 - this.y) * 0.01;
         } else if (side === 2) { // Bottom
             this.x = Math.random() * canvas.width;
             this.y = canvas.height + this.size;
             this.vx = (canvas.width / 2 - this.x) * 0.01;
-            this.vy = -(Math.random() * 2 + 2);
+            this.vy = -(Math.random() * 2 + 2) * speedMult;
         } else { // Left
             this.x = -this.size;
             this.y = Math.random() * canvas.height;
-            this.vx = Math.random() * 2 + 2;
+            this.vx = (Math.random() * 2 + 2) * speedMult;
             this.vy = (canvas.height / 2 - this.y) * 0.01;
         }
         
@@ -74,18 +108,28 @@ class Star {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = this.type === 'GOLDEN' ? 25 : 15;
         ctx.shadowColor = this.color;
         
-        ctx.beginPath();
-        for (let i = 0; i < 5; i++) {
-            ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * this.size,
-                       Math.sin((18 + i * 72) * Math.PI / 180) * this.size);
-            ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * (this.size/2),
-                       Math.sin((54 + i * 72) * Math.PI / 180) * (this.size/2));
+        if (this.type === 'VOID') {
+            // Draw void as a pulsing circle with a ring
+            ctx.beginPath();
+            ctx.arc(0, 0, this.size * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        } else {
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * this.size,
+                               Math.sin((18 + i * 72) * Math.PI / 180) * this.size);
+                ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * (this.size/2),
+                               Math.sin((54 + i * 72) * Math.PI / 180) * (this.size/2));
+            }
+            ctx.closePath();
+            ctx.fill();
         }
-        ctx.closePath();
-        ctx.fill();
         ctx.restore();
     }
 }
@@ -156,9 +200,22 @@ function handleInteraction(e) {
         if (dist < star.size * 2) {
             const hitQuality = checkHit(star.x, star.y);
             
-            if (hitQuality !== 'MISS') {
+            if (star.type === 'VOID') {
+                createHitText(star.x, star.y, 'VOID TOUCH!', '#ff0000');
+                score = Math.max(0, score - 500);
+                multiplier = 1;
+                
+                // Explosion of dark particles
+                for (let i = 0; i < 20; i++) {
+                    particles.push(new Particle(star.x, star.y, '#4b0082'));
+                }
+                
+                star.active = false;
+                hitSomething = true;
+            } else if (hitQuality !== 'MISS') {
                 const points = { 'PERFECT': 100, 'GREAT': 50, 'GOOD': 20 };
-                score += points[hitQuality] * multiplier;
+                const typeMult = STAR_TYPES[star.type].points;
+                score += points[hitQuality] * multiplier * typeMult;
                 multiplier++;
                 
                 createHitText(star.x, star.y, hitQuality, '#fff');
@@ -172,7 +229,7 @@ function handleInteraction(e) {
                 hitSomething = true;
             } else {
                 // Clicked a star but it was too far from the ring
-                createHitText(star.x, star.y, 'TOO EARLY!', '#ff4444', 'MISS');
+                createHitText(star.x, star.y, 'TOO EARLY!', '#ff4444');
                 multiplier = 1;
             }
             break;
@@ -233,17 +290,20 @@ function update() {
 }
 
 function draw() {
-    ctx.clearRect(0, 0, 0, canvas.width, 0, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Background stars
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    for(let i=0; i<50; i++) {
-        const x = (Math.sin(i * 123.456) * 0.5 + 0.5) * canvas.width;
-        const y = (Math.cos(i * 678.901) * 0.5 + 0.5) * canvas.height;
-        ctx.arc(x, y, 1, 0, Math.PI * 2);
+    backgroundStars.forEach(star => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
-    }
+        
+        // Twinkle effect
+        star.opacity += (Math.random() - 0.5) * 0.02;
+        if (star.opacity < 0.1) star.opacity = 0.1;
+        if (star.opacity > 1) star.opacity = 1;
+    });
     
     stars.forEach(star => star.draw());
     particles.forEach(particle => particle.draw());
