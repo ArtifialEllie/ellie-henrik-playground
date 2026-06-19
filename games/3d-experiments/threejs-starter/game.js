@@ -253,13 +253,22 @@ function createSinglePrism(geometries) {
         reflectivity: 1
     });
     
+    const prism = new THREE.Mesh(geometry, material);
+    prism.level = 1;
+
     if (Math.random() < 0.1) {
         prism.isMirrorPrism = true;
         prism.material.color.setHex(0xffffff);
         prism.material.emissive = new THREE.Color(0xaaaaaa);
     }
-    const prism = new THREE.Mesh(geometry, material);
-    prism.level = 1;
+    
+    if (Math.random() < 0.05) {
+        prism.isPortalPrism = true;
+        prism.material.color.setHex(0x4b0082);
+        prism.material.emissive = new THREE.Color(0x8a2be2);
+        prism.material.emissiveIntensity = 2;
+    }
+
     prism.position.set(
         (Math.random() - 0.5) * 10,
         (Math.random() - 0.5) * 10,
@@ -314,6 +323,37 @@ function onMouseDown(event) {
             }
             createFloatingText('MIRROR CLONE! 🪞', event.clientX, event.clientY);
             playSound(1000, 'sine', 0.1, 0.1);
+        }
+
+        if (object.isPortalPrism) {
+            createFloatingText('PORTAL JUMP! 🌀', event.clientX, event.clientY);
+            playSound(400, 'sine', 0.4, 0.1);
+            playSound(800, 'sine', 0.4, 0.1);
+            
+            // Teleport camera slightly for a "jump" effect
+            const jumpDir = new THREE.Vector3(
+                (Math.random() - 0.5) * 5,
+                (Math.random() - 0.5) * 5,
+                (Math.random() - 0.5) * 5
+            );
+            camera.position.add(jumpDir);
+            controls.update();
+            
+            // Spawn a cluster of prisms
+            for (let i = 0; i < 5; i++) {
+                const miniGeo = new THREE.OctahedronGeometry(0.2, 0);
+                const miniMat = new THREE.MeshPhongMaterial({ color: 0x8a2be2, shininess: 100 });
+                const miniPrism = new THREE.Mesh(miniGeo, miniMat);
+                miniPrism.position.copy(object.position).add(new THREE.Vector3(
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2
+                ));
+                miniPrism.level = 1;
+                scene.add(miniPrism);
+                prisms.push(miniPrism);
+            }
+            score += 100;
         }
 
         if (goldenPrisms.includes(object)) {
