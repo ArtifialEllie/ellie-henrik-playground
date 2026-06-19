@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Pop Party! 🎈✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Score: <span id="score">0</span></div>
+            <div id="timer">Time: <span id="time">60</span>s</div>
+        </div>
+        <div id="start-screen">
+            <h1>Balloon Pop Party! 🎈</h1>
+            <p>Pop as many colorful balloons as you can before time runs out!</p>
+            <button id="start-button">Start Party! ✨</button>
+        </div>
+        <div id="game-over-screen" class="hidden">
+            <h1>Party Over! 🥳</h1>
+            <p>You popped <span id="final-score">0</span> balloons!</p>
+            <button id="restart-button">Play Again! 🌈</button>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
