@@ -27,7 +27,7 @@ scene.add(stars);
 
 // Cosmic Island
 const islandGeometry = new THREE.CylinderGeometry(10, 12, 2, 32);
-const islandMaterial = new THREE.MeshStandardMaterial({ color: 0x4b0082, roughness: 0.8 });
+const islandMaterial = new THREE.MeshStandardMaterial({ color: 0x4b0082, roughness: 0.8, emissive: 0x4b0082, emissiveIntensity: 0.1 });
 const island = new THREE.Mesh(islandGeometry, islandMaterial);
 island.position.y = -1;
 scene.add(island);
@@ -65,6 +65,7 @@ camera.lookAt(0, 0, 0);
 let stardust = 0;
 let flowers = 0;
 let level = 1;
+const plantedFlowers = [];
 let currentFlowerType = 'neon-tulip';
 const growingFlowers = [];
 const activeBursts = [];
@@ -114,7 +115,7 @@ function plantFlower(position) {
     flowerGroup.add(stem);
 
     // Flower Head
-    const headGeo = new THREE.SphereGeometry(0.5 * config.scale, 16, 16);
+    const headGeo = new THREE.IcosahedronGeometry(0.5 * config.scale, 1);
     const headMat = new THREE.MeshStandardMaterial({ 
         color: config.color, 
         emissive: config.color, 
@@ -125,12 +126,12 @@ function plantFlower(position) {
     flowerGroup.add(head);
 
     // Petals
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
         const petalGeo = new THREE.SphereGeometry(0.3 * config.scale, 8, 8);
         const petalMat = new THREE.MeshStandardMaterial({ color: config.color });
         const petal = new THREE.Mesh(petalGeo, petalMat);
         const angle = (i / 6) * Math.PI * 2;
-        petal.position.set(Math.cos(angle) * 0.4, 2, Math.sin(angle) * 0.4);
+        petal.position.set(Math.cos(angle) * 0.5, 2, Math.sin(angle) * 0.5);
         petal.scale.set(1, 0.3, 1);
         flowerGroup.add(petal);
     }
@@ -151,12 +152,15 @@ function plantFlower(position) {
     
     growingFlowers.push({
         group: flowerGroup,
+        pulseOffset: Math.random() * Math.PI * 2,
         targetScale: 1,
         currentScale: 0,
         growthSpeed: 0.05
     });
+    plantedFlowers.push({ group: flowerGroup, pulseOffset: Math.random() * Math.PI * 2 });
 
     createBurst(position);
+    createPlantRing(position);
 
     flowers++;
     stardust += config.points;
@@ -173,6 +177,21 @@ function plantFlower(position) {
     if (flowers === 1) {
         tutorialEl.style.opacity = '0';
     }
+}
+
+function createPlantRing(position) {
+    const ringGeo = new THREE.TorusGeometry(0.2, 0.02, 16, 100);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.set(position.x, position.y, position.z);
+    ring.rotation.x = Math.PI / 2;
+    scene.add(ring);
+    activeBursts.push({
+        points: ring,
+        ring: true,
+        life: 1.0,
+        scale: 0.1
+    });
 }
 
 function createBurst(position) {
@@ -255,6 +274,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
 });
 
 function animate() {
+    const time = Date.now() * 0.001;
     requestAnimationFrame(animate);
     
     // Growth animation
@@ -271,6 +291,17 @@ function animate() {
     // Burst animation
     for (let i = activeBursts.length - 1; i >= 0; i--) {
         const b = activeBursts[i];
+        if (b.ring) {
+            b.points.scale.set(b.scale, b.scale, b.scale);
+            b.scale += 0.1;
+            b.points.material.opacity = b.life;
+            b.life -= 0.02;
+            if (b.life <= 0) {
+                scene.remove(b.points);
+                activeBursts.splice(i, 1);
+            }
+            continue;
+        }
         const positions = b.points.geometry.attributes.position.array;
         for (let j = 0; j < positions.length; j++) {
             positions[j] += b.velocities[j] || 0; // This is slightly wrong since vels is 3x smaller, but let's simplify
@@ -293,13 +324,24 @@ function animate() {
     
     // Rotate island slowly
     island.rotation.y += 0.002;
+    island.material.emissiveIntensity = 0.1 + Math.sin(time * 2) * 0.05;
     ring.rotation.z += 0.005; // Make the ring spin too!
     particleSystem.rotation.y += 0.005;
+    
+    // Cosmic rain - wait, we need rain object. Let's add it at the top.
     stars.rotation.y += 0.0001;
+
+    // Pulsing flowers
+    plantedFlowers.forEach(f => {
+        const pulse = 1 + Math.sin(time * 3 + f.pulseOffset) * 0.05;
+        f.group.scale.set(pulse, pulse, pulse);
+    });
+
+    // Subtle camera movement
     
     // Subtle camera movement
-    const time = Date.now() * 0.001;
     camera.position.x = Math.sin(time * 0.2) * 2;
+    camera.position.z = 25 + Math.cos(time * 0.2) * 2;
     camera.position.z = 25 + Math.cos(time * 0.2) * 2;
     camera.lookAt(0, 0, 0);
     
