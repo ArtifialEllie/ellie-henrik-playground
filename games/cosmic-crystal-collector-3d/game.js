@@ -108,6 +108,37 @@ shipGroup.add(wings);
 
 scene.add(shipGroup);
 
+// --- Ellie-Bot Companion ---
+const companionGroup = new THREE.Group();
+const companionGeo = new THREE.SphereGeometry(0.2, 16, 16);
+const companionMat = new THREE.MeshPhongMaterial({ 
+    color: 0xff69b4, 
+    emissive: 0xff1493, 
+    shininess: 100 
+});
+const companionMesh = new THREE.Mesh(companionGeo, companionMat);
+companionGroup.add(companionMesh);
+
+// Tiny eyes for the companion
+const eyeGeo = new THREE.SphereGeometry(0.04, 8, 8);
+const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+eyeL.position.set(0.08, 0.05, 0.15);
+const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+eyeR.position.set(-0.08, 0.05, 0.15);
+companionGroup.add(eyeL, eyeR);
+
+// Companion ring
+const cRingGeo = new THREE.TorusGeometry(0.3, 0.01, 8, 24);
+const cRingMat = new THREE.MeshBasicMaterial({ color: 0xff69b4, transparent: true, opacity: 0.6 });
+const cRing = new THREE.Mesh(cRingGeo, cRingMat);
+cRing.rotation.x = Math.PI / 2;
+companionGroup.add(cRing);
+
+scene.add(companionGroup);
+let companionOffset = new THREE.Vector3(1, 1, 1);
+
+
 // --- Nebula & Space Dust ---
 function createNebula() {
     for (let i = 0; i < 8; i++) {
@@ -311,6 +342,14 @@ function animate() {
             shipBody.material.emissive.setHex(0x00ffff);
         }
     }
+    
+    // --- Companion Movement ---
+    const targetCompanionPos = shipGroup.position.clone().add(companionOffset);
+    companionGroup.position.lerp(targetCompanionPos, 0.05);
+    companionGroup.rotation.y += 0.02;
+    // Companion orbits the ship slightly
+    const time = Date.now() * 0.002;
+    companionOffset.set(Math.sin(time) * 1.5, 1 + Math.cos(time * 0.5) * 0.5, 1.5);
     
     nebulaClouds.forEach(cloud => {
         cloud.rotation.y += 0.001;
