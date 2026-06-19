@@ -359,6 +359,10 @@ class Bubble {
         } else if (rand > 0.207 && rand < 0.237) {
             this.type = 'magic-mushroom';
             this.color = '#ff69b4';
+        } else if (rand > 0.247 && rand < 0.277) {
+            this.type = 'rainbow-portal';
+            this.color = '#ff00ff';
+            this.radius = 45;
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -1019,7 +1023,24 @@ function handlePop(e) {
                     }
                 });
             }
-            if (b.type === 'gold') {
+            if (b.type === 'rainbow-portal') {
+                playPopSound(true, false);
+                const portalBonus = 300;
+                score += portalBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW PORTAL! 🌈🌀 +${portalBonus}`, '#ff00ff'));
+                createPopEffect(b.x, b.y, '#ff00ff');
+                
+                // Portal effect: spawns 10 random special bubbles instantly
+                for (let j = 0; j < 10; j++) {
+                    const special = new Bubble(true);
+                    special.type = ['gold', 'heart', 'lucky-star', 'magic-star', 'lucky-clover'][Math.floor(Math.random() * 5)];
+                    special.x = Math.random() * (canvasWidth - 40) + 20;
+                    special.y = Math.random() * (canvasHeight - 40) + 20;
+                    special.speed = Math.random() * 2 + 1;
+                    bubbles.push(special);
+                }
+                triggerFrenzy();
+            } else if (b.type === 'gold') {
                 playPopSound(true, false);
                 const bonus = 5 + (combo * 2);
                 let goldGain = bonus;
