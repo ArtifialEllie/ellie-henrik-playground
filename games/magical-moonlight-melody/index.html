@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magical Moonlight Melody ✨🌙</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="score-board">Score: <span id="score">0</span></div>
+            <div id="multiplier-board">Multiplier: x<span id="multiplier">1</span></div>
+            <div id="message">Get ready for the melody!</div>
+        </div>
+        
+        <div id="hit-zone"></div>
+        
+        <div id="start-screen">
+            <h1>Magical Moonlight Melody</h1>
+            <p>Click the glowing moon-notes when they hit the magic circle!</p>
+            <button id="start-button">Start the Magic! ✨</button>
+        </div>
+        
+        <div id="game-over-screen" class="hidden">
+            <h1>The Melody Ends...</h1>
+            <p>Your final score: <span id="final-score">0</span></p>
+            <button id="restart-button">Play Again! 🌙</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
