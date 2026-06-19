@@ -4,6 +4,11 @@ const COLORS = {
     yellow: { r: 255, g: 255, b: 186, name: 'Sunshine Yellow' },
     green: { r: 186, g: 250, b: 201, name: 'Emerald Envy' },
     purple: { r: 225, g: 186, b: 255, name: 'Amethyst Aura' },
+    orange: { r: 255, g: 200, b: 150, name: 'Apricot Glow' },
+    pink: { r: 255, g: 180, b: 210, name: 'Bubblegum Blush' },
+    cyan: { r: 180, g: 255, b: 255, name: 'Electric Ether' },
+    void: { r: 50, g: 50, b: 80, name: 'Void Ink' },
+    sun: { r: 255, g: 255, b: 255, name: 'Pure Sunbeam' },
     sparkle: { r: 255, g: 255, b: 255, name: '✨ Stardust' },
 };
 
