@@ -2,6 +2,9 @@ const COLORS = {
     red: { r: 255, g: 179, b: 186, name: 'Ruby Red' },
     blue: { r: 174, g: 225, b: 255, name: 'Sapphire Blue' },
     yellow: { r: 255, g: 255, b: 186, name: 'Sunshine Yellow' },
+    green: { r: 186, g: 250, b: 201, name: 'Emerald Envy' },
+    purple: { r: 225, g: 186, b: 255, name: 'Amethyst Aura' },
+    sparkle: { r: 255, g: 255, b: 255, name: '✨ Stardust' },
 };
 
 const CUSTOMERS = [
@@ -78,7 +81,13 @@ function spawnNewCustomer() {
     currentTarget = getRandomColor();
     
     customerEmojiEl.textContent = customer.emoji;
-    targetColorNameEl.textContent = "a magical pastel color";
+    
+    // Try to find a color name that matches the target color closely
+    const closestColor = Object.values(COLORS).reduce((prev, curr) => {
+        return (Math.abs(curr.r - currentTarget.r) + Math.abs(curr.g - currentTarget.g) + Math.abs(curr.b - currentTarget.b)) < 
+               (Math.abs(prev.r - currentTarget.r) + Math.abs(prev.g - currentTarget.g) + Math.abs(prev.b - currentTarget.b)) ? curr : prev;
+    });
+    targetColorNameEl.textContent = closestColor.name;
     
     updateLiquidColors();
 }
