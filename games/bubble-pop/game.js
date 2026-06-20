@@ -1030,6 +1030,7 @@ function handlePop(e) {
             const popColor = b.color;
             bubbles.splice(i, 1); // Remove bubble first so it's not found in playPopSound's find()
             playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
+            if (b.type === 'mystery-box') {
                 playPopSound(true, false);
                 const mysteryOutcomes = [
                     { text: 'JACKPOT! 💰', action: () => { totalGold += 1000; localStorage.setItem('bubblePopTotalGold', totalGold); totalGoldEl.innerText = totalGold; }, bonus: 2000, color: 'gold' },
