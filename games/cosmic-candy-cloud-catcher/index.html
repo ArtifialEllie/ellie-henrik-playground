@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Candy Cloud Catcher ✨🍬</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="lives">Lives: ❤️❤️❤️</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <div id="start-screen">
+                <h1>Cosmic Candy Cloud Catcher</h1>
+                <p>Catch the magical candies on your fluffy cloud!</p>
+                <button id="start-btn">Start Magic! ✨</button>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h1>Game Over! 🍭</h1>
+                <p>You caught <span id="final-score">0</span> candies!</p>
+                <button id="restart-btn">Try Again! 🌈</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
