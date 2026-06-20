@@ -18,6 +18,10 @@ let superBounceTimer = 0;
 let dashTimer = 0;
 let combo = 0;
 let comboTimer = 0;
+let rushTimer = 0;
+let isRushMode = false;
+let rushHeightInterval = 500;
+let nextRushHeight = 500;
 
 const PLAYER_RADIUS = 20;
 const GRAVITY = 0.25;
@@ -112,6 +116,9 @@ function initGame() {
     superBounceTimer = 0;
     combo = 0;
     comboTimer = 0;
+    rushTimer = 0;
+    isRushMode = false;
+    nextRushHeight = 500;
     player.x = canvas.width / 2;
     player.y = canvas.height - 100;
     player.vx = 0;
@@ -200,6 +207,23 @@ function update() {
         const diff = (canvas.height / 2 + cameraY) - player.y;
         cameraY -= diff;
         score += Math.floor(diff);
+    }
+
+    // Rush Mode Logic
+    const currentHeight = Math.floor(score / 10);
+    if (!isRushMode && currentHeight >= nextRushHeight) {
+        isRushMode = true;
+        rushTimer = 300; // 5 seconds of rush
+        createSparkles(player.x, player.y, '#ff00ff', 30);
+    }
+
+    if (isRushMode) {
+        rushTimer--;
+        player.vy -= 0.1; // Gentle lift during rush
+        if (rushTimer <= 0) {
+            isRushMode = false;
+            nextRushHeight += rushHeightInterval;
+        }
     }
     
     // Platform collision
@@ -402,6 +426,17 @@ function draw() {
     ctx.translate(player.x, player.y);
     ctx.scale(player.scaleX, player.scaleY);
     
+    if (isRushMode) {
+        // Add a glowing aura during rush mode
+        const auraGradient = ctx.createRadialGradient(0, 0, player.radius, 0, 0, player.radius * 2);
+        auraGradient.addColorStop(0, 'rgba(255, 0, 255, 0.4)');
+        auraGradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
+        ctx.fillStyle = auraGradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, player.radius * 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
     ctx.beginPath();
     ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
     const gradient = ctx.createRadialGradient(
