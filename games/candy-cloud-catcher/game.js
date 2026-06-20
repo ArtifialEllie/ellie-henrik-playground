@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const timerElement = document.getElementById('timer');
 const highscoreElement = document.getElementById('highscore');
+const comboElement = document.getElementById('combo');
 const startOverlay = document.getElementById('start-overlay');
 const startBtn = document.getElementById('start-btn');
 const overlay = document.getElementById('overlay');
@@ -15,7 +16,9 @@ let gameActive = false;
 let gameInterval;
 let timerInterval;
 
-let combo = 0;
+let combo = 1;
+let comboTimer = null;
+
 let feverMode = false;
 let feverTimer = null;
 
@@ -289,7 +292,7 @@ function update() {
     if (!gameActive) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
- 
+    
     // Draw background clouds
     bgClouds.forEach(cloud => {
         cloud.update();
@@ -331,23 +334,23 @@ function update() {
             item.x < player.x + player.width
         ) {
             if (item.type === 'candy') {
-                combo++;
-                const multiplier = combo >= 5 ? 2 : 1;
-                score += 1 * multiplier;
+                const points = 1 * combo;
+                score += points;
+                updateCombo();
                 createParticles(item.x, item.y, item.color);
-                createFloatingText(item.x, item.y, `+${1 * multiplier}${multiplier > 1 ? ' COMBO!' : ''}`, item.color);
+                createFloatingText(item.x, item.y, `+${points}`, item.color);
             } else if (item.type === 'golden') {
-                combo++;
-                const multiplier = combo >= 5 ? 2 : 1;
-                score += 5 * multiplier;
+                const points = 5 * combo;
+                score += points;
+                updateCombo();
                 createParticles(item.x, item.y, '#ffd700', 20);
-                createFloatingText(item.x, item.y, `+${5 * multiplier}${multiplier > 1 ? ' COMBO!' : ''}`, '#ffd700');
+                createFloatingText(item.x, item.y, `+${points}`, '#ffd700');
             } else if (item.type === 'rainbow') {
-                combo++;
-                const multiplier = combo >= 5 ? 2 : 1;
-                score += 10 * multiplier;
+                const points = 10 * combo;
+                score += points;
+                updateCombo();
                 createParticles(item.x, item.y, '#ff00ff', 30);
-                createFloatingText(item.x, item.y, '🌈 RAINBOW RUSH!', '#ff00ff');
+                createFloatingText(item.x, item.y, `🌈 ${points} RUSH!`, '#ff00ff');
                 activateFeverMode();
             } else if (item.type === 'ticket') {
                 combo++;
@@ -355,15 +358,8 @@ function update() {
                 createParticles(item.x, item.y, '#fbbf24', 40);
                 createFloatingText(item.x, item.y, '🎟️ GOLDEN TICKET!', '#fbbf24');
             } else {
-                if (feverMode) {
-                    score += 2;
-                    createParticles(item.x, item.y, '#ffd700', 10);
-                    createFloatingText(item.x, item.y, '+2', '#ffd700');
-                    items.splice(i, 1);
-                    continue;
-                }
-                combo = 0;
-                score = Math.max(0, score - 10);
+                score = Math.max(0, score - 5);
+                resetCombo();
                 createParticles(item.x, item.y, '#fef08a', 15);
                 createFloatingText(item.x, item.y, '-10 🍋', '#ef4444');
                 
@@ -379,6 +375,21 @@ function update() {
     }
 
     requestAnimationFrame(update);
+}
+
+function updateCombo() {
+    combo++;
+    comboElement.textContent = `x${combo}`;
+    comboElement.style.transform = 'scale(1.2)';
+    setTimeout(() => comboElement.style.transform = 'scale(1)', 100);
+
+    if (comboTimer) clearTimeout(comboTimer);
+    comboTimer = setTimeout(resetCombo, 2000);
+}
+
+function resetCombo() {
+    combo = 1;
+    comboElement.textContent = `x${combo}`;
 }
 
 function activateFeverMode() {
@@ -409,13 +420,13 @@ startBtn.addEventListener('click', () => {
     scoreElement.textContent = score;
     
     gameInterval = setInterval(spawnItem, 800);
-    timerInterval = setInterval(() => {
+    timerInterval = setInterval(setInterval(() => {
         timeLeft--;
         timerElement.textContent = timeLeft;
         if (timeLeft <= 0) {
             endGame();
         }
-    }, 1000);
+    }, 1000), 1000);
     
     update();
 });

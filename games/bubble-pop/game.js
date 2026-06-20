@@ -1160,6 +1160,17 @@ function handlePop(e) {
                 const rainbowBonus = 100;
                 score += rainbowBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW BURST! 🌈 +${rainbowBonus}`, 'magenta'));
+                
+                // Rainbow Burst effect: pops ALL bubbles on screen! 🌈✨
+                bubbles.forEach(bub => {
+                    if (bub !== b) {
+                        createPopEffect(bub.x, bub.y, bub.color);
+                        score += 5;
+                        floatingTexts.push(new FloatingText(bub.x, bub.y, `+5`, bub.color));
+                        bub.hits = 0; // Mark for removal
+                    }
+                });
+                
                 triggerFrenzy();
                 createPopEffect(b.x, b.y, 'rainbow');
             } else            if (b.type === 'heart') {
