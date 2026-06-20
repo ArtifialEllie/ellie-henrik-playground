@@ -1,0 +1,42 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    color: #fff;
+    user-select: none;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    pointer-events: none;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+#score-board {
+    font-size: 24px;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 20px;
+    display: inline-block;
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+#instructions {
+    margin-top: 10px;
+    font-size: 18px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 5px 15px;
+    border-radius: 15px;
+    display: inline-block;
+}
+
+#game-container {
+    width: 100vw;
+    height: 100vh;
+}
