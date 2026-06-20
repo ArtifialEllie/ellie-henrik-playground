@@ -884,6 +884,31 @@ function triggerSlowMo() {
     }, 5000);
 }
 
+function triggerWindGust() {
+    const windAlert = document.getElementById('wind-alert');
+    windAlert.style.display = 'block';
+    windAlert.style.color = '#e0f7fa';
+    windAlert.style.textShadow = '2px 2px #006064';
+    
+    const windForce = 5;
+    const windDirection = Math.random() > 0.5 ? 1 : -1;
+    
+    const windInterval = setInterval(() => {
+        if (!gameActive) {
+            clearInterval(windInterval);
+            return;
+        }
+        bubbles.forEach(b => {
+            b.vx += windDirection * 0.5;
+        });
+    }, 20);
+    
+    setTimeout(() => {
+        windAlert.style.display = 'none';
+        clearInterval(windInterval);
+    }, 4000);
+}
+
 function triggerMagnetism() {
     isMagnetic = true;
     const magnetAlert = document.createElement('div');
@@ -1379,6 +1404,7 @@ function handlePop(e) {
             if (Math.random() < 0.004) triggerCupcakeRain();
             if (Math.random() < 0.003) triggerDiscoParty();
             if (Math.random() < 0.004) triggerSlowMo();
+            if (Math.random() < 0.005) triggerWindGust();
             
             updateCombo();
             scoreEl.innerText = score;
