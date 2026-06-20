@@ -312,9 +312,15 @@ class Bubble {
             this.type = 'lucky-clover';
             this.color = '#81c784';
         } else if (rand > 0.307 && rand < 0.327) {
-            this.type = 'burst-bubble';
-            this.color = '#ffeb3b';
-            this.radius = 35;
+            if (rand < 0.317) {
+                this.type = 'rainbow-spiral';
+                this.color = '#ff00ff';
+                this.radius = 30;
+            } else {
+                this.type = 'burst-bubble';
+                this.color = '#ffeb3b';
+                this.radius = 35;
+            }
         } else if (rand > 0.277 && rand < 0.307) {
             this.type = 'pet-treat';
             this.color = '#ffca28';
@@ -477,7 +483,13 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('💥', this.x, this.y + currentRadius/3);
-        } else if (this.type === 'magnetic-bubble') {
+        } else if (b.type === 'magnetic-bubble') {
+        } else if (b.type === 'rainbow-spiral') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🌀', this.x, this.y + currentRadius/3);
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'magenta';
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🧲', this.x, this.y + currentRadius/3);
@@ -1310,14 +1322,34 @@ function handlePop(e) {
                 const nearby = bubbles.filter(bub => bub !== b && Math.hypot(bub.x - b.x, bub.y - b.y) < 200);
                 const targets = nearby.sort(() => 0.5 - Math.random()).slice(0, 3);
                 
-                targets.forEach(target => {
-                    createPopEffect(target.x, target.y, target.color);
-                    score += 10;
-                    floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
-                    target.hits = 0; // Mark for removal
-                });
-            } else if (b.type === 'giant') {
-                playSuperPopSound();
+            targets.forEach(target => {
+                createPopEffect(target.x, target.y, target.color);
+                score += 10;
+                floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
+                target.hits = 0; // Mark for removal
+            });
+        } else if (b.type === 'giant') {
+        } else if (b.type === 'rainbow-spiral') {
+            playPopSound(true, false);
+            const spiralBonus = 200;
+            score += spiralBonus;
+            floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW SPIRAL! 🌀 +${spiralBonus}`, 'magenta'));
+            createPopEffect(b.x, b.y, 'magenta');
+            
+            for (let i = 0; i < 20; i++) {
+                const angle = 0.5 * i;
+                const r = 5 * i;
+                const spiralBubble = new Bubble(false);
+                spiralBubble.x = b.x + r * Math.cos(angle);
+                spiralBubble.y = b.y + r * Math.sin(angle);
+                spiralBubble.vx = Math.cos(angle) * 2;
+                spiralBubble.vy = Math.sin(angle) * 2;
+                spiralBubble.radius = 15;
+                bubbles.push(spiralBubble);
+            }
+            triggerFrenzy();
+        } else if (b.type === 'giant') {
+            playSuperPopSound();
                 const giantBonus = 200;
                 score += giantBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `GIANT POP! 🌟 +${giantBonus}`, 'gold'));
