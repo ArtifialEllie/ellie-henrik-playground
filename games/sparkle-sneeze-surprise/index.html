@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sparkle Sneeze Surprise! ✨🤧</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Sparkles: <span id="score">0</span></div>
+            <div id="timer-board">Time: <span id="timer">60</span>s</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <div id="start-screen">
+                <h1>Sparkle Sneeze Surprise! ✨</h1>
+                <p>Help Ellie the Cloud clear the air!</p>
+                <p>Click to <b>SNEEZE</b> and pop the Glimmer-Bubbles!</p>
+                <p>Avoid the Grumpy Dust Bunnies! 🐰☁️</p>
+                <button id="start-btn">Start Sneezing! 🤧</button>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h1>Achoo! All Done! ✨</h1>
+                <p>You collected <span id="final-score">0</span> sparkles!</p>
+                <button id="restart-btn">Sneeze Again! 🤧</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
