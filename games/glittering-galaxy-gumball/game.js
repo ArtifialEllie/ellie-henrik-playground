@@ -1,12 +1,14 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
+const livesElement = document.getElementById('lives');
 const highScoreElement = document.getElementById('high-score');
 const finalScoreElement = document.getElementById('final-score');
 const overlay = document.getElementById('overlay');
 const restartBtn = document.getElementById('restart-btn');
 
 let score = 0;
+let lives = 3;
 let highScore = localStorage.getItem('galaxyGumballHighScore') || 0;
 let gameActive = true;
 let gumballs = [];
@@ -19,6 +21,7 @@ let player = {
 };
 
 highScoreElement.innerText = highScore;
+livesElement.innerText = lives;
 
 function resize() {
     canvas.width = window.innerWidth;
@@ -46,6 +49,7 @@ window.addEventListener('touchmove', (e) => {
 class Gumball {
     constructor() {
         this.radius = 10 + Math.random() * 15;
+        this.isHazard = Math.random() < 0.15; // 15% chance to be a hazard
         this.reset();
     }
 
@@ -71,7 +75,7 @@ class Gumball {
         const speed = 2 + Math.random() * 4;
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
-        this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+        this.color = this.isHazard ? '#ff0000' : `hsl(${Math.random() * 360}, 80%, 60%)`;
         this.glow = 0;
     }
 
@@ -89,7 +93,11 @@ class Gumball {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < this.radius + player.radius) {
-            collectGumball(this);
+            if (this.isHazard) {
+                loseLife();
+            } else {
+                collectGumball(this);
+            }
         }
     }
 
@@ -137,6 +145,19 @@ class Particle {
         ctx.fillStyle = this.color;
         ctx.fill();
         ctx.restore();
+    }
+}
+
+function loseLife() {
+    lives--;
+    livesElement.innerText = lives;
+    
+    // Red flash effect
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    if (lives <= 0) {
+        gameOver();
     }
 }
 
@@ -242,7 +263,9 @@ function gameOver() {
 
 restartBtn.addEventListener('click', () => {
     score = 0;
+    lives = 3;
     scoreElement.innerText = score;
+    livesElement.innerText = lives;
     gumballs = [];
     particles = [];
     gameActive = true;

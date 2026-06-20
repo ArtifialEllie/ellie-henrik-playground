@@ -328,6 +328,10 @@ class Bubble {
             this.type = 'rainbow-portal';
             this.color = '#ff00ff';
             this.radius = 45;
+        } else if (rand > 0.05 && rand < 0.07) {
+            this.type = 'bomb-burst';
+            this.color = '#ff5722';
+            this.radius = 30;
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -382,6 +386,12 @@ class Bubble {
             this.color = `hsl(${Date.now() / 15 % 360}, 100%, 80%)`;
             ctx.shadowBlur = 20;
             ctx.shadowColor = 'white';
+        } else if (currentSkin === 'supernova') {
+            this.color = `hsl(${Date.now() / 5 % 360}, 100%, 80%)`;
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = 'white';
+            ctx.strokeStyle = `hsl(${Date.now() / 5 % 360}, 100%, 50%)`;
+            ctx.lineWidth = 3;
         }
         
         if (this.type === 'giant') {
@@ -631,7 +641,8 @@ class MagicalPet {
     let nextInterval = 8000;
     let nextRange = 150;
 
-    if (score >= 5000) { nextLevel = 5; nextEmoji = '✨🌈'; nextInterval = 3000; nextRange = 300; }
+    if (score >= 10000) { nextLevel = 6; nextEmoji = '👑🐱'; nextInterval = 2000; nextRange = 400; }
+    else if (score >= 5000) { nextLevel = 5; nextEmoji = '✨🌈'; nextInterval = 3000; nextRange = 300; }
     else if (score >= 3000) { nextLevel = 4; nextEmoji = '🐉'; nextInterval = 4000; nextRange = 250; }
     else if (score >= 1500) { nextLevel = 3; nextEmoji = '🦄'; nextInterval = 5000; nextRange = 200; }
     else if (score >= 500) { nextLevel = 2; nextEmoji = '🦊'; nextInterval = 6000; nextRange = 175; }
@@ -1195,6 +1206,21 @@ function handlePop(e) {
                 bubbles = [];
                 combo = 0;
                 floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
+            } else if (b.type === 'bomb-burst') {
+                playPopSound(true, false);
+                floatingTexts.push(new FloatingText(b.x, b.y, 'BURST BOOM! 💥', '#ff5722'));
+                const burstRadius = 200;
+                let burstPops = 0;
+                bubbles.forEach(bub => {
+                    if (bub !== b && Math.hypot(bub.x - b.x, bub.y - b.y) < burstRadius) {
+                        createPopEffect(bub.x, bub.y, bub.color);
+                        score += 5;
+                        burstPops++;
+                        bub.hits = 0;
+                    }
+                });
+                score += burstPops * 2;
+                createBigExplosion(b.x, b.y);
             } else if (b.type === 'stinky') {
                 if (shieldActive) {
                     playPopSound(true, false);

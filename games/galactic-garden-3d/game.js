@@ -69,6 +69,7 @@ const plantedFlowers = [];
 let currentFlowerType = 'neon-tulip';
 const growingFlowers = [];
 const activeBursts = [];
+const fallingStardust = []; // New: for cosmic rain
 
 const flowerConfigs = {
     'neon-tulip': { color: 0xff00ff, scale: 1, points: 10 },
@@ -194,6 +195,30 @@ function createPlantRing(position) {
     });
 }
 
+function spawnStardust() {
+    const geo = new THREE.SphereGeometry(0.1, 8, 8);
+    const mat = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff, 
+        emissive: 0xffffff, 
+        emissiveIntensity: 1 
+    });
+    const star = new THREE.Mesh(geo, mat);
+    
+    // Spawn randomly above the island
+    star.position.set(
+        (Math.random() - 0.5) * 20,
+        10 + Math.random() * 5,
+        (Math.random() - 0.5) * 20
+    );
+    
+    scene.add(star);
+    fallingStardust.push({
+        mesh: star,
+        velocity: new THREE.Vector3(0, -0.05 - Math.random() * 0.1, 0),
+        rotation: new THREE.Vector3(Math.random()*0.02, Math.random()*0.02, Math.random()*0.02)
+    });
+}
+
 function createBurst(position) {
     const burstGeo = new THREE.BufferGeometry();
     const burstMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true });
@@ -277,6 +302,24 @@ function animate() {
     const time = Date.now() * 0.001;
     requestAnimationFrame(animate);
     
+    // Spawn cosmic stardust rain
+    if (Math.random() < 0.05) {
+        spawnStardust();
+    }
+
+    // Update falling stardust
+    for (let i = fallingStardust.length - 1; i >= 0; i--) {
+        const s = fallingStardust[i];
+        s.mesh.position.add(s.velocity);
+        s.mesh.rotation.x += s.rotation.x;
+        s.mesh.rotation.y += s.rotation.y;
+        
+        if (s.mesh.position.y < -1) {
+            scene.remove(s.mesh);
+            fallingStardust.splice(i, 1);
+        }
+    }
+
     // Growth animation
     for (let i = growingFlowers.length - 1; i >= 0; i--) {
         const f = growingFlowers[i];

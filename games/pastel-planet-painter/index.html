@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Planet Painter 🎨🪐</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-layer">
+            <h1>Pastel Planet Painter</h1>
+            <p>Paint your own magical planet! ✨</p>
+            
+            <div id="palette">
+                <div class="color-swatch active" style="background-color: #FFB7B2;" data-color="#FFB7B2"></div>
+                <div class="color-swatch" style="background-color: #FFDAC1;" data-color="#FFDAC1"></div>
+                <div class="color-swatch" style="background-color: #E2F0CB;" data-color="#E2F0CB"></div>
+                <div class="color-swatch" style="background-color: #B5EAD7;" data-color="#B5EAD7"></div>
+                <div class="color-swatch" style="background-color: #C7CEEA;" data-color="#C7CEEA"></div>
+                <div class="color-swatch" style="background-color: #FF9AA2;" data-color="#FF9AA2"></div>
+                <div class="color-swatch" style="background-color: #FFFFD1;" data-color="#FFFFD1"></div>
+                <div class="color-swatch" style="background-color: #B2CEFE;" data-color="#B2CEFE"></div>
+            </div>
+
+            <div id="controls">
+                <button id="clear-btn">Start Over ✨</button>
+                <button id="save-btn">Save Masterpiece 📸</button>
+            </div>
+        </div>
+        <canvas id="planet-canvas"></canvas>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

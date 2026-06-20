@@ -14,22 +14,22 @@ let distance = 0;
 let speed = 5;
 let ribbonWidth = 200;
 let playerX = 0;
-let playerY = 0;
 let targetX = 0;
-let ribbonOffset = 0;
 let items = [];
 let particles = [];
+let backgroundStars = [];
+let playerTrail = [];
 let keys = {};
+let combo = 0;
+let comboTimer = 0;
 
 // Game Constants
 const COLORS = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'];
-const PLAYER_SIZE = 20;
-const ITEM_SIZE = 15;
+const PLAYER_SIZE = 15;
 
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    playerY = canvas.height * 0.8;
 }
 
 window.addEventListener('resize', resize);
@@ -38,116 +38,46 @@ resize();
 window.addEventListener('keydown', e => keys[e.code] = true);
 window.addEventListener('keyup', e => keys[e.code] = false);
 
+function initBackground() {
+    backgroundStars = [];
+    for (let i = 0; i < 100; i++) {
+        backgroundStars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * (canvas.height / 2),
+            size: Math.random() * 2,
+            opacity: Math.random(),
+            speed: Math.random() * 0.02
+        });
+    }
+}
+
 function createItem() {
-    const side = Math.random() > 0.5 ? 1 : -1;
-    const offset = (Math.random() - 0.5) * ribbonWidth * 0.8;
-    items.push({
-        x: offset,
-        y: -100,
-        type: 'star',
-        color: '#FFFF00',
-        collected: false
-    });
+    const rand = Math.random();
+    let type = 'star';
+    let color = '#FFFF00';
+    let value = 1;
+
+    if (rand > 0.9) {
+        type = 'gem';
+        color = '#00FFFF';
+        value = 5;
+    }
+
+    const itemX = (Math.random() - 0.5) * ribbonWidth * 0.9;
+    items.push({ x: itemX, z: 1000, type, color, value, collected: false });
 }
 
 function createParticle(x, y, color) {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 12; i++) {
         particles.push({
             x, y,
-            vx: (Math.random() - 0.5) * 5,
-            vy: (Math.random() - 0.5) * 5,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
             life: 1.0,
             color
         });
     }
 }
-
-function update() {
-    if (gameState !== 'PLAYING') return;
-
-    distance += speed / 10;
-    speed += 0.001;
-
-    if (keys['ArrowLeft'] || keys['KeyA']) {
-        targetX -= 7;
-    }
-    if (keys['ArrowRight'] || keys['KeyD']) {
-        targetX += 7;
-    }
-
-    // Keep player within some reasonable bounds for the "feel"
-    // The ribbon itself curves, so we'll handle the "off-ribbon" check based on current ribbon width
-    playerX += (targetX - playerX) * 0.1;
-
-    // Spawn items
-    if (Math.random() < 0.02) {
-        createItem();
-    }
-
-    // Update items
-    for (let i = items.length - 1; i >= 0; i--) {
-        const item = items[i];
-        item.y += speed;
-
-        // Collision detection
-        const dx = (playerX - (canvas.width / 2)) - (item.x + (canvas.width / 2)); // Simple conceptual relative distance
-        // Wait, let's rethink the coordinate system for the ribbon.
-        // The ribbon center is canvas.width / 2 + ribbonOffset.
-    }
-}
-
-// Let's rewrite the update and draw logic for a pseudo-3D perspective
-function updatePseudo3D() {
-    if (gameState !== 'PLAYING') return;
-
-    distance += speed / 10;
-    speed += 0.0005;
-
-    if (keys['ArrowLeft'] || keys['KeyA']) {
-        targetX -= 8;
-    }
-    if (keys['ArrowRight'] || keys['KeyD']) {
-        targetX += 8;
-    }
-
-    playerX += (targetX - playerX) * 0.1;
-
-    // Spawn items
-    if (Math.random() < 0.03) {
-        createItem();
-    }
-
-    // Update items
-    for (let i = items.length - 1; i >= 0; i--) {
-        const item = items[i];
-        item.z = (item.z || 0) + speed; // conceptually z is distance from horizon
-        item.y = canvas.height / 2 + (item.z * 0.5);
-        item.x = canvas.width / 2 + (item.x * (item.z / 500));
-        
-        // Relative to ribbon's current curvature?
-        // Let's simplify: the ribbon is a path we follow.
-        
-        if (item.z > canvas.height) {
-            items.splice(i, 1);
-        }
-    }
-}
-
-// Redoing the whole logic to be more consistent
-function gameLoop() {
-    if (gameState === 'PLAYING') {
-        update();
-        draw();
-    } else if (gameState === 'START') {
-        drawStart();
-    } else if (gameState === 'GAMEOVER') {
-        drawGameOver();
-    }
-    requestAnimationFrame(gameLoop);
-}
-
-// To avoid confusing myself, I'll just implement a clean 2D perspective with a "pseudo-3D" feel
-// by scaling and moving things toward the camera.
 
 function resetGame() {
     score = 0;
@@ -157,9 +87,13 @@ function resetGame() {
     targetX = 0;
     items = [];
     particles = [];
+    playerTrail = [];
+    combo = 0;
+    comboTimer = 0;
     gameState = 'PLAYING';
     overlay.style.display = 'none';
     gameOverScreen.style.display = 'none';
+    initBackground();
 }
 
 startBtn.onclick = () => resetGame();
@@ -172,25 +106,30 @@ function updateLogic() {
     speed += 0.0005;
 
     if (keys['ArrowLeft'] || keys['KeyA']) {
-        targetX -= 5;
+        targetX -= 6;
     }
     if (keys['ArrowRight'] || keys['KeyD']) {
-        targetX += 5;
+        targetX += 6;
     }
 
-    playerX += (targetX - playerX) * 0.1;
+    playerX += (targetX - playerX) * 0.15;
 
-    // Boundary check: if player goes too far from center (0), they fall off
+    // Boundary check
     if (Math.abs(playerX) > ribbonWidth / 2) {
         gameState = 'GAMEOVER';
         gameOverScreen.style.display = 'flex';
         finalScoreEl.innerText = `Stars Collected: ${score}`;
     }
 
+    // Combo timer
+    if (comboTimer > 0) {
+        comboTimer--;
+        if (comboTimer <= 0) combo = 0;
+    }
+
     // Spawn items
-    if (Math.random() < 0.02) {
-        const itemX = (Math.random() - 0.5) * ribbonWidth * 0.9;
-        items.push({ x: itemX, z: 1000, collected: false });
+    if (Math.random() < 0.03) {
+        createItem();
     }
 
     // Update items
@@ -200,11 +139,14 @@ function updateLogic() {
         if (item.z < 0) {
             items.splice(i, 1);
         } else if (item.z < 50) {
-            // Check collision
             const dx = Math.abs(item.x - playerX);
             if (dx < 30) {
-                score++;
-                createParticle(canvas.width / 2 + item.x, canvas.height * 0.8, '#FFFF00');
+                combo++;
+                comboTimer = 60; // 1 second at 60fps
+                const points = item.value * (1 + Math.floor(combo / 5));
+                score += points;
+                
+                createParticle(canvas.width / 2 + item.x, canvas.height * 0.8, item.color);
                 items.splice(i, 1);
             }
         }
@@ -219,21 +161,38 @@ function updateLogic() {
         if (p.life <= 0) particles.splice(i, 1);
     }
 
-    scoreEl.innerText = `Stars: ${score}`;
+    // Update player trail
+    playerTrail.push({ x: canvas.width / 2 + playerX, y: canvas.height * 0.8 });
+    if (playerTrail.length > 20) playerTrail.shift();
+
+    // Update background stars
+    backgroundStars.forEach(s => {
+        s.opacity += s.speed;
+        if (s.opacity > 1 || s.opacity < 0) s.speed *= -1;
+    });
+
+    scoreEl.innerText = `Stars: ${score}${combo >= 5 ? ' 🔥' : ''}`;
     distanceEl.innerText = `Distance: ${Math.floor(distance)}m`;
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw Background (Space/Sky)
     const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, '#1a1a2e');
-    grad.addColorStop(1, '#16213e');
+    grad.addColorStop(0, '#0a0a1a');
+    grad.addColorStop(1, '#1a1a3a');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Horizon
+    // Draw Twinkling Stars
+    backgroundStars.forEach(s => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
     const horizonY = canvas.height / 2;
     
     // Draw Ribbon (Pseudo-3D)
@@ -244,7 +203,6 @@ function draw() {
     ctx.lineTo(canvas.width / 2 - 20, horizonY);
     ctx.closePath();
     
-    // Rainbow Gradient for Ribbon
     const ribbonGrad = ctx.createLinearGradient(0, canvas.height, 0, horizonY);
     ribbonGrad.addColorStop(0, '#ff0000');
     ribbonGrad.addColorStop(0.2, '#ff7f00');
@@ -260,26 +218,48 @@ function draw() {
         const scale = 1 - item.z / 1000;
         const x = canvas.width / 2 + item.x * scale;
         const y = horizonY + (canvas.height - horizonY) * scale;
-        const size = 10 * scale;
+        const size = (item.type === 'gem' ? 15 : 10) * scale;
         
-        ctx.fillStyle = '#FFFF00';
+        ctx.fillStyle = item.color;
         ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
+        if (item.type === 'gem') {
+            // Draw a diamond shape for gems
+            ctx.moveTo(x, y - size);
+            ctx.lineTo(x + size, y);
+            ctx.lineTo(x, y + size);
+            ctx.lineTo(x - size, y);
+            ctx.closePath();
+        } else {
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+        }
         ctx.fill();
-        // Glow
+        
         ctx.shadowBlur = 15;
-        ctx.shadowColor = 'yellow';
+        ctx.shadowColor = item.color;
         ctx.fill();
         ctx.shadowBlur = 0;
     });
+
+    // Draw Player Trail
+    if (playerTrail.length > 1) {
+        ctx.beginPath();
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.moveTo(playerTrail[0].x, playerTrail[0].y);
+        for (let i = 1; i < playerTrail.length; i++) {
+            ctx.lineTo(playerTrail[i].x, playerTrail[i].y);
+        }
+        ctx.stroke();
+    }
 
     // Draw Player
     const playerXPos = canvas.width / 2 + playerX;
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.arc(playerXPos, canvas.height * 0.8, 15, 0, Math.PI * 2);
+    ctx.arc(playerXPos, canvas.height * 0.8, PLAYER_SIZE, 0, Math.PI * 2);
     ctx.fill();
-    // Player Glow
+    
     ctx.shadowBlur = 20;
     ctx.shadowColor = 'white';
     ctx.fill();
@@ -287,21 +267,11 @@ function draw() {
 
     // Draw Particles
     particles.forEach(p => {
-        ctx.fillStyle = `rgba(255, 255, 0, ${p.life})`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
         ctx.fill();
     });
-}
-
-function drawStart() {
-    // Just clear and draw the overlay
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function drawGameOver() {
-    // Just clear and draw the overlay
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function loop() {
@@ -310,4 +280,5 @@ function loop() {
     requestAnimationFrame(loop);
 }
 
+initBackground();
 loop();
