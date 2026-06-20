@@ -94,6 +94,31 @@ class Particle {
     }
 }
 
+class FloatingText {
+    constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 1.0;
+        this.velocity = -2;
+    }
+
+    update() {
+        this.y += this.velocity;
+        this.life -= 0.02;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold 24px cursive';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 class FallingItem {
     constructor() {
         this.radius = 15 + Math.random() * 10;
@@ -105,7 +130,11 @@ class FallingItem {
         this.speed = (3 + Math.random() * 4) * difficultyMultiplier;
         
         const rand = Math.random();
-        if (rand > 0.9) {
+        if (rand > 0.95) {
+            this.type = 'rainbow';
+            this.color = '#ff00ff';
+            this.emoji = '🌈';
+        } else if (rand > 0.9) {
             this.type = 'golden';
             this.color = '#ffd700';
             this.emoji = '🌟';
@@ -135,11 +164,16 @@ class FallingItem {
 const player = new Player();
 const items = [];
 const particles = [];
+const floatingTexts = [];
 
 function createParticles(x, y, color, count = 10) {
     for (let i = 0; i < count; i++) {
         particles.push(new Particle(x, y, color));
     }
+}
+
+function createFloatingText(x, y, text, color) {
+    floatingTexts.push(new FloatingText(x, y, text, color));
 }
 
 function spawnItem() {
@@ -163,6 +197,14 @@ function update() {
         if (p.life <= 0) particles.splice(i, 1);
     }
 
+    // Update and draw floating texts
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.update();
+        ft.draw();
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
+    }
+
     for (let i = items.length - 1; i >= 0; i--) {
         const item = items[i];
         item.update();
@@ -178,12 +220,19 @@ function update() {
             if (item.type === 'candy') {
                 score++;
                 createParticles(item.x, item.y, item.color);
+                createFloatingText(item.x, item.y, '+1', item.color);
             } else if (item.type === 'golden') {
                 score += 5;
                 createParticles(item.x, item.y, '#ffd700', 20);
+                createFloatingText(item.x, item.y, '+5', '#ffd700');
+            } else if (item.type === 'rainbow') {
+                score += 10;
+                createParticles(item.x, item.y, '#ff00ff', 30);
+                createFloatingText(item.x, item.y, '🌈 RAINBOW! +10', '#ff00ff');
             } else {
                 score = Math.max(0, score - 5);
                 createParticles(item.x, item.y, '#fef08a', 15);
+                createFloatingText(item.x, item.y, '-5', '#ef4444');
                 
                 // Screen shake effect when hitting a lemon
                 document.body.classList.add('shake');
