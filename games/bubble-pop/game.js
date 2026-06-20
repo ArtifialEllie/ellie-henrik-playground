@@ -483,16 +483,16 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('💥', this.x, this.y + currentRadius/3);
-        } else if (b.type === 'magnetic-bubble') {
-        } else if (b.type === 'rainbow-spiral') {
+        } else if (this.type === 'magnetic-bubble') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🧲', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'rainbow-spiral') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🌀', this.x, this.y + currentRadius/3);
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'magenta';
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('🧲', this.x, this.y + currentRadius/3);
         } else if (this.type === 'magic-burst') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -504,7 +504,7 @@ class Bubble {
         } else if (this.type === 'golden-ticket') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🦴', this.x, this.y + currentRadius/3);
+            ctx.fillText('🎫', this.x, this.y + currentRadius/3);
         } else if (this.type === 'cupcake') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -1326,9 +1326,8 @@ function handlePop(e) {
                 createPopEffect(target.x, target.y, target.color);
                 score += 10;
                 floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
-                target.hits = 0; // Mark for removal
-            });
-        } else if (b.type === 'giant') {
+            target.hits = 0; // Mark for removal
+        });
         } else if (b.type === 'rainbow-spiral') {
             playPopSound(true, false);
             const spiralBonus = 200;
