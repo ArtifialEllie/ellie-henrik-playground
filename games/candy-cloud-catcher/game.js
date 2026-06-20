@@ -24,6 +24,46 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+class BackgroundCloud {
+    constructor() {
+        this.reset();
+        this.y = Math.random() * canvas.height;
+    }
+
+    reset() {
+        this.x = -200 - Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.speed = 0.5 + Math.random() * 1;
+        this.scale = 0.5 + Math.random() * 1;
+        this.opacity = 0.3 + Math.random() * 0.4;
+    }
+
+    update() {
+        this.x += this.speed;
+        if (this.x > canvas.width + 200) {
+            this.reset();
+            this.x = -200;
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = 'white';
+        ctx.translate(this.x, this.y);
+        ctx.scale(this.scale, this.scale);
+        
+        ctx.beginPath();
+        ctx.arc(30, 30, 30, 0, Math.PI * 2);
+        ctx.arc(60, 20, 35, 0, Math.PI * 2);
+        ctx.arc(90, 30, 30, 0, Math.PI * 2);
+        ctx.arc(60, 40, 30, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+    }
+}
+
 class Player {
     constructor() {
         this.width = 120;
@@ -165,6 +205,7 @@ const player = new Player();
 const items = [];
 const particles = [];
 const floatingTexts = [];
+const bgClouds = Array.from({ length: 8 }, () => new BackgroundCloud());
 
 function createParticles(x, y, color, count = 10) {
     for (let i = 0; i < count; i++) {
@@ -185,7 +226,13 @@ function update() {
     if (!gameActive) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+ 
+    // Draw background clouds
+    bgClouds.forEach(cloud => {
+        cloud.update();
+        cloud.draw();
+    });
+ 
     player.update(mouseX);
     player.draw();
 
