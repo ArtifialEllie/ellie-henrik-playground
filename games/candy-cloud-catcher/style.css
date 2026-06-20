@@ -90,3 +90,12 @@ h1 {
 #timer {
     color: #ef4444;
 }
+
+.fever-mode {
+    animation: fever-bg 2s linear infinite;
+}
+
+@keyframes fever-bg {
+    0% { filter: hue-rotate(0deg) saturate(1.5); }
+    100% { filter: hue-rotate(360deg) saturate(1.5); }
+}

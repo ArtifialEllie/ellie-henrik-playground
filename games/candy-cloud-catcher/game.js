@@ -15,6 +15,9 @@ let gameActive = false;
 let gameInterval;
 let timerInterval;
 
+let feverMode = false;
+let feverTimer = null;
+
 highscoreElement.textContent = highscore;
 
 function resize() {
@@ -70,6 +73,7 @@ class Player {
         this.height = 60;
         this.x = canvas.width / 2 - this.width / 2;
         this.y = canvas.height - 100;
+        this.baseWidth = 120;
         this.color = '#ffffff';
         this.bob = 0;
     }
@@ -77,6 +81,14 @@ class Player {
     draw() {
         this.bob = Math.sin(Date.now() / 200) * 8;
         const drawY = this.y + this.bob;
+
+        if (feverMode) {
+            this.color = `hsl(${Date.now() / 10 % 360}, 80%, 80%)`;
+            this.width = this.baseWidth * 1.5;
+        } else {
+            this.color = '#ffffff';
+            this.width = this.baseWidth;
+        }
 
         // Draw a fluffy cloud
         ctx.fillStyle = this.color;
@@ -275,8 +287,16 @@ function update() {
             } else if (item.type === 'rainbow') {
                 score += 10;
                 createParticles(item.x, item.y, '#ff00ff', 30);
-                createFloatingText(item.x, item.y, '🌈 RAINBOW! +10', '#ff00ff');
+                createFloatingText(item.x, item.y, '🌈 RAINBOW RUSH!', '#ff00ff');
+                activateFeverMode();
             } else {
+                if (feverMode) {
+                    score += 2;
+                    createParticles(item.x, item.y, '#ffd700', 10);
+                    createFloatingText(item.x, item.y, '+2', '#ffd700');
+                    items.splice(i, 1);
+                    continue;
+                }
                 score = Math.max(0, score - 5);
                 createParticles(item.x, item.y, '#fef08a', 15);
                 createFloatingText(item.x, item.y, '-5', '#ef4444');
@@ -293,6 +313,18 @@ function update() {
     }
 
     requestAnimationFrame(update);
+}
+
+function activateFeverMode() {
+    feverMode = true;
+    if (feverTimer) clearTimeout(feverTimer);
+    
+    document.body.classList.add('fever-mode');
+    
+    feverTimer = setTimeout(() => {
+        feverMode = false;
+        document.body.classList.remove('fever-mode');
+    }, 5000);
 }
 
 let mouseX = 0;
