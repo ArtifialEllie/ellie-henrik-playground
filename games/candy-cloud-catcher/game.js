@@ -218,7 +218,11 @@ class FallingItem {
         this.speed = (3 + Math.random() * 4) * difficultyMultiplier;
         
         const rand = Math.random();
-        if (rand > 0.95) {
+        if (rand > 0.98) {
+            this.type = 'ticket';
+            this.color = '#fbbf24';
+            this.emoji = '🎟️';
+        } else if (rand > 0.95) {
             this.type = 'rainbow';
             this.color = '#ff00ff';
             this.emoji = '🌈';
@@ -345,6 +349,11 @@ function update() {
                 createParticles(item.x, item.y, '#ff00ff', 30);
                 createFloatingText(item.x, item.y, '🌈 RAINBOW RUSH!', '#ff00ff');
                 activateFeverMode();
+            } else if (item.type === 'ticket') {
+                combo++;
+                score += 50;
+                createParticles(item.x, item.y, '#fbbf24', 40);
+                createFloatingText(item.x, item.y, '🎟️ GOLDEN TICKET!', '#fbbf24');
             } else {
                 if (feverMode) {
                     score += 2;
