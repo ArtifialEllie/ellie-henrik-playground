@@ -1,9 +1,11 @@
 const canvas = document.getElementById('garden-canvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
+const levelElement = document.getElementById('level');
 const clearButton = document.getElementById('clear-garden');
 
 let score = 0;
+let level = 1;
 let stars = [];
 const colors = ['#FF00FF', '#00FFFF', '#FFFF00', '#FFD700', '#FF69B4', '#7B68EE', '#00FA9A'];
 
@@ -72,6 +74,17 @@ function createStar(e) {
     score++;
     scoreElement.innerText = score;
     
+    // Level up logic: Every 10 stars, level up and add some bonus sparkles
+    if (score % 10 === 0) {
+        level++;
+        levelElement.innerText = level;
+        
+        // Celebration sparkles
+        for (let i = 0; i < 30; i++) {
+            sparkles.push(new Sparkle(x, y, true));
+        }
+    }
+    
     // Add some "sparkle" particles around the new star
     for (let i = 0; i < 8; i++) {
         sparkles.push(new Sparkle(x, y));
@@ -79,11 +92,11 @@ function createStar(e) {
 }
 
 class Sparkle {
-    constructor(x, y) {
+    constructor(x, y, isCelebration = false) {
         this.x = x;
         this.y = y;
-        this.vx = (Math.random() - 0.5) * 4;
-        this.vy = (Math.random() - 0.5) * 4;
+        this.vx = (Math.random() - 0.5) * (isCelebration ? 8 : 4);
+        this.vy = (Math.random() - 0.5) * (isCelebration ? 8 : 4);
         this.size = Math.random() * 3 + 1;
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.life = 1.0;
@@ -138,7 +151,9 @@ clearButton.addEventListener('click', () => {
     stars = [];
     sparkles = [];
     score = 0;
+    level = 1;
     scoreElement.innerText = score;
+    levelElement.innerText = level;
 });
 
 animate();
