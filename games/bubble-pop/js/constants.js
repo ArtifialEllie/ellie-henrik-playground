@@ -30,7 +30,10 @@ const SKINS = [
     { color: '#c0c0c0', name: 'Starlight Silver', cost: 4000 },
     { color: 'holographic', name: 'Holographic Dream', cost: 5000 },
     { color: 'diamond', name: 'Diamond Dust 💎', cost: 10000 },
-    { color: '#2c3e50', name: 'Nebula Night ✨', cost: 12000 }, // NEW SKIN
+    { color: '#2c3e50', name: 'Nebula Night ✨', cost: 12000 },
+    { color: '#fffacd', name: 'Sunbeam Gold ☀️', cost: 15000 },
+    { color: '#e0ffff', name: 'Ocean Whisper 🌊', cost: 18000 },
+    { color: 'supernova', name: 'Supernova Silver 🎇', cost: 25000 },
 ];
 
 const ACCESSORIES = [

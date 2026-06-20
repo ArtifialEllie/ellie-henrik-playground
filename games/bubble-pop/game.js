@@ -386,6 +386,12 @@ class Bubble {
             this.color = `hsl(${Date.now() / 15 % 360}, 100%, 80%)`;
             ctx.shadowBlur = 20;
             ctx.shadowColor = 'white';
+        } else if (currentSkin === 'supernova') {
+            this.color = `hsl(${Date.now() / 5 % 360}, 100%, 80%)`;
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = 'white';
+            ctx.strokeStyle = `hsl(${Date.now() / 5 % 360}, 100%, 50%)`;
+            ctx.lineWidth = 3;
         }
         
         if (this.type === 'giant') {
