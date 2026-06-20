@@ -418,6 +418,20 @@ class Bubble {
                 ctx.arc(this.x + (Math.random() - 0.5) * this.radius, this.y + (Math.random() - 0.5) * this.radius, 2, 0, Math.PI * 2);
                 ctx.fill();
             }
+        } else if (currentSkin === 'diamond') {
+            this.color = '#e0f7fa';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'cyan';
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            // Diamond refraction effect
+            ctx.beginPath();
+            ctx.moveTo(this.x - this.radius * 0.5, this.y);
+            ctx.lineTo(this.x, this.y - this.radius * 0.5);
+            ctx.lineTo(this.x + this.radius * 0.5, this.y);
+            ctx.lineTo(this.x, this.y + this.radius * 0.5);
+            ctx.closePath();
+            ctx.stroke();
         }
         
         if (this.type === 'giant') {
