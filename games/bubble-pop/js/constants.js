@@ -12,6 +12,10 @@ const QUESTS = [
     { text: 'Reach a x5 Multiplier! 🚀', goal: 5, reward: 800, rewardGold: 500, type: 'multiplier' },
     { text: 'Pop 100 bubbles! 🫧', goal: 100, reward: 1000, rewardGold: 600 },
     { text: 'Collect 1000 Gold! ✨', goal: 1000, reward: 1200, rewardGold: 0, type: 'gold' },
+    { text: 'Pop 200 bubbles! 🫧', goal: 200, reward: 2000, rewardGold: 1000 },
+    { text: 'Reach Level 20! 🌟', goal: 20, reward: 3000, rewardGold: 1500, type: 'level' },
+    { text: 'Get a Combo of 30! 🔥', goal: 30, reward: 4000, rewardGold: 2000, type: 'combo' },
+    { text: 'Collect 5000 Gold! ✨', goal: 5000, reward: 5000, rewardGold: 0, type: 'gold' },
 ];
 
 const SKINS = [
@@ -34,6 +38,9 @@ const SKINS = [
     { color: '#fffacd', name: 'Sunbeam Gold ☀️', cost: 15000 },
     { color: '#e0ffff', name: 'Ocean Whisper 🌊', cost: 18000 },
     { color: 'supernova', name: 'Supernova Silver 🎇', cost: 25000 },
+    { color: '#ff69b4', name: 'Neon Dream 🍭', cost: 30000 },
+    { color: '#7fffd4', name: 'Aquamarine Glow 💎', cost: 35000 },
+    { color: 'rainbow-glitter', name: 'Rainbow Glitter ✨', cost: 50000 },
 ];
 
 const ACCESSORIES = [

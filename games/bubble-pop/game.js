@@ -396,6 +396,19 @@ class Bubble {
             ctx.shadowColor = 'white';
             ctx.strokeStyle = `hsl(${Date.now() / 5 % 360}, 100%, 50%)`;
             ctx.lineWidth = 3;
+        } else if (currentSkin === 'rainbow-glitter') {
+            this.color = `hsl(${Date.now() / 10 % 360}, 100%, 70%)`;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'white';
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 4;
+            // Add some tiny white sparkles inside the bubble
+            if (Math.random() > 0.8) {
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(this.x + (Math.random() - 0.5) * this.radius, this.y + (Math.random() - 0.5) * this.radius, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
         
         if (this.type === 'giant') {
