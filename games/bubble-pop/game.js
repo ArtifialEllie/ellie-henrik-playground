@@ -1363,6 +1363,9 @@ function handlePop(e) {
                 playPopSound();
                 combo++;
                 const points = (Math.ceil(60 / b.radius * 2) + (combo > 5 ? 5 : 0)) * multiplier;
+                if (currentAccessory === '🪄') {
+                    score += 5; // Bonus from Magic Bubble Wand
+                }
                 score += points;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${points}`, b.color));
             }
