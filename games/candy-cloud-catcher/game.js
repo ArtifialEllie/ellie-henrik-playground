@@ -15,6 +15,7 @@ let gameActive = false;
 let gameInterval;
 let timerInterval;
 
+let combo = 0;
 let feverMode = false;
 let feverTimer = null;
 
@@ -119,21 +120,56 @@ class Player {
 }
 
 class Particle {
-    constructor(x, y, color) {
+    constructor(x, y, color, isRing = false) {
         this.x = x;
         this.y = y;
         this.color = color;
-        this.size = Math.random() * 5 + 2;
-        this.speedX = (Math.random() - 0.5) * 10;
-        this.speedY = (Math.random() - 0.5) * 10;
+        this.isRing = isRing;
+        this.size = isRing ? 10 : Math.random() * 5 + 2;
+        this.speedX = isRing ? 0 : (Math.random() - 0.5) * 10;
+        this.speedY = isRing ? 0 : (Math.random() - 0.5) * 10;
         this.life = 1.0;
-        this.decay = Math.random() * 0.02 + 0.02;
+        this.decay = isRing ? 0.05 : Math.random() * 0.02 + 0.02;
     }
 
     update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
+        if (this.isRing) {
+            this.size += 2;
+        } else {
+            this.x += this.speedX;
+            this.y += this.speedY;
+        }
         this.life -= this.decay;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        if (this.isRing) {
+            ctx.strokeStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.stroke();
+        } else {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+class TrailCloud {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = 20 + Math.random() * 20;
+        this.color = `hsl(${Math.random() * 360}, 80%, 90%)`;
+        this.life = 1.0;
+    }
+
+    update() {
+        this.life -= 0.05;
     }
 
     draw() {
@@ -216,12 +252,23 @@ class FallingItem {
 const player = new Player();
 const items = [];
 const particles = [];
+const trail = [];
 const floatingTexts = [];
 const bgClouds = Array.from({ length: 8 }, () => new BackgroundCloud());
 
 function createParticles(x, y, color, count = 10) {
     for (let i = 0; i < count; i++) {
         particles.push(new Particle(x, y, color));
+    }
+    particles.push(new Particle(x, y, color, true));
+}
+
+function updateTrail() {
+    trail.push(new TrailCloud(player.x + player.width / 2, player.y + player.height / 2));
+    if (trail.length > 20) trail.shift();
+    for (let i = trail.length - 1; i >= 0; i--) {
+        trail[i].update();
+        if (trail[i].life <= 0) trail.splice(i, 1);
     }
 }
 
@@ -244,7 +291,10 @@ function update() {
         cloud.update();
         cloud.draw();
     });
- 
+
+    updateTrail();
+    trail.forEach(t => t.draw());
+
     player.update(mouseX);
     player.draw();
 
@@ -277,15 +327,21 @@ function update() {
             item.x < player.x + player.width
         ) {
             if (item.type === 'candy') {
-                score++;
+                combo++;
+                const multiplier = combo >= 5 ? 2 : 1;
+                score += 1 * multiplier;
                 createParticles(item.x, item.y, item.color);
-                createFloatingText(item.x, item.y, '+1', item.color);
+                createFloatingText(item.x, item.y, `+${1 * multiplier}${multiplier > 1 ? ' COMBO!' : ''}`, item.color);
             } else if (item.type === 'golden') {
-                score += 5;
+                combo++;
+                const multiplier = combo >= 5 ? 2 : 1;
+                score += 5 * multiplier;
                 createParticles(item.x, item.y, '#ffd700', 20);
-                createFloatingText(item.x, item.y, '+5', '#ffd700');
+                createFloatingText(item.x, item.y, `+${5 * multiplier}${multiplier > 1 ? ' COMBO!' : ''}`, '#ffd700');
             } else if (item.type === 'rainbow') {
-                score += 10;
+                combo++;
+                const multiplier = combo >= 5 ? 2 : 1;
+                score += 10 * multiplier;
                 createParticles(item.x, item.y, '#ff00ff', 30);
                 createFloatingText(item.x, item.y, '🌈 RAINBOW RUSH!', '#ff00ff');
                 activateFeverMode();
@@ -297,9 +353,10 @@ function update() {
                     items.splice(i, 1);
                     continue;
                 }
-                score = Math.max(0, score - 5);
+                combo = 0;
+                score = Math.max(0, score - 10);
                 createParticles(item.x, item.y, '#fef08a', 15);
-                createFloatingText(item.x, item.y, '-5', '#ef4444');
+                createFloatingText(item.x, item.y, '-10 🍋', '#ef4444');
                 
                 // Screen shake effect when hitting a lemon
                 document.body.classList.add('shake');
