@@ -12,6 +12,8 @@ let gameActive = false;
 let spawnInterval;
 
 const treats = ['🧁', '🍰', '🍩', '🍪', '🍬', '🍭'];
+const rareTreats = ['🌟', '👑', '💎'];
+let slowMoActive = false;
 
 function init() {
     score = 0;
@@ -46,16 +48,21 @@ function updateUI() {
 function spawnTreats() {
     if (!gameActive) return;
 
-    const treatType = treats[Math.floor(Math.random() * treats.length)];
+    // Randomly choose between common and rare treats
+    const isRare = Math.random() < 0.1;
+    const treatType = isRare 
+        ? rareTreats[Math.floor(Math.random() * rareTreats.length)]
+        : treats[Math.floor(Math.random() * treats.length)];
+    
     const treat = document.createElement('div');
-    treat.className = 'cupcake';
+    treat.className = isRare ? 'cupcake rare' : 'cupcake';
     treat.textContent = treatType;
     
     const rect = gameCanvas.getBoundingClientRect();
     treat.style.left = Math.random() * (rect.width - 40) + 'px';
     
-    // Random fall duration between 2 and 4 seconds
-    const duration = 2 + Math.random() * 2;
+    // Rare treats fall slower and are worth more
+    const duration = isRare ? 5 + Math.random() * 2 : 2 + Math.random() * 2;
     treat.style.animationDuration = duration + 's';
     
     gameCanvas.appendChild(treat);
@@ -77,11 +84,17 @@ function spawnTreats() {
             pRect.top < tRect.bottom &&
             pRect.bottom > tRect.top
         ) {
-            score++;
+            const points = isRare ? 5 : 1;
+            score += points;
             updateUI();
-            createSparkles(tRect.left, tRect.top);
+            createSparkles(tRect.left, tRect.top, isRare ? '#ffd700' : '#ffffff');
             treat.remove();
             clearInterval(checkCollision);
+
+            // Rare treat bonus: Slow motion!
+            if (isRare) {
+                activateSlowMo();
+            }
         }
     }, 50);
 
@@ -102,7 +115,7 @@ function spawnTreats() {
     setTimeout(spawnTreats, nextSpawn);
 }
 
-function createSparkles(x, y) {
+function createSparkles(x, y, color = '#ffffff') {
     for (let i = 0; i < 8; i++) {
         const sparkle = document.createElement('div');
         sparkle.className = 'sparkle';
@@ -110,6 +123,7 @@ function createSparkles(x, y) {
         sparkle.style.position = 'absolute';
         sparkle.style.left = x + 'px';
         sparkle.style.top = y + 'px';
+        sparkle.style.color = color;
         sparkle.style.fontSize = '20px';
         sparkle.style.pointerEvents = 'none';
         sparkle.style.zIndex = '1000';
@@ -130,6 +144,25 @@ function createSparkles(x, y) {
         gameCanvas.appendChild(sparkle);
         setTimeout(() => sparkle.remove(), 600);
     }
+}
+
+function activateSlowMo() {
+    slowMoActive = true;
+    gameCanvas.style.filter = 'hue-rotate(45deg) saturate(1.5)';
+    gameCanvas.style.transition = 'filter 0.5s ease';
+    
+    const treats = document.querySelectorAll('.cupcake');
+    treats.forEach(t => {
+        t.style.animationPlayState = 'paused';
+    });
+
+    setTimeout(() => {
+        slowMoActive = false;
+        gameCanvas.style.filter = 'none';
+        document.querySelectorAll('.cupcake').forEach(t => {
+            t.style.animationPlayState = 'running';
+        });
+    }, 3000);
 }
 
 function endGame() {

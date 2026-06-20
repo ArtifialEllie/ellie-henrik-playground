@@ -61,6 +61,12 @@ body {
     animation: fall linear forwards;
 }
 
+.cupcake.rare {
+    font-size: 50px;
+    filter: drop-shadow(0 0 10px #ffd700);
+    z-index: 110;
+}
+
 @keyframes fall {
     0% { transform: translateY(-100px) rotate(0deg); }
     100% { transform: translateY(650px) rotate(360deg); }
