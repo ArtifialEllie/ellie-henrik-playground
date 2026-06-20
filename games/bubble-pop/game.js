@@ -257,9 +257,13 @@ class Bubble {
             this.type = 'golden-ticket';
             this.color = '#FFD700';
         } else if (rand > 0.987) {
+            this.type = 'magic-mirror';
+            this.color = '#e0f7fa';
+            this.radius = 35;
+        } else if (rand > 0.977) {
             this.type = 'magic-wand';
             this.color = '#da70d6';
-        } else if (rand > 0.977) {
+        } else if (rand > 0.967) {
             this.type = 'super-pop';
             this.color = '#ff4500';
         } else if (rand > 0.957) {
