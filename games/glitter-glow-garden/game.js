@@ -1,18 +1,22 @@
 const gardenArea = document.getElementById('garden-area');
 const glitterCountEl = document.getElementById('glitter-count');
 const flowerCountEl = document.getElementById('flower-count');
+const levelCountEl = document.getElementById('level-count');
 const plantBtn = document.getElementById('plant-btn');
 const collectBtn = document.getElementById('collect-btn');
 const messageEl = document.getElementById('message');
 
 let glitter = 20; // Start with some glitter!
 let flowers = 0;
+let level = 1;
+let glitterPerClick = 1;
 
 const flowerEmojis = ['🌸', '🌼', '🌻', '🌹', '🌷', '🌺', '🍀', '🍄'];
 
 function updateUI() {
     glitterCountEl.textContent = glitter;
     flowerCountEl.textContent = flowers;
+    levelCountEl.textContent = level;
 }
 
 function createGlitterParticle(x, y) {
@@ -51,9 +55,14 @@ function plantFlower() {
     
     flower.onclick = (e) => {
         createGlitterParticle(e.clientX, e.clientY);
-        glitter += 1;
+        glitter += glitterPerClick;
         updateUI();
         messageEl.textContent = "En blomst ga deg litt glitter! ✨";
+        
+        // Check for level up!
+        if (flowers >= level * 5) {
+            levelUp();
+        }
     };
     
     gardenArea.appendChild(flower);
@@ -73,6 +82,22 @@ function collectGlitter() {
     
     updateUI();
     messageEl.textContent = `Du fant ${amount} glitter-støv i luften! ✨`;
+}
+
+function levelUp() {
+    level++;
+    glitterPerClick++;
+    messageEl.textContent = `🌟 NIVÅ OPP! Du er nå nivå ${level}! Blomstene dine er mer magiske! ✨`;
+    
+    // Big celebration!
+    const rect = gardenArea.getBoundingClientRect();
+    for(let i=0; i<30; i++) {
+        createGlitterParticle(
+            rect.left + Math.random() * rect.width, 
+            rect.top + Math.random() * rect.height
+        );
+    }
+    updateUI();
 }
 
 plantBtn.addEventListener('click', plantFlower);
