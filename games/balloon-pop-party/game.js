@@ -1,6 +1,8 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
+const comboElement = document.getElementById('combo');
+const comboBoard = document.getElementById('combo-board');
 const timerElement = document.getElementById('time');
 const finalScoreElement = document.getElementById('final-score');
 const startScreen = document.getElementById('start-screen');
@@ -9,6 +11,7 @@ const startButton = document.getElementById('start-button');
 const restartButton = document.getElementById('restart-button');
 
 let score = 0;
+let combo = 0;
 let timeLeft = 60;
 let gameActive = false;
 let balloons = [];
@@ -16,6 +19,7 @@ let clouds = [];
 let globalParticles = [];
 let animationId;
 let timerInterval;
+let lastPopTime = 0;
 
 const COLORS = {
     NORMAL: ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'],
@@ -237,9 +241,39 @@ function handleInput(e) {
             const dist = Math.hypot(x - balloon.x, y - balloon.y);
             if (dist < balloon.radius) {
                 balloon.pop();
-                score += balloon.points;
+                
+                // Combo System
+                const now = Date.now();
+                if (now - lastPopTime < 1000) {
+                    combo++;
+                } else {
+                    combo = 1;
+                }
+                lastPopTime = now;
+
+                let multiplier = 1;
+                if (combo >= 10) multiplier = 3;
+                else if (combo >= 5) multiplier = 2;
+                else if (combo >= 2) multiplier = 1.5;
+
+                score += Math.floor(balloon.points * multiplier);
                 if (score < 0) score = 0;
+                
                 scoreElement.textContent = score;
+                
+                if (combo > 1) {
+                    comboBoard.classList.remove('hidden');
+                    comboElement.textContent = combo;
+                } else {
+                    comboBoard.classList.add('hidden');
+                }
+                
+                // Add combo particles if high combo
+                if (multiplier > 1) {
+                    for (let i = 0; i < 5; i++) {
+                        globalParticles.push(new Particle(x, y, '#FFD700'));
+                    }
+                }
             }
         }
     });
@@ -250,12 +284,14 @@ function startGame() {
         audioCtx.resume();
     }
     score = 0;
+    combo = 0;
     timeLeft = 60;
     gameActive = true;
     balloons = [];
     globalParticles = [];
     scoreElement.textContent = score;
     timerElement.textContent = timeLeft;
+    comboBoard.classList.add('hidden');
     
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');

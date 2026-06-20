@@ -23,7 +23,7 @@ body {
     z-index: 10;
 }
 
-#score-board, #timer {
+#score-board, #timer, #combo-board {
     background: rgba(255, 255, 255, 0.8);
     padding: 10px 20px;
     border-radius: 25px;
@@ -31,6 +31,17 @@ body {
     color: #ff69b4;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     border: 3px solid #ffb6c1;
+}
+
+#combo-board {
+    color: #ff1493;
+    font-weight: bold;
+    animation: bounce 0.3s ease-in-out;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
 }
 
 #start-screen, #game-over-screen {
