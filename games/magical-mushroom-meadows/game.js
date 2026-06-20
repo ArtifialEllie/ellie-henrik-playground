@@ -22,6 +22,8 @@ let timerInterval;
 let combo = 0;
 let comboTimer;
 let currentSkin = localStorage.getItem('mushroomSkin') || '#ff80ab';
+let frenzyMode = false;
+let frenzyTimer = 0;
 
 sporesEl.innerText = spores;
 
@@ -56,7 +58,10 @@ class Mushroom {
         this.decay = Math.random() * 0.005 + 0.002;
         
         const rand = Math.random();
-        if (rand > 0.9) {
+        if (rand > 0.98) {
+            this.type = 'rainbow';
+            this.color = 'rainbow';
+        } else if (rand > 0.9) {
             this.type = 'golden';
             this.color = '#ffd700';
         } else if (rand < 0.15) {
@@ -64,7 +69,7 @@ class Mushroom {
             this.color = '#9c27b0'; // Deep purple
         } else {
             this.type = 'normal';
-            this.color = currentSkin === 'rainbow' ? `hsl(${Math.random() * 360}, 70%, 70%)` : currentSkin;
+            this.color = (currentSkin === 'rainbow' || this.color === 'rainbow') ? `hsl(${Math.random() * 360}, 70%, 70%)` : currentSkin;
         }
     }
 
@@ -97,6 +102,11 @@ class Mushroom {
         ctx.shadowBlur = 15 * this.growth;
         ctx.shadowColor = this.color;
         ctx.fillStyle = this.color;
+        if (this.type === 'rainbow') {
+            const grad = ctx.createLinearGradient(-currentRadius, 0, currentRadius, 0);
+            grad.addColorStop(0, 'red'); grad.addColorStop(0.2, 'yellow'); grad.addColorStop(0.4, 'green'); grad.addColorStop(0.6, 'blue'); grad.addColorStop(0.8, 'purple'); grad.addColorStop(1, 'red');
+            ctx.fillStyle = grad;
+        }
         ctx.beginPath();
         ctx.arc(0, 0, currentRadius, Math.PI, 0);
         ctx.fill();
@@ -139,6 +149,33 @@ class Particle {
     }
 }
 
+class BackgroundSpore {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * canvasWidth;
+        this.y = Math.random() * canvasHeight;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.size = Math.random() * 3;
+        this.alpha = Math.random() * 0.5;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvasWidth || this.y < 0 || this.y > canvasHeight) this.reset();
+    }
+    draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 class FloatingText {
     constructor(x, y, text, color) {
         this.x = x;
@@ -165,6 +202,8 @@ class FloatingText {
 let mushrooms = [];
 let particles = [];
 let floatingTexts = [];
+let bgSpores = [];
+for(let i=0; i<50; i++) bgSpores.push(new BackgroundSpore());
 
 function spawnMushroom() {
     if (!gameActive) return;
@@ -197,10 +236,19 @@ function popMushroom(index) {
     
     // Visuals
     for (let i = 0; i < 12; i++) {
-        particles.push(new Particle(m.x, m.y, m.color));
+        if (m.type === 'rainbow') {
+            for(let j=0; j<20; j++) {
+                particles.push(new Particle(m.x, m.y, `hsl(${Math.random() * 360}, 100%, 70%)`));
+            }
+        } else {
+            particles.push(new Particle(m.x, m.y, m.color));
+        }
     }
     
-    if (m.type === 'poison') {
+    if (m.type === 'rainbow') {
+        triggerFrenzy();
+        floatingTexts.push(new FloatingText(m.x, m.y, `RAINBOW FRENZY! 🌈✨`, '#ff00ff'));
+    } else if (m.type === 'poison') {
         floatingTexts.push(new FloatingText(m.x, m.y, `OOPS! -5 🍄`, '#9c27b0'));
         combo = 0;
         score = Math.max(0, score - 5);
@@ -210,14 +258,15 @@ function popMushroom(index) {
         
         // Logic
         combo++;
+        const multiplier = frenzyMode ? 5 : 1;
         if (m.type === 'golden') {
-            const bonus = 10 + (combo * 2);
+            const bonus = (10 + (combo * 2)) * multiplier;
             score += bonus;
             spores += bonus;
             floatingTexts.push(new FloatingText(m.x, m.y - 20, `GOLDEN! ✨ +${bonus}`, '#ffd700'));
         } else {
-            score += 1;
-            spores += 1;
+            score += 1 * multiplier;
+            spores += 1 * multiplier;
         }
     }
     
@@ -227,6 +276,16 @@ function popMushroom(index) {
     
     updateCombo();
     mushrooms.splice(index, 1);
+}
+
+function triggerFrenzy() {
+    frenzyMode = true;
+    frenzyTimer = 300; // 5 seconds at 60fps
+    document.body.classList.add('frenzy-bg');
+    setTimeout(() => {
+        frenzyMode = false;
+        document.body.classList.remove('frenzy-bg');
+    }, 5000);
 }
 
 function updateCombo() {
@@ -248,7 +307,19 @@ function gameLoop() {
         return;
     }
 
+    if (frenzyMode) {
+        frenzyTimer--;
+        ctx.fillStyle = `hsla(${Date.now() % 360}, 50%, 95%, 0.2)`;
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    }
+    // Note: We don't clearRect if we want the frenzy effect to persist slightly or 
+    // we do it AFTER the effect if we want the flash. 
+    // Actually, for a clean game loop:
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    if (frenzyMode) {
+        ctx.fillStyle = `hsla(${Date.now() % 360}, 50%, 95%, 0.2)`;
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    }
 
     // Background decoration (simple grass patches)
     ctx.fillStyle = '#c8e6c9';
