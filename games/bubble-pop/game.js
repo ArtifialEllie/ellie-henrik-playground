@@ -112,7 +112,10 @@ function playPopSound(isGold = false, isStinky = false) {
     } else if (isStinky) {
         playSound(150, 'sawtooth', 0.3);
     } else {
-        playSound(400 + Math.random() * 400, 'sine', 0.1);
+        // Use the color-coded notes for a more musical experience! 🎵
+        const bubbleColor = bubbles.find(b => b.radius === 0)?.color || COLORS[0]; // This is a hacky way to get the color of the bubble being popped
+        const freq = COLOR_NOTES[bubbleColor] || (400 + Math.random() * 400);
+        playSound(freq, 'sine', 0.1);
     }
 }
 
@@ -984,7 +987,10 @@ function handlePop(e) {
             }
             createPopEffect(b.x, b.y, b.color);
             
-            if (b.type === 'mystery-box') {
+            // Pass the bubble's color to the sound function for musical pops! 🎵
+            const popColor = b.color;
+            bubbles.splice(i, 1); // Remove bubble first so it's not found in playPopSound's find()
+            playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
                 playPopSound(true, false);
                 const mysteryOutcomes = [
                     { text: 'JACKPOT! 💰', action: () => { totalGold += 1000; localStorage.setItem('bubblePopTotalGold', totalGold); totalGoldEl.innerText = totalGold; }, bonus: 2000, color: 'gold' },
@@ -1326,8 +1332,8 @@ function handlePop(e) {
                 createPopEffect(target.x, target.y, target.color);
                 score += 10;
                 floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
-            target.hits = 0; // Mark for removal
-        });
+                target.hits = 0; // Mark for removal
+            });
         } else if (b.type === 'rainbow-spiral') {
             playPopSound(true, false);
             const spiralBonus = 200;

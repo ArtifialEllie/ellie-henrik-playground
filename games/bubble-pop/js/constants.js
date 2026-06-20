@@ -1,4 +1,13 @@
 const COLORS = ['#ff80ab', '#81d4fa', '#ce93d8', '#b39ddb', '#fff59d', '#a5d6a7', '#ffccbc'];
+const COLOR_NOTES = {
+    '#ff80ab': 261.63, // C4
+    '#81d4fa': 293.66, // D4
+    '#ce93d8': 329.63, // E4
+    '#b39ddb': 349.23, // F4
+    '#fff59d': 392.00, // G4
+    '#a5d6a7': 440.00, // A4
+    '#ffccbc': 493.88, // B4
+};
 
 const QUESTS = [
     { text: 'Pop 10 bubbles! 🫧', goal: 10, reward: 50, rewardGold: 10 },
