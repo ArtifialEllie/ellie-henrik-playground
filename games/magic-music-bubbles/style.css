@@ -1,0 +1,95 @@
+:root {
+    --primary-blue: #a5f3fc;
+    --primary-purple: #ddd6fe;
+    --accent-pink: #fbcfe8;
+    --bg-gradient: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+    --text-color: #4c1d95;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    user-select: none;
+}
+
+#gameCanvas {
+    display: block;
+    cursor: crosshair;
+}
+
+#game-ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 10;
+    text-shadow: 2px 2px 0px white;
+}
+
+#start-overlay, #overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    text-align: center;
+    backdrop-filter: blur(8px);
+}
+
+h1 {
+    font-size: 3.5rem;
+    color: #7c3aed;
+    margin-bottom: 10px;
+    text-shadow: 3px 3px 0px white;
+}
+
+.btn {
+    padding: 15px 40px;
+    font-size: 1.8rem;
+    background: #a78bfa;
+    border: none;
+    border-radius: 50px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #7c3aed;
+    transition: transform 0.1s, box-shadow 0.1s;
+    font-family: inherit;
+}
+
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #7c3aed;
+}
+
+#timer {
+    color: #ef4444;
+}
+
+.combo-text {
+    position: absolute;
+    pointer-events: none;
+    font-weight: bold;
+    color: #8b5cf6;
+    animation: floatUp 0.8s ease-out forwards;
+    font-size: 1.5rem;
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-50px); opacity: 0; }
+}
