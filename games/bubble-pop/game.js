@@ -711,7 +711,7 @@ class MagicalPet {
         this.emoji = '🐱'; 
         this.floatOffset = 0;
         this.floatDir = 1;
-        this.autoPopTimer = 0;
+        this.autoPopTimer = 8000;
         this.popInterval = 8000;
         this.popRange = 150;
         this.sugarRushTimer = 0;
@@ -750,6 +750,13 @@ class MagicalPet {
             } else if (this.mood === 'Hungry' && Math.random() < 0.005) {
                 this.mood = 'Happy';
             }
+        }
+
+        // Auto-pop timer
+        this.autoPopTimer--;
+        if (this.autoPopTimer <= 0) {
+            this.tryAutoPop();
+            this.autoPopTimer = this.popInterval;
         }
 
     // Pet Evolution Logic
