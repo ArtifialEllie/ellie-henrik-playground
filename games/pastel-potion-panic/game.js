@@ -8,7 +8,43 @@ const overlay = document.getElementById('overlay');
 canvas.width = 800;
 canvas.height = 600;
 
+class SoundManager {
+    constructor() {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    playPop(freq = 400, type = 'sine') {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+    }
+
+    playSparkle() {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+    }
+}
+
+let sound;
 let score = 0;
+
 let timeLeft = 60;
 let gameActive = false;
 let bubbles = [];
@@ -311,8 +347,11 @@ function update() {
                         particles.push(new Particle(bubble.x, bubble.y, bubble.color.main));
                     }
                     
+                    if (sound) sound.playPop(400 + combo * 50);
+                    
                     bubbles.splice(index, 1);
                     spawnBubble();
+
                 } else {
                     if (bubble.type === 'rainbow') {
                         combo++;
@@ -324,8 +363,10 @@ function update() {
                         for (let i = 0; i < 15; i++) {
                             particles.push(new Particle(bubble.x, bubble.y, '#ffffff'));
                         }
+                        if (sound) sound.playSparkle();
                         bubbles.splice(index, 1);
                         spawnBubble();
+
                     } else {
                         combo = 0;
                         lastColorKey = null;
@@ -373,6 +414,7 @@ function endGame() {
 
 startButton.addEventListener('click', () => {
     overlay.classList.add('hidden');
+    if (!sound) sound = new SoundManager();
     initGame();
     gameActive = true;
     update();
