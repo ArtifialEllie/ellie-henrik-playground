@@ -15,6 +15,7 @@ let bubbles = [];
 let bottles = [];
 let particles = [];
 let sparkles = [];
+let floatingTexts = [];
 
 const COLORS = {
     pink: { main: '#ffb3d9', light: '#ffeef8', dark: '#ff85b2' },
@@ -37,6 +38,7 @@ class Bubble {
         this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
         this.y = canvas.height + this.radius;
         this.speed = 1 + Math.random() * 3;
+        this.type = Math.random() > 0.95 ? 'rainbow' : 'normal';
         this.colorKey = COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
         this.color = COLORS[this.colorKey];
         this.vx = (Math.random() - 0.5) * 1;
@@ -56,7 +58,11 @@ class Bubble {
     draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color.main;
+        if (this.type === 'rainbow') {
+            ctx.fillStyle = `hsl(${Date.now() / 5 % 360}, 80%, 70%)`;
+        } else {
+            ctx.fillStyle = this.color.main;
+        }
         ctx.fill();
 
         const wobbleX = Math.sin(this.wobbleOffset) * 3;
@@ -200,12 +206,36 @@ class Sparkle {
     }
 }
 
+class FloatingText {
+    constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 1.0;
+        this.vy = -2;
+    }
+    update() {
+        this.y += this.vy;
+        this.life -= 0.02;
+    }
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold 20px Comic Sans MS';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 function initGame() {
     score = 0;
     timeLeft = 60;
     bubbles = [];
     bottles = [];
     particles = [];
+    floatingTexts = [];
     
     const spacing = canvas.width / 4;
     for (let i = 0; i < 4; i++) {
@@ -261,7 +291,7 @@ function update() {
                 bubble.x - bubble.radius < bottle.x + bottle.width) {
                 
                 if (bubble.colorKey === bottle.colorKey) {
-                    if (bubble.colorKey === lastColorKey) {
+                    if (bubble.colorKey === lastColorKey || bubble.type === 'rainbow') {
                         combo++;
                     } else {
                         combo = 1;
@@ -271,6 +301,9 @@ function update() {
                     const points = 10 * combo;
                     score += points;
                     scoreElement.innerText = `Score: ${score}`;
+                    if (combo > 1) {
+                        floatingTexts.push(new FloatingText(bubble.x, bubble.y, `x${combo} COMBO! ✨`, '#ffeb3b'));
+                    }
                     bottle.targetFillLevel = Math.min(1, bottle.targetFillLevel + 0.1);
                     
                     // Particle effect
@@ -281,14 +314,27 @@ function update() {
                     bubbles.splice(index, 1);
                     spawnBubble();
                 } else {
-                    combo = 0;
-                    lastColorKey = null;
-                    score = Math.max(0, score - 5);
-                    scoreElement.innerText = `Score: ${score}`;
-                    
-                    bottle.shake = 10;
-                    bubbles.splice(index, 1);
-                    spawnBubble();
+                    if (bubble.type === 'rainbow') {
+                        combo++;
+                        const points = 20 * combo;
+                        score += points;
+                        scoreElement.innerText = `Score: ${score}`;
+                        floatingTexts.push(new FloatingText(bubble.x, bubble.y, `RAINBOW POP! 🌈`, '#ff00ff'));
+                        bottle.targetFillLevel = Math.min(1, bottle.targetFillLevel + 0.1);
+                        for (let i = 0; i < 15; i++) {
+                            particles.push(new Particle(bubble.x, bubble.y, '#ffffff'));
+                        }
+                        bubbles.splice(index, 1);
+                        spawnBubble();
+                    } else {
+                        combo = 0;
+                        lastColorKey = null;
+                        score = Math.max(0, score - 5);
+                        scoreElement.innerText = `Score: ${score}`;
+                        bottle.shake = 10;
+                        bubbles.splice(index, 1);
+                        spawnBubble();
+                    }
                 }
             }
         });
@@ -299,6 +345,12 @@ function update() {
         p.update();
         p.draw();
         if (p.life <= 0) particles.splice(i, 1);
+    });
+
+    floatingTexts.forEach((ft, i) => {
+        ft.update();
+        ft.draw();
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
     });
 
     timeLeft -= 1/60;
