@@ -999,6 +999,31 @@ function triggerWindGust() {
     }, 4000);
 }
 
+function triggerRainbowCascade() {
+    const cascadeAlert = document.getElementById('cascade-alert');
+    cascadeAlert.style.display = 'block';
+    cascadeAlert.style.color = '#ff00ff';
+    cascadeAlert.style.textShadow = '4px 4px #00ffff';
+
+    // Create a cascade of rainbow bubbles falling from the top
+    for (let i = 0; i < 40; i++) {
+        setTimeout(() => {
+            if (!gameActive) return;
+            const rb = new Bubble(false);
+            rb.type = 'rainbow-burst';
+            rb.color = 'rainbow';
+            rb.x = Math.random() * canvasWidth;
+            rb.y = -rb.radius;
+            rb.speed = Math.random() * 3 + 2;
+            bubbles.push(rb);
+        }, i * 80);
+    }
+
+    setTimeout(() => {
+        cascadeAlert.style.display = 'none';
+    }, 6000);
+}
+
 function triggerMagnetism() {
     isMagnetic = true;
     const magnetAlert = document.createElement('div');
@@ -1544,6 +1569,7 @@ function handlePop(e) {
     if (Math.random() < 0.003) triggerDiscoParty();
     if (Math.random() < 0.004) triggerSlowMo();
     if (Math.random() < 0.005) triggerWindGust();
+    if (Math.random() < 0.002) triggerRainbowCascade();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
     updateCombo();
