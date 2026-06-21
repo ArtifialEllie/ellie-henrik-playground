@@ -33,7 +33,65 @@ const companionBubble = document.getElementById('companion-bubble');
 const burstButton = document.getElementById('burst-button');
 const soundToggle = document.getElementById('sound-toggle');
 
-function init() {
+function createMagicFlower(position) {
+    const flowerGroup = new THREE.Group();
+    
+    // Center of the flower
+    const centerGeo = new THREE.SphereGeometry(0.2, 16, 16);
+    const centerMat = new THREE.MeshPhongMaterial({ color: 0xffff00, emissive: 0xffaa00 });
+    const center = new THREE.Mesh(centerGeo, centerMat);
+    flowerGroup.add(center);
+    
+    // Petals
+    const petalGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    const petalColors = [0xff69b4, 0xff1493, 0xda70d6, 0xee82ee];
+    
+    for (let i = 0; i < 6; i++) {
+        const petalMat = new THREE.MeshPhongMaterial({ 
+            color: petalColors[i % petalColors.length],
+            transparent: true,
+            opacity: 0.8
+        });
+        const petal = new THREE.Mesh(petalGeo, petalMat);
+        
+        const angle = (i / 6) * Math.PI * 2;
+        petal.position.set(Math.cos(angle) * 0.3, 0, Math.sin(angle) * 0.3);
+        petal.scale.set(1, 0.5, 1);
+        flowerGroup.add(petal);
+    }
+    
+    flowerGroup.position.copy(position);
+    scene.add(flowerGroup);
+    
+    // Animation for the flower: float up and fade out
+    const startTime = Date.now();
+    const duration = 3000;
+    
+    function animateFlower() {
+        const elapsed = Date.now() - startTime;
+        const progress = elapsed / duration;
+        
+        if (progress >= 1) {
+            scene.remove(flowerGroup);
+            return;
+        }
+        
+        flowerGroup.position.y += 0.01;
+        flowerGroup.rotation.y += 0.02;
+        
+        flowerGroup.children.forEach(child => {
+            if (child.material && child.material.opacity !== undefined) {
+                child.material.opacity = 1 - progress;
+            }
+        });
+        
+        requestAnimationFrame(animateFlower);
+    }
+    
+    animateFlower();
+}
+
+
     // Load high score
     let savedHighScore = localStorage.getItem('magicPrismHighScore') || 0;
     highScoreElement.innerText = savedHighScore;
