@@ -316,6 +316,39 @@ function onMouseDown(event) {
             // Check for constellation clicks first! ✨
            checkConstellationClick(object);
            
+           // --- NEW: PRISM FUSION MECHANIC! 💎 ---
+           const fusionRadius = 1.5;
+           const nearbyPrisms = prisms.filter(p => p !== object && p.position.distanceTo(object.position) < fusionRadius);
+           
+           if (nearbyPrisms.length > 0) {
+               const fusionTarget = nearbyPrisms[0];
+               
+               // Fuse the two prisms!
+               const fusionBonus = 100 * ((object.level || 1) + (fusionTarget.level || 1));
+               score += fusionBonus;
+               createFloatingText(`FUSION! +${fusionBonus} 💎`, event.clientX, event.clientY);
+               playSound(1500, 'sine', 0.2, 0.1);
+               playSound(1800, 'sine', 0.2, 0.1);
+               
+               // Level up the main prism significantly
+               object.level = (object.level || 1) + (fusionTarget.level || 1);
+               const newScale = 1 + (object.level - 1) * 0.2;
+               object.scale.set(newScale, newScale, newScale);
+               
+               // Visual effect for fusion
+               spawnSpark(object.position);
+               spawnSpark(fusionTarget.position);
+               
+               // Remove the fused prism
+               scene.remove(fusionTarget);
+               prisms = prisms.filter(p => p !== fusionTarget);
+               
+               // Extra magic energy for fusion!
+               magicEnergy = Math.min(MAX_MAGIC_ENERGY, magicEnergy + 15);
+               updateEnergyUI();
+           }
+           // --- END FUSION MECHANIC ---
+
            // Check if it's a golden prism
         if (object.isMirrorPrism) {
             for (let i = 0; i < 2; i++) {
