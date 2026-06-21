@@ -1024,6 +1024,41 @@ function triggerRainbowCascade() {
     }, 6000);
 }
 
+function triggerMirrorRealm() {
+    const mirrorAlert = document.getElementById('mirror-realm-alert');
+    mirrorAlert.style.display = 'block';
+    mirrorAlert.style.color = '#e0f7fa';
+    mirrorAlert.style.textShadow = '2px 2px #006064';
+    
+    const mirrorDuration = 6000;
+    const startTime = Date.now();
+    
+    const mirrorInterval = setInterval(() => {
+        if (!gameActive || Date.now() - startTime > mirrorDuration) {
+            clearInterval(mirrorInterval);
+            mirrorAlert.style.display = 'none';
+            return;
+        }
+        
+        // Mirror Realm effect: Every bubble gets a twin on the opposite side of the screen
+        // To avoid infinite spawning, we only do this occasionally or for a few bubbles
+        if (Math.random() < 0.05) {
+            const sourceBubble = bubbles[Math.floor(Math.random() * bubbles.length)];
+            if (sourceBubble) {
+                const twin = new Bubble(false);
+                twin.radius = sourceBubble.radius;
+                twin.color = sourceBubble.color;
+                twin.type = sourceBubble.type;
+                twin.x = canvasWidth - sourceBubble.x;
+                twin.y = sourceBubble.y;
+                twin.speed = sourceBubble.speed;
+                twin.vx = -sourceBubble.vx;
+                bubbles.push(twin);
+            }
+        }
+    }, 100);
+}
+
 function triggerMagnetism() {
     isMagnetic = true;
     const magnetAlert = document.createElement('div');
@@ -1190,26 +1225,29 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC WAND! 🪄 +${wandBonus}`, '#da70d6'));
                 createPopEffect(b.x, b.y, '#da70d6');
                 triggerFrenzy();
-            } else if (b.type === 'magic-mirror') {
-                playPopSound(true, false);
-                const mirrorBonus = 500;
-                score += mirrorBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC MIRROR! 🪞 +${mirrorBonus}`, '#e0f7fa'));
-                createPopEffect(b.x, b.y, '#e0f7fa');
-                
-                // Create a Crystal Clone of the pet!
-                const clone = new MagicalPet();
-                clone.emoji = '💎' + pet.emoji;
-                clone.isClone = true;
-                petClones.push(clone);
-                floatingTexts.push(new FloatingText(b.x, b.y, `CRYSTAL CLONE! 💎✨`, 'gold'));
-                
-                setTimeout(() => {
-                    petClones = petClones.filter(c => c !== clone);
-                }, 10000);
-                
-                triggerFrenzy();
-            } else if (b.type === 'magic-burst') {
+            } else                if (b.type === 'magic-mirror') {
+                    playPopSound(true, false);
+                    const mirrorBonus = 500;
+                    score += mirrorBonus;
+                    floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC MIRROR! 🪞 +${mirrorBonus}`, '#e0f7fa'));
+                    createPopEffect(b.x, b.y, '#e0f7fa');
+                    
+                    // Trigger the Mirror Realm event!
+                    triggerMirrorRealm();
+                    
+                    // Create a Crystal Clone of the pet!
+                    const clone = new MagicalPet();
+                    clone.emoji = '💎' + pet.emoji;
+                    clone.isClone = true;
+                    petClones.push(clone);
+                    floatingTexts.push(new FloatingText(b.x, b.y, `CRYSTAL CLONE! 💎✨`, 'gold'));
+                    
+                    setTimeout(() => {
+                        petClones = petClones.filter(c => c !== clone);
+                    }, 10000);
+                    
+                    triggerFrenzy();
+                } else if (b.type === 'magic-burst') {
                 playPopSound(true, false);
                 const burstBonus = 150;
                 score += burstBonus;
