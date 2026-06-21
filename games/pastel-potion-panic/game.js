@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
+const highscoreElement = document.getElementById('highscore');
 const timerElement = document.getElementById('timer');
 const startButton = document.getElementById('start-button');
 const overlay = document.getElementById('overlay');
@@ -44,6 +45,7 @@ class SoundManager {
 
 let sound;
 let score = 0;
+let highscore = localStorage.getItem('potionPanicHighscore') || 0;
 
 let timeLeft = 60;
 let gameActive = false;
@@ -267,6 +269,7 @@ class FloatingText {
 
 function initGame() {
     score = 0;
+    highscoreElement.innerText = `Best: ${highscore} ✨`;
     timeLeft = 60;
     bubbles = [];
     bottles = [];
@@ -406,6 +409,12 @@ function update() {
 
 function endGame() {
     gameActive = false;
+
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem('potionPanicHighscore', highscore);
+    }
+
     overlay.classList.remove('hidden');
     document.getElementById('overlay-title').innerText = "Time's Up!";
     document.getElementById('overlay-text').innerText = `You brewed ${score} points worth of magical potions! ✨`;
