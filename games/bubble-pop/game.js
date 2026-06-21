@@ -231,6 +231,7 @@ let particles = [];
 let trail = [];
 let floatingTexts = [];
 let magicFlowers = [];
+let clouds = [];
 let lastMouseX = canvasWidth / 2;
 let lastMouseY = canvasHeight / 2;
 let petClones = [];
@@ -651,12 +652,42 @@ class MagicFlower {
         ctx.arc(0, 0, this.size / 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-        ctx.globalAlpha = 1.0;
+       ctx.globalAlpha = 1.0;
+   }
+}
+
+class Cloud {
+    constructor() {
+        this.reset();
+        this.x = Math.random() * canvasWidth;
+    }
+    reset() {
+        this.x = -200;
+        this.y = Math.random() * (canvasHeight * 0.4);
+        this.speed = Math.random() * 0.5 + 0.2;
+        this.scale = Math.random() * 0.5 + 0.5;
+        this.opacity = Math.random() * 0.3 + 0.2;
+    }
+    update() {
+        this.x += this.speed;
+        if (this.x > canvasWidth + 200) this.reset();
+    }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 30 * this.scale, 0, Math.PI * 2);
+        ctx.arc(this.x + 25 * this.scale, this.y - 10 * this.scale, 25 * this.scale, 0, Math.PI * 2);
+        ctx.arc(this.x + 50 * this.scale, this.y, 30 * this.scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
     }
 }
+
 class MagicalPet {
     constructor() {
-        this.x = canvasWidth / 2;
+       this.x = canvasWidth / 2;
         this.y = canvasHeight / 2;
         this.targetX = this.x;
         this.targetY = this.y;
