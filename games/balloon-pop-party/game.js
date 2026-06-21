@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const comboElement = document.getElementById('combo');
 const comboBoard = document.getElementById('combo-board');
+const feverBoard = document.getElementById('fever-board');
 const timerElement = document.getElementById('time');
 const finalScoreElement = document.getElementById('final-score');
 const startScreen = document.getElementById('start-screen');
@@ -20,6 +21,8 @@ let globalParticles = [];
 let animationId;
 let timerInterval;
 let lastPopTime = 0;
+let feverMode = false;
+let feverTimer = 0;
 
 const COLORS = {
     NORMAL: ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'],
@@ -192,7 +195,13 @@ function resize() {
 function spawnBalloon() {
     if (!gameActive) return;
     balloons.push(new Balloon());
-    setTimeout(spawnBalloon, Math.random() * 800 + 400);
+    
+    let spawnRate = Math.random() * 800 + 400;
+    if (feverMode) {
+        spawnRate = Math.random() * 300 + 100;
+    }
+    
+    setTimeout(spawnBalloon, spawnRate);
 }
 
 function gameLoop() {
@@ -220,6 +229,13 @@ function gameLoop() {
     balloons = balloons.filter(b => !b.popped);
     
     if (gameActive) {
+        if (feverMode) {
+            feverTimer--;
+            if (feverTimer <= 0) {
+                feverMode = false;
+                feverBoard.classList.add('hidden');
+            }
+        }
         animationId = requestAnimationFrame(gameLoop);
     }
 }
@@ -267,6 +283,11 @@ function handleInput(e) {
                 } else {
                     comboBoard.classList.add('hidden');
                 }
+
+                // Fever Mode Trigger
+                if (combo >= 15) {
+                    triggerFever();
+                }
                 
                 // Add combo particles if high combo
                 if (multiplier > 1) {
@@ -279,6 +300,18 @@ function handleInput(e) {
     });
 }
 
+function triggerFever() {
+    if (feverMode) return;
+    feverMode = true;
+    feverTimer = 300; // Approx 5 seconds at 60fps
+    feverBoard.classList.remove('hidden');
+    
+    // Special effects for fever
+    for (let i = 0; i < 20; i++) {
+        globalParticles.push(new Particle(canvas.width / 2, canvas.height / 2, '#FFD700'));
+    }
+}
+
 function startGame() {
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
@@ -289,9 +322,11 @@ function startGame() {
     gameActive = true;
     balloons = [];
     globalParticles = [];
+    feverMode = false;
     scoreElement.textContent = score;
     timerElement.textContent = timeLeft;
     comboBoard.classList.add('hidden');
+    feverBoard.classList.add('hidden');
     
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
