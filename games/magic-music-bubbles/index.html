@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Music Bubbles 🎵🫧</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui">
+        <div>Harmoni: <span id="score">0</span> ✨</div>
+        <div>Tid: <span id="timer">60</span>s ⏰</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+
+    <div id="start-overlay">
+        <h1>Magic Music Bubbles 🎵🫧</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 0px;">Popp boblene i takt med magien!</p>
+        <p style="font-size: 1rem; margin-bottom: 20px; color: #888;">Tips: Jo raskere du popper, jo mer harmoni får du!</p>
+        <button class="btn" id="start-btn">Start Symfonien! 🌈</button>
+    </div>
+
+    <div id="overlay" style="display: none;">
+        <h1 id="status-text">Musikken stilner... 🌸</h1>
+        <p id="final-score" style="font-size: 1.5rem; margin-bottom: 30px;">Du skapte 0 harmoni!</p>
+        <button class="btn" onclick="location.reload()">Spill igjen! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <script src="game.js"></script>
+</body>
+</html>

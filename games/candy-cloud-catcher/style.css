@@ -87,10 +87,17 @@ h1 {
     box-shadow: 0 6px 0 #db2777;
     transition: transform 0.1s, box-shadow 0.1s;
     font-family: inherit;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 .btn:active {
-    transform: translateY(4px);
+    transform: translateY(4px) scale(0.95);
     box-shadow: 0 2px 0 #db2777;
 }
 
