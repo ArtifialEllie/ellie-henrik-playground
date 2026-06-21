@@ -14,6 +14,7 @@ let gameActive = false;
 let bubbles = [];
 let bottles = [];
 let particles = [];
+let sparkles = [];
 
 const COLORS = {
     pink: { main: '#ffb3d9', light: '#ffeef8', dark: '#ff85b2' },
@@ -22,6 +23,9 @@ const COLORS = {
     purple: { main: '#e1bee7', light: '#f3e5f5', dark: '#ce93d8' }
 };
 const COLOR_KEYS = Object.keys(COLORS);
+
+let combo = 0;
+let lastColorKey = null;
 
 class Bubble {
     constructor() {
@@ -36,6 +40,8 @@ class Bubble {
         this.colorKey = COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
         this.color = COLORS[this.colorKey];
         this.vx = (Math.random() - 0.5) * 1;
+        this.wobbleOffset = Math.random() * Math.PI * 2;
+        this.wobbleSpeed = 0.05 + Math.random() * 0.05;
     }
 
     update() {
@@ -44,6 +50,7 @@ class Bubble {
         if (this.y < -this.radius) {
             this.reset();
         }
+        this.wobbleOffset += this.wobbleSpeed;
     }
 
     draw() {
@@ -51,7 +58,8 @@ class Bubble {
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = this.color.main;
         ctx.fill();
-        
+
+        const wobbleX = Math.sin(this.wobbleOffset) * 3;
         // Highlight
         ctx.beginPath();
         ctx.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.2, 0, Math.PI * 2);
@@ -75,6 +83,7 @@ class Bottle {
         this.color = COLORS[colorKey];
         this.fillLevel = 0;
         this.targetFillLevel = 0;
+        this.shake = 0;
     }
 
     update() {
@@ -83,49 +92,54 @@ class Bottle {
         } else if (this.fillLevel > this.targetFillLevel) {
             this.fillLevel -= 0.05;
         }
+        if (this.shake > 0) {
+            this.shake--;
+        }
     }
 
     draw() {
         const centerX = this.x + this.width / 2;
-        
+        const offsetX = this.shake > 0 ? (Math.random() - 0.5) * 6 : 0;
+        const currentX = this.x + offsetX;
+
         // Bottle Body
         ctx.strokeStyle = '#5d5d5d';
         ctx.lineWidth = 4;
         ctx.lineJoin = 'round';
         
         ctx.beginPath();
-        ctx.moveTo(this.x, this.y + 20);
-        ctx.lineTo(this.x, this.y + this.height);
-        ctx.lineTo(this.x + this.width, this.y + this.height);
-        ctx.lineTo(this.x + this.width, this.y + 20);
-        ctx.lineTo(this.x + this.width * 0.7, this.y + 20);
-        ctx.lineTo(this.x + this.width * 0.7, this.y);
-        ctx.lineTo(this.x + this.width * 0.3, this.y);
-        ctx.lineTo(this.x + this.width * 0.3, this.y + 20);
+        ctx.moveTo(currentX, this.y + 20);
+        ctx.lineTo(currentX, this.y + this.height);
+        ctx.lineTo(currentX + this.width, this.y + this.height);
+        ctx.lineTo(currentX + this.width, this.y + 20);
+        ctx.lineTo(currentX + this.width * 0.7, this.y + 20);
+        ctx.lineTo(currentX + this.width * 0.7, this.y);
+        ctx.lineTo(currentX + this.width * 0.3, this.y);
+        ctx.lineTo(currentX + this.width * 0.3, this.y + 20);
         ctx.closePath();
         ctx.stroke();
         
         // Potion Fill
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(this.x + 2, this.y + 22);
-        ctx.lineTo(this.x + 2, this.y + this.height - 2);
-        ctx.lineTo(this.x + this.width - 2, this.y + this.height - 2);
-        ctx.lineTo(this.x + this.width - 2, this.y + 22);
+        ctx.moveTo(currentX + 2, this.y + 22);
+        ctx.lineTo(currentX + 2, this.y + this.height - 2);
+        ctx.lineTo(currentX + this.width - 2, this.y + this.height - 2);
+        ctx.lineTo(currentX + this.width - 2, this.y + 22);
         ctx.clip();
         
         const fillHeight = this.fillLevel * (this.height - 24);
         ctx.fillStyle = this.color.main;
-        ctx.fillRect(this.x, this.y + this.height - 22 - fillHeight, this.width, fillHeight);
+        ctx.fillRect(currentX, this.y + this.height - 22 - fillHeight, this.width, fillHeight);
         ctx.restore();
         
         // Label
         ctx.fillStyle = 'white';
-        ctx.fillRect(this.x + 5, this.y + 40, this.width - 10, 20);
+        ctx.fillRect(currentX + 5, this.y + 40, this.width - 10, 20);
         ctx.fillStyle = '#5d5d5d';
         ctx.font = '10px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(this.colorKey.toUpperCase(), centerX, this.y + 53);
+        ctx.fillText(this.colorKey.toUpperCase(), centerX + offsetX, this.y + 53);
     }
 }
 
@@ -156,6 +170,36 @@ class Particle {
     }
 }
 
+class Sparkle {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 3;
+        this.speed = 0.2 + Math.random() * 0.5;
+        this.alpha = 0.1 + Math.random() * 0.5;
+        this.fadeSpeed = 0.005 + Math.random() * 0.01;
+    }
+
+    update() {
+        this.y -= this.speed;
+        this.alpha -= this.fadeSpeed;
+        if (this.alpha <= 0 || this.y < 0) this.reset();
+    }
+
+    draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 function initGame() {
     score = 0;
     timeLeft = 60;
@@ -170,6 +214,11 @@ function initGame() {
     
     for (let i = 0; i < 5; i++) {
         bubbles.push(new Bubble());
+    }
+
+    sparkles = [];
+    for (let i = 0; i < 30; i++) {
+        sparkles.push(new Sparkle());
     }
     
     scoreElement.innerText = `Score: ${score}`;
@@ -186,6 +235,12 @@ function update() {
     if (!gameActive) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Update and draw sparkles
+    sparkles.forEach(s => {
+        s.update();
+        s.draw();
+    });
 
     // Update and draw bottles
     bottles.forEach(bottle => {
@@ -206,7 +261,15 @@ function update() {
                 bubble.x - bubble.radius < bottle.x + bottle.width) {
                 
                 if (bubble.colorKey === bottle.colorKey) {
-                    score += 10;
+                    if (bubble.colorKey === lastColorKey) {
+                        combo++;
+                    } else {
+                        combo = 1;
+                    }
+                    lastColorKey = bubble.colorKey;
+
+                    const points = 10 * combo;
+                    score += points;
                     scoreElement.innerText = `Score: ${score}`;
                     bottle.targetFillLevel = Math.min(1, bottle.targetFillLevel + 0.1);
                     
@@ -218,10 +281,12 @@ function update() {
                     bubbles.splice(index, 1);
                     spawnBubble();
                 } else {
+                    combo = 0;
+                    lastColorKey = null;
                     score = Math.max(0, score - 5);
                     scoreElement.innerText = `Score: ${score}`;
                     
-                    // Shake effect would be nice, but keeping it simple for now
+                    bottle.shake = 10;
                     bubbles.splice(index, 1);
                     spawnBubble();
                 }
