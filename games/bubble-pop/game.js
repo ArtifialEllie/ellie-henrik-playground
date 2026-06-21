@@ -327,6 +327,10 @@ class Bubble {
                 this.color = '#ffeb3b';
                 this.radius = 35;
             }
+        } else if (rand > 0.327 && rand < 0.347) {
+            this.type = 'confetti';
+            this.color = '#ff69b4';
+            this.radius = 30;
         } else if (rand > 0.277 && rand < 0.307) {
             this.type = 'pet-treat';
             this.color = '#ffca28';
@@ -535,6 +539,10 @@ class Bubble {
             ctx.fillText('💎', this.x, this.y + currentRadius/3);
             ctx.shadowBlur = 15;
             ctx.shadowColor = 'white';
+        } else if (this.type === 'confetti') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🎊', this.x, this.y + currentRadius/3);
         }
         ctx.shadowBlur = 0;
     }
@@ -1562,27 +1570,51 @@ function handlePop(e) {
                 shard.type = 'normal';
                 bubbles.push(shard);
             }
-        } else if (b.type === 'rainbow-spiral') {
-            playPopSound(true, false);
-            const spiralBonus = 200;
-            score += spiralBonus;
-            floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW SPIRAL! 🌀 +${spiralBonus}`, 'magenta'));
-            createPopEffect(b.x, b.y, 'magenta');
-            
-            for (let i = 0; i < 20; i++) {
-                const angle = 0.5 * i;
-                const r = 5 * i;
-                const spiralBubble = new Bubble(false);
-                spiralBubble.x = b.x + r * Math.cos(angle);
-                spiralBubble.y = b.y + r * Math.sin(angle);
-                spiralBubble.vx = Math.cos(angle) * 2;
-                spiralBubble.vy = Math.sin(angle) * 2;
-                spiralBubble.radius = 15;
-                bubbles.push(spiralBubble);
-            }
-            triggerFrenzy();
-        } else if (b.type === 'giant') {
-            playSuperPopSound();
+            } else if (b.type === 'rainbow-spiral') {
+                playPopSound(true, false);
+                const spiralBonus = 200;
+                score += spiralBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW SPIRAL! 🌀 +${spiralBonus}`, 'magenta'));
+                createPopEffect(b.x, b.y, 'magenta');
+                
+                for (let i = 0; i < 20; i++) {
+                    const angle = 0.5 * i;
+                    const r = 5 * i;
+                    const spiralBubble = new Bubble(false);
+                    spiralBubble.x = b.x + r * Math.cos(angle);
+                    spiralBubble.y = b.y + r * Math.sin(angle);
+                    spiralBubble.vx = Math.cos(angle) * 2;
+                    spiralBubble.vy = Math.sin(angle) * 2;
+                    spiralBubble.radius = 15;
+                    bubbles.push(spiralBubble);
+                }
+                triggerFrenzy();
+            } else if (b.type === 'confetti') {
+                playPopSound(true, false);
+                const confettiBonus = 120;
+                score += confettiBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `CONFETTI POP! 🎊 +${confettiBonus}`, '#ff69b4'));
+                createPopEffect(b.x, b.y, '#ff69b4');
+                
+                // Confetti effect: spawn many tiny colorful particles and some small bubbles
+                for (let i = 0; i < 30; i++) {
+                    const p = new Particle(b.x, b.y, `hsl(${Math.random() * 360}, 100%, 70%)`);
+                    p.vx *= 2;
+                    p.vy *= 2;
+                    particles.push(p);
+                }
+                for (let i = 0; i < 5; i++) {
+                    const mini = new Bubble(false);
+                    mini.radius = 10;
+                    mini.x = b.x + (Math.random() - 0.5) * 40;
+                    mini.y = b.y + (Math.random() - 0.5) * 40;
+                    mini.speed = Math.random() * 2 + 1;
+                    mini.type = 'normal';
+                    mini.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                    bubbles.push(mini);
+                }
+            } else if (b.type === 'giant') {
+                playSuperPopSound();
                 const giantBonus = 200;
                 score += giantBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `GIANT POP! 🌟 +${giantBonus}`, 'gold'));
