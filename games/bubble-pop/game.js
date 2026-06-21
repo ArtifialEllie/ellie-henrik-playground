@@ -231,6 +231,7 @@ let particles = [];
 let trail = [];
 let floatingTexts = [];
 let magicFlowers = [];
+let clouds = [];
 let lastMouseX = canvasWidth / 2;
 let lastMouseY = canvasHeight / 2;
 let petClones = [];
@@ -691,9 +692,10 @@ class MagicFlower {
         }
     }
 }
+
 class MagicalPet {
     constructor() {
-        this.x = canvasWidth / 2;
+       this.x = canvasWidth / 2;
         this.y = canvasHeight / 2;
         this.targetX = this.x;
         this.targetY = this.y;
