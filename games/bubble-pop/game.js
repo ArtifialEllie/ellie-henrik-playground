@@ -108,7 +108,7 @@ function playSound(freq, type, duration, vol = 0.1) {
     osc.stop(audioCtx.currentTime + duration);
 }
 
-function playPopSound(isGold = false, isStinky = false) {
+function playPopSound(isGold = false, isStinky = false, popColor = null) {
     if (isGold) {
         playSound(600, 'sine', 0.2);
         setTimeout(() => playSound(800, 'sine', 0.2), 100);
@@ -116,8 +116,7 @@ function playPopSound(isGold = false, isStinky = false) {
         playSound(150, 'sawtooth', 0.3);
     } else {
         // Use the color-coded notes for a more musical experience! 🎵
-        const bubbleColor = bubbles.find(b => b.radius === 0)?.color || COLORS[0]; // This is a hacky way to get the color of the bubble being popped
-        const freq = COLOR_NOTES[bubbleColor] || (400 + Math.random() * 400);
+        const freq = COLOR_NOTES[popColor] || (400 + Math.random() * 400);
         playSound(freq, 'sine', 0.1);
     }
 }
@@ -837,6 +836,14 @@ class MagicalPet {
         ctx.font = `${this.size * 0.5}px Arial`;
         ctx.textAlign = 'center';
         ctx.fillText(moodEmojis[this.mood] || '✨', this.x, this.y + this.floatOffset - this.size);
+
+        // Draw Pet Level badge! 🌟
+        ctx.font = `bold ${this.size * 0.3}px Arial`;
+        ctx.fillStyle = 'white';
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = 'black';
+        ctx.fillText(`Lv.${this.level}`, this.x - this.size * 0.5, this.y + this.floatOffset - this.size * 1.2);
+        ctx.shadowBlur = 0;
 
         if (this.shieldTimer > 0) {
             ctx.beginPath();
