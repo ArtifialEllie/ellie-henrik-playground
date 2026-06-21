@@ -1413,13 +1413,19 @@ function handlePop(e) {
                 if (currentAccessory === '🪄') {
                     score += 5; // Bonus from Magic Bubble Wand
                 }
+                if (currentAccessory === '💎') {
+                    score += points * 0.2; // Diamond Bow: 20% bonus points
+                }
+                if (currentAccessory === '👗' && (b.type === 'rainbow-burst' || b.color === 'rainbow')) {
+                    score += 20; // Rainbow Tutu: Bonus for rainbow bubbles
+                }
                 score += points;
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${points}`, b.color));
             }
             
             totalPops++;
             updateQuest();
-    if (Math.random() < 0.03) triggerFrenzy();
+    if (Math.random() < (currentAccessory === '🌌' ? 0.06 : 0.03)) triggerFrenzy();
     if (Math.random() < 0.01) triggerParty();
     if (Math.random() < 0.005) triggerGoldenRain();
     if (Math.random() < 0.008) triggerVortex();
