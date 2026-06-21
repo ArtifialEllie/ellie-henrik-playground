@@ -529,6 +529,12 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🧁', this.x, this.y + currentRadius/3);
+        } else if (this.type === 'prism') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('💎', this.x, this.y + currentRadius/3);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'white';
         }
         ctx.shadowBlur = 0;
     }
@@ -1381,6 +1387,23 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
                 target.hits = 0; // Mark for removal
             });
+        } else if (b.type === 'prism') {
+            playPopSound(true, false);
+            const prismBonus = 100;
+            score += prismBonus;
+            floatingTexts.push(new FloatingText(b.x, b.y, `PRISM POP! 💎 +${prismBonus}`, '#e0f7fa'));
+            createPopEffect(b.x, b.y, '#e0f7fa');
+            for (let j = 0; j < 6; j++) {
+                const shard = new Bubble(false);
+                shard.radius = 15;
+                shard.x = b.x;
+                shard.y = b.y;
+                shard.vx = (Math.random() - 0.5) * 10;
+                shard.vy = (Math.random() - 0.5) * 10 - b.speed;
+                shard.color = COLORS[j % COLORS.length];
+                shard.type = 'normal';
+                bubbles.push(shard);
+            }
         } else if (b.type === 'rainbow-spiral') {
             playPopSound(true, false);
             const spiralBonus = 200;
