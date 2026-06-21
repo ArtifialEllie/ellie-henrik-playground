@@ -628,11 +628,37 @@ class MagicFlower {
         this.decay = 0.005;
         this.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
         this.angle = Math.random() * Math.PI * 2;
+        this.pulseTimer = 0;
+        this.pulseInterval = 180 + Math.random() * 120;
+        this.pulseRadius = 0;
+        this.isPulsing = false;
     }
     update() {
         if (this.size < this.maxSize) this.size += this.growthSpeed;
         this.life -= this.decay;
         this.angle += 0.02;
+
+        this.pulseTimer++;
+        if (this.pulseTimer >= this.pulseInterval) {
+            this.pulseTimer = 0;
+            this.isPulsing = true;
+            this.pulseRadius = 0;
+            
+            bubbles.forEach(b => {
+                const dist = Math.hypot(this.x - b.x, this.y - b.y);
+                if (dist < 100) {
+                    createPopEffect(b.x, b.y, b.color);
+                    score += 10;
+                    scoreEl.innerText = score;
+                    playPopSound();
+                    b.popped = true;
+                }
+            });
+        }
+        if (this.isPulsing) {
+            this.pulseRadius += 5;
+            if (this.pulseRadius > 100) this.isPulsing = false;
+        }
     }
     draw() {
         ctx.save();
@@ -652,6 +678,17 @@ class MagicFlower {
         ctx.fill();
         ctx.restore();
         ctx.globalAlpha = 1.0;
+
+        if (this.isPulsing) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.pulseRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = 1 - (this.pulseRadius / 100);
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+            ctx.closePath();
+        }
     }
 }
 class MagicalPet {
@@ -1599,7 +1636,7 @@ function update() {
     for (let i = bubbles.length - 1; i >= 0; i--) {
         bubbles[i].update();
         bubbles[i].draw();
-        if (bubbles[i].y < -bubbles[i].radius) {
+        if (bubbles[i].y < -bubbles[i].radius || bubbles[i].popped) {
             bubbles.splice(i, 1);
         }
     }

@@ -9,6 +9,14 @@ const COLOR_NOTES = {
     '#ffccbc': 493.88, // B4
 };
 
+const MOODS = {
+    HAPPY: { name: 'Happy 🌸', speedMult: 1, spawnMult: 1, scoreMult: 1, color: '#ff80ab' },
+    DREAMY: { name: 'Dreamy 🌙', speedMult: 0.6, spawnMult: 0.8, scoreMult: 1.5, color: '#ce93d8' },
+    ENERGETIC: { name: 'Energetic ⚡', speedMult: 1.4, spawnMult: 1.6, scoreMult: 0.8, color: '#fff59d' },
+    SILLY: { name: 'Silly 😜', speedMult: 1.1, spawnMult: 1.2, scoreMult: 1.0, color: '#a5d6a7' },
+    MYSTICAL: { name: 'Mystical ✨', speedMult: 0.9, spawnMult: 1.0, scoreMult: 1.2, color: '#b39ddb' }
+};
+
 const QUESTS = [
     { text: 'Pop 10 bubbles! 🫧', goal: 10, reward: 50, rewardGold: 10 },
     { text: 'Reach a x3 Multiplier! 🚀', goal: 3, reward: 100, rewardGold: 20, type: 'multiplier' },
