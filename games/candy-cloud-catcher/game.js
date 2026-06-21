@@ -374,6 +374,10 @@ function update() {
             scoreElement.textContent = score;
             items.splice(i, 1);
         } else if (item.y > canvas.height + item.radius) {
+            // Missed candy - reduce combo
+            if (item.type !== 'lemon') {
+                combo = Math.max(0, combo - 1);
+            }
             items.splice(i, 1);
         }
     }
