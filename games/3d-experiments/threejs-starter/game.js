@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let scene, camera, renderer, controls, raycaster, mouse;
-let prisms = [];
+let prisms = []; let magicFlowers = [];
 let orbitals = [];
 let score = 0;
 let goldenPrisms = [];
@@ -489,22 +489,25 @@ function onMouseDown(event) {
             object.geometry = new THREE.TorusKnotGeometry(0.3, 0.1, 64, 8);
         }
 
-        if (object.level >= 4) {
-            // Super Prism Burst!
+        if (object.level === 4) {
+            // Super Prism Burst! - Now just a boost, doesn't remove the prism
             const superBonus = 100 * combo;
             score += superBonus;
-            scoreElement.innerText = score;
+            scoreElement.innerText = Math.floor(score);
             createFloatingText(`SUPER BURST! +${superBonus} 💥`, event.clientX, event.clientY);
             playSound(1200, 'sawtooth', 0.3, 0.1);
             spawnSpark(object.position);
-            
+        } else if (object.level >= 5) {
+            // Transform into Magic Flower!
+            createMagicFlower(object.position);
             scene.remove(object);
             prisms = prisms.filter(p => p !== object);
             
-            createSinglePrism(getAvailableGeometries());
-            if (Math.random() > 0.7) {
-                spawnGoldenPrism();
-            }
+            const flowerBonus = 500 * combo;
+            score += flowerBonus;
+            scoreElement.innerText = Math.floor(score);
+            createFloatingText(`BLOOM! +${flowerBonus} 🌸`, event.clientX, event.clientY);
+            playSound(1800, 'sine', 0.3, 0.1);
         } else if (object.level >= 2 && Math.random() > 0.6) {
             // Chain Reaction!
             triggerChainReaction(object);
