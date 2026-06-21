@@ -33,6 +33,9 @@ let comboTimer;
 let isFrenzy = false;
 let isVortex = false;
 let isMagnetic = false;
+let bossActive = false;
+let bossHealth = 100;
+let bossMaxHealth = 100;
 let gameSpeed = 1;
 let shieldActive = false;
 let freezeMultiplier = 1;
@@ -1016,8 +1019,12 @@ function handlePop(e) {
         const b = bubbles[i];
         const dist = Math.hypot(mouseX - b.x, mouseY - b.y);
         
-        if (dist < b.radius + 10) {
-            if (b.hits > 1) {
+            if (dist < b.radius + 10) {
+                if (bossActive && b.type === 'stinky') {
+                    damageBoss(10);
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'BOSS DAMAGE! -10', 'white'));
+                }
+                if (b.hits > 1) {
                 b.hits--;
                 createPopEffect(b.x, b.y, b.color);
                 playSound(300, 'sine', 0.1);
@@ -1412,16 +1419,17 @@ function handlePop(e) {
             
             totalPops++;
             updateQuest();
-            if (Math.random() < 0.03) triggerFrenzy();
-            if (Math.random() < 0.01) triggerParty();
-            if (Math.random() < 0.005) triggerGoldenRain();
-            if (Math.random() < 0.008) triggerVortex();
-            if (Math.random() < 0.004) triggerCupcakeRain();
-            if (Math.random() < 0.003) triggerDiscoParty();
-            if (Math.random() < 0.004) triggerSlowMo();
-            if (Math.random() < 0.005) triggerWindGust();
-            
-            updateCombo();
+    if (Math.random() < 0.03) triggerFrenzy();
+    if (Math.random() < 0.01) triggerParty();
+    if (Math.random() < 0.005) triggerGoldenRain();
+    if (Math.random() < 0.008) triggerVortex();
+    if (Math.random() < 0.004) triggerCupcakeRain();
+    if (Math.random() < 0.003) triggerDiscoParty();
+    if (Math.random() < 0.004) triggerSlowMo();
+    if (Math.random() < 0.005) triggerWindGust();
+    if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
+    
+    updateCombo();
             scoreEl.innerText = score;
             
             level = Math.floor(score / 200) + 1;
