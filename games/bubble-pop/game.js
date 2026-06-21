@@ -672,6 +672,9 @@ class MagicalPet {
         this.isSugarRush = false;
         this.shieldTimer = 0;
         this.shieldRadius = 80;
+        this.mood = 'Happy';
+        this.moodTimer = 0;
+        this.friendship = 0;
     }
 
     update(mouseX, mouseY) {
@@ -688,6 +691,19 @@ class MagicalPet {
 
         if (this.shieldTimer > 0) {
             this.shieldTimer--;
+        }
+
+        // Mood Logic
+        if (this.moodTimer > 0) {
+            this.moodTimer--;
+        } else {
+            if (this.mood === 'Love' || this.mood === 'Hyper') {
+                this.mood = 'Happy';
+            } else if (this.mood === 'Happy' && Math.random() < 0.001) {
+                this.mood = 'Hungry';
+            } else if (this.mood === 'Hungry' && Math.random() < 0.005) {
+                this.mood = 'Happy';
+            }
         }
 
     // Pet Evolution Logic
@@ -730,6 +746,8 @@ class MagicalPet {
  
     triggerSugarRush() {
         this.sugarRushTimer = 600; // Approx 10 seconds at 60fps
+        this.mood = 'Hyper';
+        this.moodTimer = 600;
         floatingTexts.push(new FloatingText(this.x, this.y, `SUGAR RUSH! ⚡️`, 'gold'));
         playSound(1000, 'sine', 0.2);
         playSound(1200, 'sine', 0.2);
@@ -740,7 +758,11 @@ class MagicalPet {
         
         // Find nearest bubble within range
         let nearest = null;
-        const currentRange = this.isSugarRush ? this.popRange * 2 : this.popRange;
+        let rangeMult = 1;
+        if (this.mood === 'Love') rangeMult = 1.2;
+        if (this.mood === 'Hungry') rangeMult = 0.8;
+        
+        const currentRange = (this.isSugarRush ? this.popRange * 2 : this.popRange) * rangeMult;
         let minDist = currentRange;
 
         bubbles.forEach(b => {
@@ -770,6 +792,12 @@ class MagicalPet {
             ctx.font = `${this.size * 0.7}px Arial`;
             ctx.fillText(currentAccessory, this.x + this.size * 0.3, this.y + this.floatOffset - this.size * 0.2);
         }
+
+        // Draw Mood Emoji
+        const moodEmojis = { 'Happy': '🌸', 'Love': '❤️', 'Hungry': '🍪', 'Hyper': '⚡' };
+        ctx.font = `${this.size * 0.5}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(moodEmojis[this.mood] || '✨', this.x, this.y + this.floatOffset - this.size);
 
         if (this.shieldTimer > 0) {
             ctx.beginPath();
@@ -1026,6 +1054,16 @@ function handlePop(e) {
         const dist = Math.hypot(mouseX - b.x, mouseY - b.y);
         
             if (dist < b.radius + 10) {
+                // Also check if the pet was clicked!
+                const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
+                if (petDist < pet.size) {
+                    pet.mood = 'Love';
+                    pet.moodTimer = 300;
+                    pet.friendship++;
+                    floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
+                    playSound(600, 'sine', 0.1);
+                }
+
                 if (bossActive && b.type === 'stinky') {
                     damageBoss(10);
                     floatingTexts.push(new FloatingText(b.x, b.y, 'BOSS DAMAGE! -10', 'white'));
