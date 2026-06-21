@@ -221,7 +221,11 @@ class FallingItem {
         this.speed = (3 + Math.random() * 4) * difficultyMultiplier;
         
         const rand = Math.random();
-        if (rand > 0.98) {
+        if (rand > 0.99) {
+            this.type = 'star';
+            this.color = '#fde047';
+            this.emoji = '⭐';
+        } else if (rand > 0.98) {
             this.type = 'ticket';
             this.color = '#fbbf24';
             this.emoji = '🎟️';
@@ -352,6 +356,12 @@ function update() {
                 createParticles(item.x, item.y, '#ff00ff', 30);
                 createFloatingText(item.x, item.y, `🌈 ${points} RUSH!`, '#ff00ff');
                 activateFeverMode();
+            } else if (item.type === 'star') {
+                const points = 25 * combo;
+                score += points;
+                updateCombo();
+                createParticles(item.x, item.y, '#fde047', 40);
+                createFloatingText(item.x, item.y, `⭐ SUPER STAR! +${points}`, '#fde047');
             } else if (item.type === 'ticket') {
                 combo++;
                 score += 50;
@@ -424,13 +434,13 @@ startBtn.addEventListener('click', () => {
     scoreElement.textContent = score;
     
     gameInterval = setInterval(spawnItem, 800);
-    timerInterval = setInterval(setInterval(() => {
+    timerInterval = setInterval(() => {
         timeLeft--;
         timerElement.textContent = timeLeft;
         if (timeLeft <= 0) {
             endGame();
         }
-    }, 1000), 1000);
+    }, 1000);
     
     update();
 });
