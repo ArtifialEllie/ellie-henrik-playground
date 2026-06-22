@@ -771,6 +771,8 @@ class MagicalPet {
         this.mood = 'Happy';
         this.moodTimer = 0;
         this.friendship = 0;
+        this.energy = 0;
+        this.maxEnergy = 100;
     }
 
     update(mouseX, mouseY) {
@@ -887,6 +889,29 @@ class MagicalPet {
         }
     }
 
+    gainEnergy(amount) {
+        this.energy = Math.min(this.maxEnergy, this.energy + amount);
+    }
+
+    triggerSuperPop() {
+        this.energy = 0;
+        floatingTexts.push(new FloatingText(this.x, this.y, 'SUPER POP! 🌟💥', 'gold'));
+        playSound(800, 'sine', 0.3);
+        setTimeout(() => playSound(1200, 'sine', 0.3), 100);
+        
+        createBigExplosion(this.x, this.y);
+        
+        const superPopRadius = 300;
+        bubbles.forEach(b => {
+            const dist = Math.hypot(this.x - b.x, this.y - b.y);
+            if (dist < superPopRadius) {
+                createPopEffect(b.x, b.y, b.color);
+                score += 10;
+                b.hits = 0; 
+            }
+        });
+    }
+
     draw() {
         ctx.font = `${this.size}px Arial`;
         ctx.textAlign = 'center';
@@ -894,6 +919,11 @@ class MagicalPet {
         if (currentAccessory) {
             ctx.font = `${this.size * 0.7}px Arial`;
             ctx.fillText(currentAccessory, this.x + this.size * 0.3, this.y + this.floatOffset - this.size * 0.2);
+        }
+
+        if (this.energy >= this.maxEnergy) {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'gold';
         }
 
         // Draw Mood Emoji
@@ -904,6 +934,16 @@ class MagicalPet {
 
         // Draw Pet Level badge! 🌟
         ctx.font = `bold ${this.size * 0.3}px Arial`;
+        
+        // Draw Energy Bar! ⚡
+        const barWidth = this.size;
+        const barHeight = 6;
+        ctx.fillStyle = '#444';
+        ctx.fillRect(this.x - barWidth / 2, this.y + this.floatOffset + this.size / 2, barWidth, barHeight);
+        ctx.fillStyle = this.energy >= this.maxEnergy ? 'gold' : '#ffeb3b';
+        ctx.fillRect(this.x - barWidth / 2, this.y + this.floatOffset + this.size / 2, (this.energy / this.maxEnergy) * barWidth, barHeight);
+
+        ctx.shadowBlur = 0;
         ctx.fillStyle = 'white';
         ctx.shadowBlur = 4;
         ctx.shadowColor = 'black';
@@ -1283,16 +1323,20 @@ function handlePop(e) {
         
             if (dist < b.radius + 10) {
                 // Also check if the pet was clicked!
-                const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
-                if (petDist < pet.size) {
-                    pet.mood = 'Love';
-                    pet.moodTimer = 300;
-                    pet.friendship++;
-                    floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
-                    playSound(600, 'sine', 0.1);
-                }
+               const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
+               if (petDist < pet.size) {
+                    if (pet.energy >= pet.maxEnergy) {
+                        pet.triggerSuperPop();
+                    } else {
+                        pet.mood = 'Love';
+                        pet.moodTimer = 300;
+                        pet.friendship++;
+                        floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
+                        playSound(600, 'sine', 0.1);
+                    }
+               }
 
-                if (bossActive && b.type === 'stinky') {
+               if (bossActive && b.type === 'stinky') {
                     damageBoss(10);
                     floatingTexts.push(new FloatingText(b.x, b.y, 'BOSS DAMAGE! -10', 'white'));
                 }
@@ -1306,6 +1350,7 @@ function handlePop(e) {
             createPopEffect(b.x, b.y, b.color);
             
             // Pass the bubble's color to the sound function for musical pops! 🎵
+            pet.gainEnergy(1);
             const popColor = b.color;
             bubbles.splice(i, 1); // Remove bubble first so it's not found in playPopSound's find()
             playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
