@@ -355,6 +355,11 @@ class Bubble {
         } else if (rand > 0.227 && rand < 0.257) {
             this.type = 'magnetic-bubble';
             this.color = '#9c27b0';
+        } else if (rand > 0.13 && rand < 0.16) {
+            this.type = 'emotion';
+            const emotions = ['😊', '😢', '😡', '😱', '🥳'];
+            this.emoji = emotions[Math.floor(Math.random() * emotions.length)];
+            this.color = '#ffccbc';
         } else if (rand >= 0.05 && rand < 0.10) {
             this.type = 'bomb';
             this.color = '#424242';
