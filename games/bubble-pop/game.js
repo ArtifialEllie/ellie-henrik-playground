@@ -353,10 +353,9 @@ class Bubble {
         } else if (rand > 0.227 && rand < 0.257) {
             this.type = 'magnetic-bubble';
             this.color = '#9c27b0';
-        } else if (rand > 0.187 && rand < 0.217) {
-            this.type = 'prism';
-            this.color = '#e0f7fa';
-            this.radius = 30;
+        } else if (rand >= 0.05 && rand < 0.10) {
+            this.type = 'bomb';
+            this.color = '#424242';
         } else if (rand > 0.207 && rand < 0.237) {
             this.type = 'magic-mushroom';
             this.color = '#ff69b4';
@@ -364,10 +363,9 @@ class Bubble {
             this.type = 'rainbow-portal';
             this.color = '#ff00ff';
             this.radius = 45;
-        } else if (rand > 0.05 && rand < 0.07) {
-            this.type = 'bomb-burst';
-            this.color = '#ff5722';
-            this.radius = 30;
+        } else if (rand >= 0.05 && rand < 0.10) {
+            this.type = 'bomb';
+            this.color = '#424242';
         } else if (rand > 0.10 && rand < 0.13) {
             this.type = 'sneeze';
             this.color = '#ffeb3b';
@@ -379,8 +377,8 @@ class Bubble {
             this.type = 'bomb';
             this.color = '#424242';
         }
-    }
 
+    }
     update() {
         this.y -= this.speed * gameSpeed;
         this.x += this.vx * gameSpeed;
@@ -596,9 +594,8 @@ class Bubble {
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'white';
         }
-        }
-        ctx.shadowBlur = 0;
     }
+    ctx.shadowBlur = 0;
 }
 
 class Particle {

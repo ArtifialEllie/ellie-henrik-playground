@@ -33,6 +33,7 @@ const QUESTS = [
     { text: 'Reach Level 20! 🌟', goal: 20, reward: 3000, rewardGold: 1500, type: 'level' },
     { text: 'Get a Combo of 30! 🔥', goal: 30, reward: 4000, rewardGold: 2000, type: 'combo' },
     { text: 'Collect 5000 Gold! ✨', goal: 5000, reward: 5000, rewardGold: 0, type: 'gold' },
+    { text: 'Pop 10 emotion bubbles! 🥺', goal: 10, reward: 1000, rewardGold: 500, type: 'emotion' },
 ];
 
 const SKINS = [
