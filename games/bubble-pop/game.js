@@ -96,7 +96,15 @@ function completeQuest() {
     currentQuest++;
     updateQuest();
 }
-function playSound(freq, type, duration, vol = 0.1) {
+function updateScore() {
+    scoreEl.innerText = score;
+    scoreEl.style.transform = 'scale(1.2)';
+    setTimeout(() => {
+        scoreEl.style.transform = 'scale(1)';
+    }, 100);
+}
+
+function playSound(freq, type, vol, duration = 0.1) {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = type;
@@ -314,6 +322,10 @@ class Bubble {
         } else if (rand > 0.427) {
             this.type = 'shield';
             this.color = '#b2dfdb';
+        } else if (rand > 0.417) {
+            this.type = 'mega-pop';
+            this.color = '#ff00ff';
+            this.radius = 60;
         } else if (rand > 0.377) {
             this.type = 'magic-dust';
             this.color = '#ffffff';
@@ -1362,6 +1374,31 @@ function handlePop(e) {
                     bubbles.push(special);
                 }
                 triggerFrenzy();
+            } else if (b.type === 'mega-pop') {
+                playPopSound(true, false);
+                const megaBonus = 1000;
+                score += megaBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `MEGA-POP! 💥 +${megaBonus}`, '#ff00ff'));
+                createPopEffect(b.x, b.y, '#ff00ff');
+                
+                // Mega Pop effect: pushes all bubbles away from the center!
+                bubbles.forEach(bub => {
+                    if (bub !== b) {
+                        const dx = bub.x - b.x;
+                        const dy = bub.y - b.y;
+                        const dist = Math.hypot(dx, dy);
+                        const force = 20;
+                        bub.vx += (dx / dist) * force;
+                        bub.vy += (dy / dist) * force;
+                    }
+                });
+                
+                triggerFrenzy();
+                createBigExplosion(b.x, b.y);
+                document.getElementById('mega-pop-alert').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('mega-pop-alert').style.display = 'none';
+                }, 3000);
             } else if (b.type === 'gold') {
                 playPopSound(true, false);
                 const bonus = 5 + (combo * 2);
