@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Puffin Party Plunge! 🐧✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="high-score">High Score: 0</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="start-screen" class="overlay">
+            <h1>Pastel Puffin Party Plunge! 🐧✨</h1>
+            <p>Dive deep, collect sparkling fish, and glide through the bubble rings!</p>
+            <p><strong>Controls:</strong><br>Click/Tap to dive deeper!<br>Release to glide upwards!</p>
+            <button id="start-button">Start Plunging! 🌈</button>
+        </div>
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>Splish Splash! 🌊</h1>
+            <p>Your Puffin finished the party!</p>
+            <div id="final-score">Score: 0</div>
+            <button id="restart-button">Dive Again! 🐧</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
