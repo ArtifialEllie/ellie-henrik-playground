@@ -22,13 +22,44 @@ const player = {
     height: 40,
     vx: 0,
     vy: 0,
-    jumpStrength: -15,
+    jumpStrength: -16,
     gravity: 0.4,
-    color: '#ffeb3b'
+    color: '#ffeb3b',
+    stretchY: 1,
+    stretchX: 1
 };
 
 const clouds = [];
 const cloudColors = ['#FFB6C1', '#ADD8E6', '#E6E6FA', '#FFFACD', '#F0FFF0'];
+const particles = [];
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 10;
+        this.vy = (Math.random() - 0.5) * 10;
+        this.radius = Math.random() * 4 + 2;
+        this.color = color;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.02;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+    }
+
+    draw(ctx, cameraY) {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y - cameraY, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
 
 function createCloud(y) {
     return {
@@ -47,14 +78,18 @@ function initGame() {
     player.y = 700;
     player.vx = 0;
     player.vy = 0;
+    player.stretchY = 1;
+    player.stretchX = 1;
     scoreEl.innerText = `Score: ${score}`;
     
     clouds.length = 0;
+    particles.length = 0;
+
     // Starting cloud
     clouds.push({ x: 250, y: 750, width: 100, height: 40, color: '#ffffff' });
     
     // Initial clouds
-    for (let i = 1; i < 10; i++) {
+    for (let i = 1; i < 15; i++) {
         clouds.push(createCloud(750 - i * 120));
     }
     
@@ -66,10 +101,25 @@ function initGame() {
 function update() {
     if (!gameActive) return;
 
-    // Gravity
+    // Gravity and Physics
     player.vy += player.gravity;
     player.y += player.vy;
     player.x += player.vx;
+
+    // Squash and stretch animation
+    if (player.vy < 0) {
+        player.stretchY = 1.2;
+        player.stretchX = 0.8;
+    } else if (player.vy > 0) {
+        player.stretchY = 0.9;
+        player.stretchX = 1.1;
+    } else {
+        player.stretchY = 1;
+        player.stretchX = 1;
+    }
+    // Smooth transition back to normal
+    player.stretchY += (1 - player.stretchY) * 0.1;
+    player.stretchX += (1 - player.stretchX) * 0.1;
 
     // Wrap around screen
     if (player.x > canvas.width) player.x = 0;
@@ -80,22 +130,28 @@ function update() {
         cameraY = player.y - canvas.height / 2;
     }
 
-    // Collision with clouds
-    if (player.vy > 0) {
-        clouds.forEach(cloud => {
-            if (player.x + player.width > cloud.x &&
-                player.x < cloud.x + cloud.width &&
-                player.y + player.height > cloud.y &&
-                player.y + player.height < cloud.y + cloud.vy + 20) { // simplified collision
-                
-                // Actually need a more robust collision check for falling
-                // Since clouds don't have vy, I'll just use the cloud's y
-            }
-        });
+    // Generate new clouds as player goes up
+    const highestCloudY = clouds[clouds.length - 1].y;
+    if (cameraY < highestCloudY + canvas.height) {
+        clouds.push(createCloud(highestCloudY - 120));
+    }
+
+    // Remove off-screen clouds to save memory
+    if (clouds.length > 20) {
+        if (clouds[0].y > cameraY + canvas.height + 100) {
+            clouds.shift();
+        }
+    }
+
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        if (particles[i].life <= 0) {
+            particles.splice(i, 1);
+        }
     }
 }
 
-// Fix the collision logic in a separate function for clarity
 function checkCollisions() {
     if (player.vy <= 0) return; // Only collide when falling
 
@@ -104,9 +160,15 @@ function checkCollisions() {
                 player.x < cloud.x + cloud.width &&
                 player.y + player.height > cloud.y &&
                 player.y + player.height < cloud.y + 20) {
+            
             player.vy = player.jumpStrength;
             
-            // Add points based on how high the cloud is relative to the start
+            // Create magical particles on jump
+            for (let i = 0; i < 10; i++) {
+                particles.push(new Particle(player.x + player.width / 2, player.y + player.height, cloud.color));
+            }
+            
+            // Add points
             const cloudHeight = 750 - cloud.y;
             const currentScore = Math.floor(cloudHeight / 10);
             if (currentScore > score) {
@@ -118,9 +180,11 @@ function checkCollisions() {
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Dynamic background color based on height
+    const hue = (Math.abs(cameraY) / 50) % 360;
+    ctx.fillStyle = `hsl(${hue}, 60%, 80%)`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw background shift (fake parallax or just a gradient)
     ctx.save();
     ctx.translate(0, -cameraY);
 
@@ -132,19 +196,35 @@ function draw() {
         ctx.arc(cloud.x + 50, cloud.y + 10, 25, 0, Math.PI * 2);
         ctx.arc(cloud.x + 80, cloud.y + 20, 20, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Add a little highlight to clouds for fluffiness
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.arc(cloud.x + 40, cloud.y + 10, 10, 0, Math.PI * 2);
+        ctx.fill();
     });
 
-    // Draw player
+    // Draw particles
+    particles.forEach(p => p.draw(ctx, 0)); // cameraY is already applied by translate
+
+    // Draw player with squash and stretch
+    ctx.save();
+    ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+    ctx.scale(player.stretchX, player.stretchY);
+    
     ctx.fillStyle = player.color;
     ctx.beginPath();
-    ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
+    ctx.arc(0, 0, player.width / 2, 0, Math.PI * 2);
     ctx.fill();
+    
     // Eyes
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.arc(player.x + 15, player.y + 15, 3, 0, Math.PI * 2);
-    ctx.arc(player.x + 25, player.y + 15, 3, 0, Math.PI * 2);
+    ctx.arc(-5, -5, 3, 0, Math.PI * 2);
+    ctx.arc(5, -5, 3, 0, Math.PI * 2);
     ctx.fill();
+    
+    ctx.restore();
 
     ctx.restore();
 
@@ -190,14 +270,13 @@ function gameLoop() {
 // Controls
 window.addEventListener('keydown', (e) => {
     if (!gameActive) return;
-    if (e.code === 'ArrowLeft') player.vx = -5;
-    if (e.code === 'ArrowRight') player.vx = 5;
+    if (e.code === 'ArrowLeft') player.vx = -6;
+    if (e.code === 'ArrowRight') player.vx = 6;
 });
 
 window.addEventListener('keyup', (e) => {
     if (!gameActive) return;
-    if (e.code === 'ArrowLeft') player.vx = 0;
-    if (e.code === 'ArrowRight') player.vx = 0;
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') player.vx = 0;
 });
 
 startBtn.onclick = initGame;
