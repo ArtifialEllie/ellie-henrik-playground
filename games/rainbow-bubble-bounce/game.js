@@ -15,6 +15,7 @@ let score = 0;
 let gemsCollected = 0;
 let cameraY = 0;
 let superBounceTimer = 0;
+let magnetTimer = 0;
 let dashTimer = 0;
 let combo = 0;
 let comboTimer = 0;
@@ -22,6 +23,8 @@ let rushTimer = 0;
 let isRushMode = false;
 let rushHeightInterval = 500;
 let nextRushHeight = 500;
+let wind = 0;
+let windTimer = 0;
 
 const PLAYER_RADIUS = 20;
 const GRAVITY = 0.25;
@@ -100,12 +103,13 @@ function spawnGem(y) {
 function spawnPowerup(y) {
     if (Math.random() > 0.1) return; // 10% chance to spawn a powerup
     const x = Math.random() * (canvas.width - POWERUP_RADIUS * 2);
+    const type = Math.random() > 0.5 ? 'super-bounce' : 'gem-magnet';
     powerups.push({
         x: x,
         y: y,
         radius: POWERUP_RADIUS,
         collected: false,
-        type: 'super-bounce'
+        type: type
     });
 }
 
@@ -114,11 +118,14 @@ function initGame() {
     gemsCollected = 0;
     cameraY = 0;
     superBounceTimer = 0;
+    magnetTimer = 0;
     combo = 0;
     comboTimer = 0;
     rushTimer = 0;
     isRushMode = false;
     nextRushHeight = 500;
+    wind = 0;
+    windTimer = 0;
     player.x = canvas.width / 2;
     player.y = canvas.height - 100;
     player.vx = 0;
@@ -170,6 +177,16 @@ function update() {
     // Player movement
     if (keys['ArrowLeft'] || keys['KeyA']) player.vx -= 0.8;
     if (keys['ArrowRight'] || keys['KeyD']) player.vx += 0.8;
+    
+    // Wind effect
+    if (windTimer > 0) {
+        windTimer--;
+        player.vx += wind;
+    } else if (Math.random() < 0.005) { // 0.5% chance to start wind
+        wind = (Math.random() - 0.5) * 0.2;
+        windTimer = 180 + Math.random() * 300; // 3-8 seconds
+    }
+    
     player.vx *= 0.9; // Friction
     
     player.x += player.vx;
@@ -261,11 +278,21 @@ function update() {
     
     // Gem collection
     gems.forEach(gem => {
-        if (!gem.collected && 
-            Math.hypot(player.x - gem.x, player.y - gem.y) < player.radius + gem.radius) {
-            gem.collected = true;
-            gemsCollected++;
-            createSparkles(gem.x, gem.y, '#ffd700');
+        if (!gem.collected) {
+            const dist = Math.hypot(player.x - gem.x, player.y - gem.y);
+            
+            // Magnet effect
+            if (magnetTimer > 0 && dist < 150) {
+                const angle = Math.atan2(gem.y - player.y, gem.x - player.x);
+                gem.x += Math.cos(angle) * 3;
+                gem.y += Math.sin(angle) * 3;
+            }
+            
+            if (dist < player.radius + gem.radius) {
+                gem.collected = true;
+                gemsCollected++;
+                createSparkles(gem.x, gem.y, '#ffd700');
+            }
         }
     });
     
@@ -277,6 +304,9 @@ function update() {
             if (pu.type === 'super-bounce') {
                 superBounceTimer = 300; // Approx 5 seconds at 60fps
                 createSparkles(pu.x, pu.y, '#ff00ff', 20);
+            } else if (pu.type === 'gem-magnet') {
+                magnetTimer = 300;
+                createSparkles(pu.x, pu.y, '#00ffff', 20);
             }
         }
     });
@@ -306,12 +336,14 @@ function update() {
     });
     
     if (superBounceTimer > 0) superBounceTimer--;
+    if (magnetTimer > 0) magnetTimer--;
     
     if (comboTimer > 0) {
         comboTimer--;
     } else {
         combo = 0;
     }
+
     
     particles = particles.filter(p => p.life > 0);
     
@@ -359,7 +391,7 @@ function draw() {
         if (!pu.collected) {
             ctx.beginPath();
             ctx.arc(pu.x, pu.y, pu.radius, 0, Math.PI * 2);
-            ctx.fillStyle = '#ff00ff';
+            ctx.fillStyle = pu.type === 'super-bounce' ? '#ff00ff' : '#00ffff';
             ctx.fill();
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 3;
@@ -367,7 +399,7 @@ function draw() {
             ctx.closePath();
             
             ctx.shadowBlur = 20;
-            ctx.shadowColor = '#ff00ff';
+            ctx.shadowColor = pu.type === 'super-bounce' ? '#ff00ff' : '#00ffff';
             
             // Tiny star in the middle
             ctx.fillStyle = 'white';
@@ -376,6 +408,7 @@ function draw() {
             ctx.fill();
         }
     });
+
     
     ctx.shadowBlur = 0; // Reset shadow
     
