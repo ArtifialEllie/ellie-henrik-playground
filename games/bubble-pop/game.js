@@ -1251,29 +1251,29 @@ function triggerRainbowBridge() {
     setTimeout(() => { bridgeAlert.style.display = 'none'; }, 6000);
 }
 
-function triggerMagicRain() {
-    const rainAlert = document.getElementById('rain-cloud-alert');
-    rainAlert.style.display = 'block';
-    rainAlert.style.color = '#e1bee7';
-    rainAlert.style.textShadow = '3px 3px #ffffff';
+function triggerGlitterStorm() {
+    const glitterAlert = document.getElementById('glitter-storm-alert');
+    glitterAlert.style.display = 'block';
+    glitterAlert.style.color = '#ffffff';
+    glitterAlert.style.textShadow = '0 0 10px #ff00ff, 0 0 20px #00ffff';
     
-    for (let i = 0; i < 30; i++) {
+    // Glitter Storm: Rain of tiny, high-value, fast-moving bubbles
+    for (let i = 0; i < 50; i++) {
         setTimeout(() => {
             if (!gameActive) return;
-            const rainBubble = new Bubble(false);
-            rainBubble.type = 'normal';
-            rainBubble.color = '#b3e5fc';
-            rainBubble.radius = 15;
-            rainBubble.x = Math.random() * canvasWidth;
-            rainBubble.y = -rainBubble.radius;
-            rainBubble.speed = Math.random() * 4 + 3;
-            bubbles.push(rainBubble);
-        }, i * 100);
+            const glitter = new Bubble(false);
+            glitter.type = 'gold';
+            glitter.radius = 10;
+            glitter.speed = Math.random() * 5 + 3;
+            glitter.x = Math.random() * canvasWidth;
+            glitter.y = -glitter.radius;
+            bubbles.push(glitter);
+        }, i * 50);
     }
     
     setTimeout(() => {
-        rainAlert.style.display = 'none';
-    }, 6000);
+        glitterAlert.style.display = 'none';
+    }, 5000);
 }
 
 function triggerMagnetism() {
@@ -1913,7 +1913,7 @@ function handlePop(e) {
     if (Math.random() < 0.005) triggerWindGust();
     if (Math.random() < 0.002) triggerRainbowCascade();
     if (Math.random() < 0.003) triggerRainbowBridge();
-    if (Math.random() < 0.002) triggerMagicRain();
+    if (Math.random() < 0.002) triggerGlitterStorm();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
     updateCombo();
