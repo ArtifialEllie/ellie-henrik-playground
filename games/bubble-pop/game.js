@@ -355,10 +355,9 @@ class Bubble {
         } else if (rand > 0.227 && rand < 0.257) {
             this.type = 'magnetic-bubble';
             this.color = '#9c27b0';
-        } else if (rand > 0.187 && rand < 0.217) {
-            this.type = 'prism';
-            this.color = '#e0f7fa';
-            this.radius = 30;
+        } else if (rand >= 0.05 && rand < 0.10) {
+            this.type = 'bomb';
+            this.color = '#424242';
         } else if (rand > 0.207 && rand < 0.237) {
             this.type = 'magic-mushroom';
             this.color = '#ff69b4';
@@ -366,10 +365,9 @@ class Bubble {
             this.type = 'rainbow-portal';
             this.color = '#ff00ff';
             this.radius = 45;
-        } else if (rand > 0.05 && rand < 0.07) {
-            this.type = 'bomb-burst';
-            this.color = '#ff5722';
-            this.radius = 30;
+        } else if (rand >= 0.05 && rand < 0.10) {
+            this.type = 'bomb';
+            this.color = '#424242';
         } else if (rand > 0.10 && rand < 0.13) {
             this.type = 'sneeze';
             this.color = '#ffeb3b';
@@ -381,8 +379,8 @@ class Bubble {
             this.type = 'bomb';
             this.color = '#424242';
         }
-    }
 
+    }
     update() {
         this.y -= this.speed * gameSpeed;
         this.x += this.vx * gameSpeed;
@@ -598,9 +596,8 @@ class Bubble {
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'white';
         }
-        }
-        ctx.shadowBlur = 0;
     }
+    ctx.shadowBlur = 0;
 }
 
 class Particle {
@@ -776,6 +773,8 @@ class MagicalPet {
         this.mood = 'Happy';
         this.moodTimer = 0;
         this.friendship = 0;
+        this.energy = 0;
+        this.maxEnergy = 100;
     }
 
     update(mouseX, mouseY) {
@@ -892,6 +891,29 @@ class MagicalPet {
         }
     }
 
+    gainEnergy(amount) {
+        this.energy = Math.min(this.maxEnergy, this.energy + amount);
+    }
+
+    triggerSuperPop() {
+        this.energy = 0;
+        floatingTexts.push(new FloatingText(this.x, this.y, 'SUPER POP! 🌟💥', 'gold'));
+        playSound(800, 'sine', 0.3);
+        setTimeout(() => playSound(1200, 'sine', 0.3), 100);
+        
+        createBigExplosion(this.x, this.y);
+        
+        const superPopRadius = 300;
+        bubbles.forEach(b => {
+            const dist = Math.hypot(this.x - b.x, this.y - b.y);
+            if (dist < superPopRadius) {
+                createPopEffect(b.x, b.y, b.color);
+                score += 10;
+                b.hits = 0; 
+            }
+        });
+    }
+
     draw() {
         ctx.font = `${this.size}px Arial`;
         ctx.textAlign = 'center';
@@ -899,6 +921,11 @@ class MagicalPet {
         if (currentAccessory) {
             ctx.font = `${this.size * 0.7}px Arial`;
             ctx.fillText(currentAccessory, this.x + this.size * 0.3, this.y + this.floatOffset - this.size * 0.2);
+        }
+
+        if (this.energy >= this.maxEnergy) {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'gold';
         }
 
         // Draw Mood Emoji
@@ -909,6 +936,16 @@ class MagicalPet {
 
         // Draw Pet Level badge! 🌟
         ctx.font = `bold ${this.size * 0.3}px Arial`;
+        
+        // Draw Energy Bar! ⚡
+        const barWidth = this.size;
+        const barHeight = 6;
+        ctx.fillStyle = '#444';
+        ctx.fillRect(this.x - barWidth / 2, this.y + this.floatOffset + this.size / 2, barWidth, barHeight);
+        ctx.fillStyle = this.energy >= this.maxEnergy ? 'gold' : '#ffeb3b';
+        ctx.fillRect(this.x - barWidth / 2, this.y + this.floatOffset + this.size / 2, (this.energy / this.maxEnergy) * barWidth, barHeight);
+
+        ctx.shadowBlur = 0;
         ctx.fillStyle = 'white';
         ctx.shadowBlur = 4;
         ctx.shadowColor = 'black';
@@ -1288,16 +1325,20 @@ function handlePop(e) {
         
             if (dist < b.radius + 10) {
                 // Also check if the pet was clicked!
-                const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
-                if (petDist < pet.size) {
-                    pet.mood = 'Love';
-                    pet.moodTimer = 300;
-                    pet.friendship++;
-                    floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
-                    playSound(600, 'sine', 0.1);
-                }
+               const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
+               if (petDist < pet.size) {
+                    if (pet.energy >= pet.maxEnergy) {
+                        pet.triggerSuperPop();
+                    } else {
+                        pet.mood = 'Love';
+                        pet.moodTimer = 300;
+                        pet.friendship++;
+                        floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
+                        playSound(600, 'sine', 0.1);
+                    }
+               }
 
-                if (bossActive && b.type === 'stinky') {
+               if (bossActive && b.type === 'stinky') {
                     damageBoss(10);
                     floatingTexts.push(new FloatingText(b.x, b.y, 'BOSS DAMAGE! -10', 'white'));
                 }
@@ -1311,6 +1352,7 @@ function handlePop(e) {
             createPopEffect(b.x, b.y, b.color);
             
             // Pass the bubble's color to the sound function for musical pops! 🎵
+            pet.gainEnergy(1);
             const popColor = b.color;
             bubbles.splice(i, 1); // Remove bubble first so it's not found in playPopSound's find()
             playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
@@ -1841,6 +1883,36 @@ function createBigExplosion(x, y) {
         particles.push(p);
     }
 }
+
+class Cloud {
+    constructor() {
+        this.reset();
+        this.x = Math.random() * canvasWidth;
+    }
+    reset() {
+        this.width = Math.random() * 100 + 100;
+        this.height = this.width * 0.4;
+        this.x = -this.width;
+        this.y = Math.random() * (canvasHeight * 0.4);
+        this.speed = Math.random() * 0.5 + 0.2;
+        this.opacity = Math.random() * 0.3 + 0.4;
+    }
+    update() {
+        this.x += this.speed;
+        if (this.x > canvasWidth + this.width) this.reset();
+    }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.height / 2, 0, Math.PI * 2);
+        ctx.arc(this.x + this.height * 0.6, this.y - this.height * 0.2, this.height * 0.7, 0, Math.PI * 2);
+        ctx.arc(this.x + this.height * 1.2, this.y, this.height / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
 class Sparkle {
     constructor() {
         this.x = Math.random() * canvasWidth;
@@ -1869,9 +1941,14 @@ function update() {
 
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
-
++
++    clouds.forEach(c => {
++        c.update();
++        c.draw();
++    });
++
     if (bossActive && boss) {
-        boss.update();
+
         boss.draw();
     }
 
@@ -1979,10 +2056,15 @@ function resetGame() {
     updateQuest();
     overlay.style.display = 'none';
     comboText.style.opacity = '0';
-    
++
++    clouds = [];
++    for (let i = 0; i < 6; i++) {
++        clouds.push(new Cloud());
++    }
++
     clearInterval(timerInterval);
     clearTimeout(spawnTimeout);
-    
+
     startTimer();
     spawnBubble();
 }
