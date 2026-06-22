@@ -1836,6 +1836,36 @@ function createBigExplosion(x, y) {
         particles.push(p);
     }
 }
+
+class Cloud {
+    constructor() {
+        this.reset();
+        this.x = Math.random() * canvasWidth;
+    }
+    reset() {
+        this.width = Math.random() * 100 + 100;
+        this.height = this.width * 0.4;
+        this.x = -this.width;
+        this.y = Math.random() * (canvasHeight * 0.4);
+        this.speed = Math.random() * 0.5 + 0.2;
+        this.opacity = Math.random() * 0.3 + 0.4;
+    }
+    update() {
+        this.x += this.speed;
+        if (this.x > canvasWidth + this.width) this.reset();
+    }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.height / 2, 0, Math.PI * 2);
+        ctx.arc(this.x + this.height * 0.6, this.y - this.height * 0.2, this.height * 0.7, 0, Math.PI * 2);
+        ctx.arc(this.x + this.height * 1.2, this.y, this.height / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
 class Sparkle {
     constructor() {
         this.x = Math.random() * canvasWidth;
@@ -1864,9 +1894,14 @@ function update() {
 
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
-
++
++    clouds.forEach(c => {
++        c.update();
++        c.draw();
++    });
++
     if (bossActive && boss) {
-        boss.update();
+
         boss.draw();
     }
 
@@ -1974,10 +2009,15 @@ function resetGame() {
     updateQuest();
     overlay.style.display = 'none';
     comboText.style.opacity = '0';
-    
++
++    clouds = [];
++    for (let i = 0; i < 6; i++) {
++        clouds.push(new Cloud());
++    }
++
     clearInterval(timerInterval);
     clearTimeout(spawnTimeout);
-    
+
     startTimer();
     spawnBubble();
 }
