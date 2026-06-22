@@ -248,6 +248,9 @@ class Bubble {
         this.vx = (Math.random() - 0.5) * 2;
         this.pulse = 0;
         this.pulseDir = 1;
+        this.isSneezing = false;
+        this.sneezeTimer = 0;
+        this.sneezeOffset = { x: 0, y: 0 };
         
         this.type = 'normal';
         const rand = Math.random();
@@ -353,6 +356,10 @@ class Bubble {
             this.type = 'bomb-burst';
             this.color = '#ff5722';
             this.radius = 30;
+        } else if (rand > 0.10 && rand < 0.13) {
+            this.type = 'sneeze';
+            this.color = '#ffeb3b';
+            this.radius = 30;
         } else if (rand < 0.05) {
             this.type = 'stinky';
             this.color = '#9e9e9e';
@@ -366,6 +373,13 @@ class Bubble {
         this.y -= this.speed * gameSpeed;
         this.x += this.vx * gameSpeed;
         
+        if (this.isSneezing) {
+            this.sneezeTimer--;
+            if (this.sneezeTimer <= 0) {
+                this.isSneezing = false;
+            }
+        }
+        
         if (this.x - this.radius < 0 || this.x + this.radius > canvasWidth) {
             this.vx *= -1;
         }
@@ -376,12 +390,19 @@ class Bubble {
 
     draw() {
         const currentRadius = this.radius + this.pulse * 2;
+        let drawX = this.x;
+        let drawY = this.y;
+        if (this.isSneezing) {
+            drawX += this.sneezeOffset.x * (this.sneezeTimer / 30);
+            drawY += this.sneezeOffset.y * (this.sneezeTimer / 30);
+        }
+        
         ctx.beginPath();
-        ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
+        ctx.arc(drawX, drawY, currentRadius, 0, Math.PI * 2);
         
         let grad = ctx.createRadialGradient(
-            this.x - currentRadius * 0.3, this.y - currentRadius * 0.3, currentRadius * 0.1,
-            this.x, this.y, currentRadius
+            drawX - currentRadius * 0.3, drawY - currentRadius * 0.3, currentRadius * 0.1,
+            drawX, drawY, currentRadius
         );
         grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
         grad.addColorStop(0.3, this.color);
@@ -455,95 +476,99 @@ class Bubble {
         if (this.type === 'golden-ticket') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🌟', this.x, this.y + currentRadius/3);
+            ctx.fillText('🌟', drawX, drawY + currentRadius/3);
         } else if (this.type === 'magic-mirror') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🪞', this.x, this.y + currentRadius/3);
+            ctx.fillText('🪞', drawX, drawY + currentRadius/3);
         } else if (this.type === 'magic-wand') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🪄', this.x, this.y + currentRadius/3);
+            ctx.fillText('🪄', drawX, drawY + currentRadius/3);
         } else if (this.type === 'magic-mushroom') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🍄', this.x, this.y + currentRadius/3);
+            ctx.fillText('🍄', drawX, drawY + currentRadius/3);
         } else if (this.type === 'hammer') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🔨', this.x, this.y + currentRadius/3);
+            ctx.fillText('🔨', drawX, drawY + currentRadius/3);
         } else if (this.type === 'gold') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('✨', this.x, this.y + currentRadius/3);
+            ctx.fillText('✨', drawX, drawY + currentRadius/3);
         } else if (this.type === 'freeze') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('❄️', this.x, this.y + currentRadius/3);
+            ctx.fillText('❄️', drawX, drawY + currentRadius/3);
         } else if (this.type === 'shield') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🛡️', this.x, this.y + currentRadius/3);
+            ctx.fillText('🛡️', drawX, drawY + currentRadius/3);
         } else if (this.type === 'stinky') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('💨', this.x, this.y + currentRadius/3);
+            ctx.fillText('💨', drawX, drawY + currentRadius/3);
         } else if (this.type === 'heart') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('❤️', this.x, this.y + currentRadius/3);
+            ctx.fillText('❤️', drawX, drawY + currentRadius/3);
         } else if (this.type === 'lucky-star') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🌟', this.x, this.y + currentRadius/3);
+            ctx.fillText('🌟', drawX, drawY + currentRadius/3);
         } else if (this.type === 'bomb') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('💣', this.x, this.y + currentRadius/3);
+            ctx.fillText('💣', drawX, drawY + currentRadius/3);
         } else if (this.type === 'rainbow-burst') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🌈', this.x, this.y + currentRadius/3);
+            ctx.fillText('🌈', drawX, drawY + currentRadius/3);
         } else if (this.type === 'super-pop') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('💥', this.x, this.y + currentRadius/3);
+            ctx.fillText('💥', drawX, drawY + currentRadius/3);
         } else if (this.type === 'magnetic-bubble') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🧲', this.x, this.y + currentRadius/3);
+            ctx.fillText('🧲', drawX, drawY + currentRadius/3);
         } else if (this.type === 'rainbow-spiral') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🌀', this.x, this.y + currentRadius/3);
+            ctx.fillText('🌀', drawX, drawY + currentRadius/3);
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'magenta';
         } else if (this.type === 'magic-burst') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🎆', this.x, this.y + currentRadius/3);
+            ctx.fillText('🎆', drawX, drawY + currentRadius/3);
         } else if (this.type === 'mystery-box') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🎁', this.x, this.y + currentRadius/3);
+            ctx.fillText('🎁', drawX, drawY + currentRadius/3);
         } else if (this.type === 'golden-ticket') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🎫', this.x, this.y + currentRadius/3);
+            ctx.fillText('🎫', drawX, drawY + currentRadius/3);
         } else if (this.type === 'cupcake') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🧁', this.x, this.y + currentRadius/3);
+            ctx.fillText('🧁', drawX, drawY + currentRadius/3);
         } else if (this.type === 'prism') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('💎', this.x, this.y + currentRadius/3);
+            ctx.fillText('💎', drawX, drawY + currentRadius/3);
             ctx.shadowBlur = 15;
             ctx.shadowColor = 'white';
         } else if (this.type === 'confetti') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🎊', this.x, this.y + currentRadius/3);
+            ctx.fillText('🎊', drawX, drawY + currentRadius/3);
+        } else if (this.type === 'sneeze') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🤧', drawX, drawY + currentRadius/3);
         }
         ctx.shadowBlur = 0;
     }
@@ -983,6 +1008,17 @@ function triggerDiscoParty() {
     }, 5000);
 }
 
+function triggerSneezeEffect() {
+    bubbles.forEach(b => {
+        b.isSneezing = true;
+        b.sneezeTimer = 30;
+        b.sneezeOffset = { x: (Math.random() - 0.5) * 30, y: (Math.random() - 0.5) * 30 };
+    });
+    floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, 'ACHOO! 🤧✨', 'yellow'));
+    playSound(200, 'square', 0.1);
+    setTimeout(() => playSound(400, 'square', 0.1), 100);
+}
+
 function triggerSlowMo() {
     const slowMoAlert = document.getElementById('slow-mo-alert');
     slowMoAlert.style.display = 'block';
@@ -1355,6 +1391,13 @@ function handlePop(e) {
                 timeLeft += timeBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `TIME WARP! ⏳ +${timeBonus}s`, '#e1bee7'));
                 createPopEffect(b.x, b.y, '#e1bee7');
+            } else if (b.type === 'sneeze') {
+                playPopSound(true, false);
+                const sneezeBonus = 200;
+                score += sneezeBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `SNEEZE! 🤧 +${sneezeBonus}`, '#ffeb3b'));
+                createPopEffect(b.x, b.y, '#ffeb3b');
+                triggerSneezeEffect();
             } else if (b.type === 'magic-dust') {
                 playPopSound(true, false);
                 const dustBonus = 30;
