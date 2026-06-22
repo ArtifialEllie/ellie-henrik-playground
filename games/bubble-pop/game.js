@@ -34,6 +34,7 @@ let isFrenzy = false;
 let isVortex = false;
 let isMagnetic = false;
 let bossActive = false;
+let boss = null;
 let bossHealth = 100;
 let bossMaxHealth = 100;
 let gameSpeed = 1;
@@ -1723,6 +1724,11 @@ function update() {
 
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
+
+    if (bossActive && boss) {
+        boss.update();
+        boss.draw();
+    }
 
     petClones.forEach(clone => {
         clone.update(lastMouseX, lastMouseY);
