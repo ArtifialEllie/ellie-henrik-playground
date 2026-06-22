@@ -1166,6 +1166,31 @@ function triggerRainbowBridge() {
     setTimeout(() => { bridgeAlert.style.display = 'none'; }, 6000);
 }
 
+function triggerMagicRain() {
+    const rainAlert = document.getElementById('rain-cloud-alert');
+    rainAlert.style.display = 'block';
+    rainAlert.style.color = '#e1bee7';
+    rainAlert.style.textShadow = '3px 3px #ffffff';
+    
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            if (!gameActive) return;
+            const rainBubble = new Bubble(false);
+            rainBubble.type = 'normal';
+            rainBubble.color = '#b3e5fc';
+            rainBubble.radius = 15;
+            rainBubble.x = Math.random() * canvasWidth;
+            rainBubble.y = -rainBubble.radius;
+            rainBubble.speed = Math.random() * 4 + 3;
+            bubbles.push(rainBubble);
+        }, i * 100);
+    }
+    
+    setTimeout(() => {
+        rainAlert.style.display = 'none';
+    }, 6000);
+}
+
 function triggerMagnetism() {
     isMagnetic = true;
     const magnetAlert = document.createElement('div');
@@ -1772,6 +1797,7 @@ function handlePop(e) {
     if (Math.random() < 0.005) triggerWindGust();
     if (Math.random() < 0.002) triggerRainbowCascade();
     if (Math.random() < 0.003) triggerRainbowBridge();
+    if (Math.random() < 0.002) triggerMagicRain();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
     updateCombo();
