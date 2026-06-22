@@ -778,6 +778,8 @@ class MagicalPet {
         this.mood = 'Happy';
         this.moodTimer = 0;
         this.friendship = 0;
+        this.friendshipLevel = 1;
+        this.friendshipExp = 0;
         this.energy = 0;
         this.maxEnergy = 100;
     }
@@ -796,6 +798,17 @@ class MagicalPet {
 
         if (this.shieldTimer > 0) {
             this.shieldTimer--;
+        }
+
+        // Friendship Level 5: Occasionally spawn a gold bubble!
+        if (this.friendshipLevel >= 5 && Math.random() < 0.002) {
+            const goldBubble = new Bubble(false);
+            goldBubble.type = 'gold';
+            goldBubble.x = this.x + (Math.random() - 0.5) * 100;
+            goldBubble.y = this.y + (Math.random() - 0.5) * 100;
+            goldBubble.speed = 2;
+            bubbles.push(goldBubble);
+            floatingTexts.push(new FloatingText(this.x, this.y, 'PET GIFT! ✨', 'gold'));
         }
 
         // Mood Logic
@@ -818,6 +831,15 @@ class MagicalPet {
             this.autoPopTimer = this.popInterval;
         }
 
+        // Friendship Level Up Logic
+        if (this.friendshipExp >= 100) {
+            this.friendshipExp -= 100;
+            this.friendshipLevel++;
+            floatingTexts.push(new FloatingText(this.x, this.y, `FRIENDSHIP LVL ${this.friendshipLevel}! ❤️`, '#ff4081'));
+            playSound(600, 'sine', 0.2);
+            setTimeout(() => playSound(800, 'sine', 0.2), 100);
+        }
+
     // Pet Evolution Logic
     let nextLevel = 1;
     let nextEmoji = '🐱';
@@ -836,6 +858,13 @@ class MagicalPet {
     }
     if (currentAccessory === '🎩') {
         nextInterval *= 0.8;
+    }
+    // Friendship bonuses
+    if (this.friendshipLevel >= 3) {
+        nextRange *= 1.2;
+    }
+    if (this.friendshipLevel >= 4) {
+        nextInterval *= 0.9;
     }
 
     if (nextLevel > this.level) {
@@ -900,6 +929,11 @@ class MagicalPet {
         this.energy = Math.min(this.maxEnergy, this.energy + amount);
     }
 
+    gainFriendship(amount) {
+        this.friendshipExp += amount;
+        this.friendship += amount; // Keep old property for compatibility
+    }
+
     triggerSuperPop() {
         this.energy = 0;
         floatingTexts.push(new FloatingText(this.x, this.y, 'SUPER POP! 🌟💥', 'gold'));
@@ -949,7 +983,14 @@ class MagicalPet {
         ctx.fillRect(this.x - barWidth / 2, this.y + this.floatOffset + this.size / 2, barWidth, barHeight);
         ctx.fillStyle = this.energy >= this.maxEnergy ? 'gold' : '#ffeb3b';
         ctx.fillRect(this.x - barWidth / 2, this.y + this.floatOffset + this.size / 2, (this.energy / this.maxEnergy) * barWidth, barHeight);
-
+ 
+        // Friendship Bar! ❤️
+        const fBarHeight = 4;
+        ctx.fillStyle = '#444';
+        ctx.fillRect(this.x - barWidth / 2, this.y + this.floatOffset + this.size / 2 + 8, barWidth, fBarHeight);
+        ctx.fillStyle = '#ff4081';
+        ctx.fillRect(this.x - barWidth / 2, this.y + this.floatOffset + this.size / 2 + 8, (this.friendshipExp / 100) * barWidth, fBarHeight);
+ 
         ctx.shadowBlur = 0;
         ctx.fillStyle = 'white';
         ctx.shadowBlur = 4;
@@ -1332,15 +1373,15 @@ function handlePop(e) {
                 // Also check if the pet was clicked!
                const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
                if (petDist < pet.size) {
-                    if (pet.energy >= pet.maxEnergy) {
-                        pet.triggerSuperPop();
-                    } else {
-                        pet.mood = 'Love';
-                        pet.moodTimer = 300;
-                        pet.friendship++;
-                        floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
-                        playSound(600, 'sine', 0.1);
-                    }
+                        if (pet.energy >= pet.maxEnergy) {
+                            pet.triggerSuperPop();
+                        } else {
+                            pet.mood = 'Love';
+                            pet.moodTimer = 300;
+                            pet.gainFriendship(10);
+                            floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
+                            playSound(600, 'sine', 0.1);
+                        }
                }
 
                if (bossActive && b.type === 'stinky') {
@@ -1463,14 +1504,15 @@ function handlePop(e) {
                     bubbles.push(special);
                 }
                 triggerFrenzy();
-            } else if (b.type === 'mega-pop') {
-                playPopSound(true, false);
-                const megaBonus = 1000;
-                score += megaBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `MEGA-POP! 💥 +${megaBonus}`, '#ff00ff'));
-                createPopEffect(b.x, b.y, '#ff00ff');
-                
-                // Mega Pop effect: pushes all bubbles away from the center!
+            } else if (b.type === 'heart') {
+                playPopSound();
+                const heartBonus = 50;
+                score += heartBonus;
+                pet.gainFriendship(5);
+                floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
+                createHeartEffect(b.x, b.y);
+                magicFlowers.push(new MagicFlower(b.x, b.y));
+            } else if (b.type === 'lucky-star') {
                 bubbles.forEach(bub => {
                     if (bub !== b) {
                         const dx = bub.x - b.x;
@@ -1495,6 +1537,9 @@ function handlePop(e) {
                 if (ownedAccessories.includes('Golden Collar')) {
                     goldGain = Math.floor(goldGain * 1.5);
                 }
+                // Friendship bonus: +10% gold per level above 1 (up to level 5)
+                const friendshipMult = 1 + (Math.min(pet.friendshipLevel - 1, 4) * 0.1);
+                goldGain = Math.floor(goldGain * friendshipMult);
                 score += bonus;
                 totalGold += goldGain;
                 localStorage.setItem('bubblePopTotalGold', totalGold);
@@ -1519,13 +1564,15 @@ function handlePop(e) {
                 
                 triggerFrenzy();
                 createPopEffect(b.x, b.y, 'rainbow');
-            } else            if (b.type === 'heart') {
+            } else if (b.type === 'heart') {
                 playPopSound();
                 const heartBonus = 50;
                 score += heartBonus;
+                pet.gainFriendship(5);
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
                 createHeartEffect(b.x, b.y);
                 magicFlowers.push(new MagicFlower(b.x, b.y));
+            } else if (b.type === 'lucky-star') {lower(b.x, b.y));
             } else if (b.type === 'lucky-star') {
                 playPopSound(true, false);
                 const starBonus = 40;
@@ -1596,14 +1643,15 @@ function handlePop(e) {
                 setTimeout(() => {
                     shieldActive = false;
                 }, 7000);
-            } else if (b.type === 'cluster') {
+            } else if (b.type === 'heart') {
                 playPopSound();
-                const bonus = 2 + (combo * 1);
-                score += bonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `CLUSTER! +${bonus} 💥`, '#ffcc80'));
-                for (let j = 0; j < 5; j++) {
-                    const mini = new Bubble(false);
-                    mini.radius = 10;
+                const heartBonus = 50;
+                score += heartBonus;
+                pet.gainFriendship(5);
+                floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
+                createHeartEffect(b.x, b.y);
+                magicFlowers.push(new MagicFlower(b.x, b.y));
+            } else if (b.type === 'lucky-star') {
                     mini.x = b.x + (Math.random() - 0.5) * 50;
                     mini.y = b.y + (Math.random() - 0.5) * 50;
                     mini.speed = Math.random() * 3 + 2;
@@ -1649,6 +1697,7 @@ function handlePop(e) {
             } else if (b.type === 'pet-treat') {
                 playPopSound(true, false);
                 pet.triggerSugarRush();
+                pet.gainFriendship(20);
                 const treatBonus = 30;
                 score += treatBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `YUMMY! 🦴 +${treatBonus}`, '#ffca28'));
@@ -1811,14 +1860,15 @@ function handlePop(e) {
                     mini.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
                     bubbles.push(mini);
                 }
-            } else if (b.type === 'giant') {
-                playSuperPopSound();
-                const giantBonus = 200;
-                score += giantBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `GIANT POP! 🌟 +${giantBonus}`, 'gold'));
-                createBigExplosion(b.x, b.y);
-            } else {
+            } else if (b.type === 'heart') {
                 playPopSound();
+                const heartBonus = 50;
+                score += heartBonus;
+                pet.gainFriendship(5);
+                floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
+                createHeartEffect(b.x, b.y);
+                magicFlowers.push(new MagicFlower(b.x, b.y));
+            } else if (b.type === 'lucky-star') {
                 combo++;
                 const points = (Math.ceil(60 / b.radius * 2) + (combo > 5 ? 5 : 0)) * multiplier;
                 if (currentAccessory === '🪄') {
