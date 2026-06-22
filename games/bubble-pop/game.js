@@ -1504,6 +1504,24 @@ function handlePop(e) {
                     bubbles.push(special);
                 }
                 triggerFrenzy();
+            } else if (b.type === 'shimmer-shell') {
+                playPopSound(true, false);
+                const shellBonus = 150;
+                score += shellBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `SHIMMER SHELL! 🐚 +${shellBonus}`, '#e0f7fa'));
+                createPopEffect(b.x, b.y, '#e0f7fa');
+                for (let j = 0; j < 3; j++) {
+                    const pearl = new Bubble(false);
+                    pearl.type = 'normal';
+                    pearl.color = 'white';
+                    pearl.radius = 15;
+                    pearl.x = b.x + (Math.random() - 0.5) * 50;
+                    pearl.y = b.y + (Math.random() - 0.5) * 50;
+                    pearl.vx = (Math.random() - 0.5) * 10;
+                    pearl.vy = (Math.random() - 0.5) * 10 - 2;
+                    pearl.speed = Math.random() * 2 + 1;
+                    bubbles.push(pearl);
+                }
             } else if (b.type === 'heart') {
                 playPopSound();
                 const heartBonus = 50;
@@ -1572,7 +1590,6 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
                 createHeartEffect(b.x, b.y);
                 magicFlowers.push(new MagicFlower(b.x, b.y));
-            } else if (b.type === 'lucky-star') {lower(b.x, b.y));
             } else if (b.type === 'lucky-star') {
                 playPopSound(true, false);
                 const starBonus = 40;
