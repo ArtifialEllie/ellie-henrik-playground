@@ -569,6 +569,21 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🤧', drawX, drawY + currentRadius/3);
+        } else if (this.type === 'pet-treat') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🦴', drawX, drawY + currentRadius/3);
+        } else if (this.type === 'lucky-clover') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🍀', drawX, drawY + currentRadius/3);
+        } else if (this.type === 'magic-dust') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('✨', drawX, drawY + currentRadius/3);
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'white';
+        }
         }
         ctx.shadowBlur = 0;
     }
