@@ -31,6 +31,7 @@ const GRAVITY = 0.25;
 const BOUNCE_FORCE = -10;
 const SUPER_BOUNCE_FORCE = -18;
 const CLOUD_BOUNCE_FORCE = -22;
+const RAINBOW_BOUNCE_FORCE = -30;
 const PLATFORM_WIDTH = 70;
 const PLATFORM_HEIGHT = 15;
 const CLOUD_WIDTH = 40;
@@ -73,19 +74,31 @@ window.addEventListener('keydown', (e) => keys[e.code] = true);
 window.addEventListener('keyup', (e) => keys[e.code] = false);
 
 function spawnPlatform(y, isFirst = false) {
-    const x = Math.random() * (canvas.width - PLATFORM_WIDTH);
     const colors = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff'];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    
-    const isCloud = Math.random() > 0.85; // 15% chance to be a fluffy cloud platform
-    
+    const rand = Math.random();
+    let type = 'normal';
+    let width = PLATFORM_WIDTH;
+    let color = colors[Math.floor(Math.random() * colors.length)];
+
+    if (rand > 0.92) {
+        type = 'rainbow';
+        width = PLATFORM_WIDTH * 1.5;
+        color = 'rainbow';
+    } else if (rand > 0.85) {
+        type = 'cloud';
+        width = CLOUD_WIDTH;
+        color = '#ffffff';
+    }
+
+    const x = Math.random() * (canvas.width - width);
+
     platforms.push({
         x: x,
         y: y,
-        width: isCloud ? CLOUD_WIDTH : PLATFORM_WIDTH,
+        width: width,
         height: PLATFORM_HEIGHT,
-        color: isCloud ? '#ffffff' : color,
-        type: isCloud ? 'cloud' : 'normal'
+        color: color,
+        type: type
     });
 }
 
@@ -255,6 +268,12 @@ function update() {
                 if (plat.type === 'cloud') {
                     bounceForce = CLOUD_BOUNCE_FORCE;
                     createSparkles(player.x, player.y + player.radius, '#ffffff', 12);
+                } else if (plat.type === 'rainbow') {
+                    bounceForce = RAINBOW_BOUNCE_FORCE;
+                    createSparkles(player.x, player.y + player.radius, '#ff0000', 15);
+                    createSparkles(player.x, player.y + player.radius, '#ffff00', 15);
+                    createSparkles(player.x, player.y + player.radius, '#0000ff', 15);
+                    createSparkles(player.x, player.y + player.radius, '#ffffff', 15);
                 } else if (superBounceTimer > 0) {
                     bounceForce = SUPER_BOUNCE_FORCE;
                 }
@@ -421,10 +440,23 @@ function draw() {
             const cy = plat.y + plat.height / 2;
             const r = plat.width / 4;
             ctx.arc(cx - r, cy, r, Math.PI * 0.5, Math.PI * 1.5);
-            ctx.arc(cx, cy - r, r, Math.PI, Math.PI * 2);
-            ctx.arc(cx + r, cy, r, Math.PI * 1.5, Math.PI * 0.5);
             ctx.lineTo(plat.x, plat.y + plat.height);
             ctx.lineTo(plat.x + plat.width, plat.y + plat.height);
+        } else if (plat.type === 'rainbow') {
+            ctx.roundRect(plat.x, plat.y, plat.width, plat.height, 10);
+            const grad = ctx.createLinearGradient(plat.x, 0, plat.x + plat.width, 0);
+            grad.addColorStop(0, 'red');
+            grad.addColorStop(0.17, 'orange');
+            grad.addColorStop(0.33, 'yellow');
+            grad.addColorStop(0.5, 'green');
+            grad.addColorStop(0.67, 'blue');
+            grad.addColorStop(0.83, 'indigo');
+            grad.addColorStop(1, 'violet');
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.closePath();
+            ctx.shadowBlur = 0;
+            return; // Skip the default fill
         } else {
             ctx.roundRect(plat.x, plat.y, plat.width, plat.height, 10);
         }
