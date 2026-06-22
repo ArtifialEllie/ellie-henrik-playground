@@ -19,6 +19,7 @@ let constellationPrisms = [];
 let constellationLines = [];
 let gravityWells = [];
 let companion, companionRing, companionTarget = new THREE.Vector3();
+let superNovaMesh, isSuperNovaActive = false, superNovaTimer = 0;
 soundEnabled = true;
 let windActive = false;
 let windDirection = new THREE.Vector3(0, 0, 0);
@@ -297,6 +298,13 @@ function createPrisms() {
     
     // Periodically spawn gravity wells
     setInterval(spawnGravityWell, 15000);
+
+    // Periodically trigger a Super-Nova! 🌟💥
+    setInterval(() => {
+        if (!isSuperNovaActive && Math.random() < 0.3) {
+            triggerSuperNova();
+        }
+    }, 30000);
 }
 
 function createSinglePrism(geometries) {
@@ -829,6 +837,33 @@ function triggerMagicBurst() {
     animateShockwave();
 }
 
+function triggerSuperNova() {
+    isSuperNovaActive = true;
+    superNovaTimer = 0;
+    
+    const pos = new THREE.Vector3(
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10
+    );
+
+    const geo = new THREE.SphereGeometry(0.1, 32, 32);
+    const mat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0x00ffff,
+        emissiveIntensity: 5,
+        transparent: true,
+        opacity: 0.8
+    });
+    superNovaMesh = new THREE.Mesh(geo, mat);
+    superNovaMesh.position.copy(pos);
+    scene.add(superNovaMesh);
+
+    createFloatingText('🌟 SUPER-NOVA COLLAPSE! 🌟', window.innerWidth / 2, window.innerHeight / 2);
+    playSound(100, 'sine', 1, 0.2);
+    playSound(50, 'sine', 1, 0.2);
+}
+
 function trySpawnConstellation() {
     if (Math.random() > 0.4) return;
     
@@ -1089,6 +1124,64 @@ function animate() {
         portal.rotation.z += 0.01;
         portal.scale.setScalar(1 + Math.sin(time * 3) * 0.05);
         portal.material.emissiveIntensity = 1 + Math.sin(time * 5) * 0.5;
+    }
+
+    if (isSuperNovaActive) {
+        superNovaTimer++;
+        const progress = superNovaTimer / 300; // Assume 60fps, 5 seconds
+        
+        if (progress < 1) {
+            superNovaMesh.scale.setScalar(1 + progress * 10);
+            superNovaMesh.material.emissiveIntensity = 5 + progress * 20;
+            
+            // Pull everything in!
+            prisms.forEach(prism => {
+                const dir = new THREE.Vector3().subVectors(superNovaMesh.position, prism.position).normalize();
+                const dist = prism.position.distanceTo(superNovaMesh.position);
+                const pull = (1 / (dist + 0.1)) * (progress * 0.2);
+                prism.position.add(dir.multiplyScalar(pull));
+            });
+            
+            if (Math.random() < 0.1) {
+                playSound(100 + progress * 400, 'sine', 0.1, 0.05);
+            }
+        } else {
+            // EXPLOSION! 💥
+            scene.remove(superNovaMesh);
+            isSuperNovaActive = false;
+            
+            cameraShake = 1.0;
+            createFloatingText('💥 SUPER-NOVA EXPLOSION!! 💥', window.innerWidth / 2, window.innerHeight / 2);
+            playSound(50, 'sawtooth', 0.5, 0.3);
+            playSound(100, 'sawtooth', 0.5, 0.3);
+            
+            // Spawn a rain of gold prisms
+            for (let i = 0; i < 20; i++) {
+                const gold = new THREE.IcosahedronGeometry(0.6, 0);
+                const goldMat = new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.5 });
+                const prism = new THREE.Mesh(gold, goldMat);
+                const angle = (i / 20) * Math.PI * 2;
+                prism.position.copy(superNovaMesh.position).add(new THREE.Vector3(Math.cos(angle)*2, Math.sin(angle)*2, 0));
+                scene.add(prism);
+                goldenPrisms.push(prism);
+                setTimeout(() => { if (goldenPrisms.includes(prism)) removeGoldenPrism(prism); }, 4000);
+            }
+            score += 5000;
+            scoreElement.innerText = score;
+            const swGeo = new THREE.TorusGeometry(0.1, 0.05, 16, 100);
+            const swMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
+            const sw = new THREE.Mesh(swGeo, swMat);
+            sw.position.copy(superNovaMesh.position);
+            scene.add(sw);
+            const swStartTime = Date.now();
+            function animSW() {
+                const el = Date.now() - swStartTime;
+                sw.scale.setScalar(1 + el * 0.1);
+                sw.material.opacity = 1 - el / 1000;
+                if (sw.material.opacity <= 0) scene.remove(sw); else requestAnimationFrame(animSW);
+            }
+            animSW();
+        }
     }
 
     updateCompanion();
