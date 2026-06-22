@@ -7,29 +7,35 @@ class Boss {
         this.pulse = 0;
         this.pulseDir = 1;
         this.emoji = '💨';
+        this.isEnraged = false;
+        this.enrageColor = '#ff4500';
+        this.normalColor = '#9e9e9e';
     }
 
     update() {
-        this.x += this.vx;
+        const speedMult = this.isEnraged ? 2 : 1;
+        this.x += this.vx * speedMult;
         if (this.x - this.radius < 0 || this.x + this.radius > canvasWidth) {
             this.vx *= -1;
         }
-        this.pulse += 0.05 * this.pulseDir;
+        this.pulse += (this.isEnraged ? 0.1 : 0.05) * this.pulseDir;
         if (this.pulse > 1 || this.pulse < 0) this.pulseDir *= -1;
     }
 
     draw() {
-        const currentRadius = this.radius + this.pulse * 10;
+        const currentRadius = this.radius + this.pulse * (this.isEnraged ? 20 : 10);
         ctx.save();
         ctx.beginPath();
         ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
         let grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
-        grad.addColorStop(0, '#9e9e9e');
-        grad.addColorStop(1, '#666');
+        const colorStart = this.isEnraged ? '#ff8c00' : '#9e9e9e';
+        const colorEnd = this.isEnraged ? '#ff0000' : '#666';
+        grad.addColorStop(0, colorStart);
+        grad.addColorStop(1, colorEnd);
         ctx.fillStyle = grad;
         ctx.fill();
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 5;
+        ctx.strokeStyle = this.isEnraged ? '#ffff00' : 'white';
+        ctx.lineWidth = this.isEnraged ? 8 : 5;
         ctx.stroke();
         ctx.font = `${currentRadius}px Arial`;
         ctx.textAlign = 'center';
@@ -76,6 +82,13 @@ function damageBoss(amount) {
     const fill = document.getElementById('boss-health-fill');
     if (fill) fill.style.width = `${Math.max(0, (bossHealth / bossMaxHealth) * 100)}%`;
     
+    if (bossHealth <= 50 && !boss.isEnraged) {
+        boss.isEnraged = true;
+        boss.emoji = '😡';
+        floatingTexts.push(new FloatingText(canvasWidth / 2, 100, "STINKY BEHEMOTH IS ENRAGED! 😡🔥", "red"));
+        playSound(150, 'sawtooth', 0.5);
+    }
+
     if (bossHealth <= 0) {
         bossActive = false;
         boss = null;

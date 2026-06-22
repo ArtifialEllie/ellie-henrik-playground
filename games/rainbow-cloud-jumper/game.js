@@ -14,7 +14,6 @@ highScoreEl.innerText = `Best: ${highScore}`;
 
 let gameActive = false;
 let cameraY = 0;
-let particles = [];
 
 const player = {
     x: 300,
@@ -23,47 +22,53 @@ const player = {
     height: 40,
     vx: 0,
     vy: 0,
-    jumpStrength: -15,
+    jumpStrength: -16,
     gravity: 0.4,
-    color: '#ffeb3b'
+    color: '#ffeb3b',
+    stretchY: 1,
+    stretchX: 1
 };
 
 const clouds = [];
-const cloudColors = {
-    normal: ['#FFB6C1', '#ADD8E6', '#E6E6FA', '#FFFACD', '#F0FFF0'],
-    moving: ['#B39DDB', '#9575CD'],
-    spring: ['#FFD54F', '#FFB300'],
-    disappearing: ['#CFD8DC', '#B0BEC5']
-};
+const cloudColors = ['#FFB6C1', '#ADD8E6', '#E6E6FA', '#FFFACD', '#F0FFF0'];
+const particles = [];
 
-function createCloud(y, type = 'normal') {
-    const types = ['normal', 'normal', 'normal', 'moving', 'spring', 'disappearing'];
-    const actualType = type === 'normal' ? types[Math.floor(Math.random() * types.length)] : type;
-    
-    const colorList = cloudColors[actualType];
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 10;
+        this.vy = (Math.random() - 0.5) * 10;
+        this.radius = Math.random() * 4 + 2;
+        this.color = color;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.02;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+    }
+
+    draw(ctx, cameraY) {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y - cameraY, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+function createCloud(y) {
     return {
         x: Math.random() * (canvas.width - 100),
         y: y,
         width: 100,
         height: 40,
-        color: colorList[Math.floor(Math.random() * colorList.length)],
-        type: actualType,
-        vx: actualType === 'moving' ? (Math.random() > 0.5 ? 2 : -2) : 0,
-        active: true
+        color: cloudColors[Math.floor(Math.random() * cloudColors.length)]
     };
-}
-
-function createParticles(x, y, color) {
-    for (let i = 0; i < 8; i++) {
-        particles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            life: 1.0,
-            color: color
-        });
-    }
 }
 
 function initGame() {
@@ -73,13 +78,15 @@ function initGame() {
     player.y = 700;
     player.vx = 0;
     player.vy = 0;
+    player.stretchY = 1;
+    player.stretchX = 1;
     scoreEl.innerText = `Score: ${score}`;
     
     clouds.length = 0;
     particles.length = 0;
-    
+
     // Starting cloud
-    clouds.push({ x: 250, y: 750, width: 100, height: 40, color: '#ffffff', type: 'normal', vx: 0, active: true });
+    clouds.push({ x: 250, y: 750, width: 100, height: 40, color: '#ffffff' });
     
     // Initial clouds
     for (let i = 1; i < 15; i++) {
@@ -94,10 +101,25 @@ function initGame() {
 function update() {
     if (!gameActive) return;
 
-    // Gravity
+    // Gravity and Physics
     player.vy += player.gravity;
     player.y += player.vy;
     player.x += player.vx;
+
+    // Squash and stretch animation
+    if (player.vy < 0) {
+        player.stretchY = 1.2;
+        player.stretchX = 0.8;
+    } else if (player.vy > 0) {
+        player.stretchY = 0.9;
+        player.stretchX = 1.1;
+    } else {
+        player.stretchY = 1;
+        player.stretchX = 1;
+    }
+    // Smooth transition back to normal
+    player.stretchY += (1 - player.stretchY) * 0.1;
+    player.stretchX += (1 - player.stretchX) * 0.1;
 
     // Wrap around screen
     if (player.x > canvas.width) player.x = 0;
@@ -108,34 +130,25 @@ function update() {
         cameraY = player.y - canvas.height / 2;
     }
 
-    // Update Clouds
-    clouds.forEach(cloud => {
-        if (cloud.type === 'moving') {
-            cloud.x += cloud.vx;
-            if (cloud.x <= 0 || cloud.x + cloud.width >= canvas.width) {
-                cloud.vx *= -1;
-            }
-        }
-    });
-
-    // Update Particles
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life -= 0.02;
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-
-    // Spawn new clouds as player goes up
+    // Generate new clouds as player goes up
     const highestCloudY = clouds[clouds.length - 1].y;
-    if (player.y < highestCloudY + 800) {
+    if (cameraY < highestCloudY + canvas.height) {
         clouds.push(createCloud(highestCloudY - 120));
     }
-    
-    // Clean up old clouds
-    if (clouds.length > 30) {
-        clouds.shift();
+
+    // Remove off-screen clouds to save memory
+    if (clouds.length > 20) {
+        if (clouds[0].y > cameraY + canvas.height + 100) {
+            clouds.shift();
+        }
+    }
+
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        if (particles[i].life <= 0) {
+            particles.splice(i, 1);
+        }
     }
 }
 
@@ -143,23 +156,19 @@ function checkCollisions() {
     if (player.vy <= 0) return; // Only collide when falling
 
     clouds.forEach(cloud => {
-        if (!cloud.active) return;
-
         if (player.x + player.width > cloud.x &&
                 player.x < cloud.x + cloud.width &&
                 player.y + player.height > cloud.y &&
-                player.y + player.height < cloud.y + 25) {
+                player.y + player.height < cloud.y + 20) {
             
-            let jump = player.jumpStrength;
-            if (cloud.type === 'spring') jump = -25;
+            player.vy = player.jumpStrength;
             
-            player.vy = jump;
-            createParticles(player.x + player.width/2, player.y + player.height, cloud.color);
-
-            if (cloud.type === 'disappearing') {
-                cloud.active = false;
+            // Create magical particles on jump
+            for (let i = 0; i < 10; i++) {
+                particles.push(new Particle(player.x + player.width / 2, player.y + player.height, cloud.color));
             }
             
+            // Add points
             const cloudHeight = 750 - cloud.y;
             const currentScore = Math.floor(cloudHeight / 10);
             if (currentScore > score) {
@@ -171,12 +180,9 @@ function checkCollisions() {
 }
 
 function draw() {
-    // Dynamic Background Gradient
-    const hue = (Date.now() / 50) % 360;
-    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, `hsl(${hue}, 70%, 80%)`);
-    grad.addColorStop(1, `hsl(${(hue + 60) % 360}, 70%, 95%)`);
-    ctx.fillStyle = grad;
+    // Dynamic background color based on height
+    const hue = (Math.abs(cameraY) / 50) % 360;
+    ctx.fillStyle = `hsl(${hue}, 60%, 80%)`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.save();
@@ -184,57 +190,41 @@ function draw() {
 
     // Draw clouds
     clouds.forEach(cloud => {
-        if (!cloud.active) return;
-
         ctx.fillStyle = cloud.color;
-        
-        // Add a slight glow to special clouds
-        if (cloud.type === 'spring') {
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = 'gold';
-        } else {
-            ctx.shadowBlur = 0;
-        }
-
         ctx.beginPath();
         ctx.arc(cloud.x + 20, cloud.y + 20, 20, 0, Math.PI * 2);
         ctx.arc(cloud.x + 50, cloud.y + 10, 25, 0, Math.PI * 2);
         ctx.arc(cloud.x + 80, cloud.y + 20, 20, 0, Math.PI * 2);
         ctx.fill();
         
-        // Cloud type labels/icons
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        if (cloud.type === 'spring') ctx.fillText('🚀', cloud.x + 50, cloud.y + 25);
-        if (cloud.type === 'moving') ctx.fillText('↔️', cloud.x + 50, cloud.y + 25);
-        if (cloud.type === 'disappearing') ctx.fillText('☁️', cloud.x + 50, cloud.y + 25);
-        
-        ctx.shadowBlur = 0;
+        // Add a little highlight to clouds for fluffiness
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.arc(cloud.x + 40, cloud.y + 10, 10, 0, Math.PI * 2);
+        ctx.fill();
     });
 
     // Draw particles
-    particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-    });
-    ctx.globalAlpha = 1.0;
+    particles.forEach(p => p.draw(ctx, 0)); // cameraY is already applied by translate
 
-    // Draw player
+    // Draw player with squash and stretch
+    ctx.save();
+    ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+    ctx.scale(player.stretchX, player.stretchY);
+    
     ctx.fillStyle = player.color;
     ctx.beginPath();
-    ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
+    ctx.arc(0, 0, player.width / 2, 0, Math.PI * 2);
     ctx.fill();
     
     // Eyes
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.arc(player.x + 15, player.y + 15, 3, 0, Math.PI * 2);
-    ctx.arc(player.x + 25, player.y + 15, 3, 0, Math.PI * 2);
+    ctx.arc(-5, -5, 3, 0, Math.PI * 2);
+    ctx.arc(5, -5, 3, 0, Math.PI * 2);
     ctx.fill();
+    
+    ctx.restore();
 
     ctx.restore();
 
@@ -280,14 +270,13 @@ function gameLoop() {
 // Controls
 window.addEventListener('keydown', (e) => {
     if (!gameActive) return;
-    if (e.code === 'ArrowLeft') player.vx = -5;
-    if (e.code === 'ArrowRight') player.vx = 5;
+    if (e.code === 'ArrowLeft') player.vx = -6;
+    if (e.code === 'ArrowRight') player.vx = 6;
 });
 
 window.addEventListener('keyup', (e) => {
     if (!gameActive) return;
-    if (e.code === 'ArrowLeft' && player.vx === -5) player.vx = 0;
-    if (e.code === 'ArrowRight' && player.vx === 5) player.vx = 0;
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') player.vx = 0;
 });
 
 startBtn.onclick = initGame;
