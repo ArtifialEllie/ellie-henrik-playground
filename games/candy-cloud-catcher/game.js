@@ -22,6 +22,9 @@ let comboTimer = null;
 let feverMode = false;
 let feverTimer = null;
 
+let magnetActive = false;
+let magnetTimer = null;
+
 highscoreElement.textContent = highscore;
 
 function resize() {
@@ -83,6 +86,18 @@ class Player {
     }
 
     draw() {
+        // Draw magnet aura
+        if (magnetActive) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            const auraSize = 120 + Math.sin(Date.now() / 150) * 20;
+            ctx.arc(this.x + this.width / 2, this.y + 30, auraSize, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         this.bob = Math.sin(Date.now() / 200) * 8;
         const drawY = this.y + this.bob;
 
@@ -237,6 +252,10 @@ class FallingItem {
             this.type = 'golden';
             this.color = '#ffd700';
             this.emoji = '🌟';
+        } else if (rand > 0.85) {
+            this.type = 'magnet';
+            this.color = '#3b82f6';
+            this.emoji = '🧲';
         } else if (rand > 0.2) {
             this.type = 'candy';
             this.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
@@ -327,6 +346,17 @@ function update() {
 
     for (let i = items.length - 1; i >= 0; i--) {
         const item = items[i];
+        
+        if (magnetActive) {
+            const dx = (player.x + player.width / 2) - item.x;
+            const dy = (player.y + player.height / 2) - item.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 300 && item.type !== 'lemon') {
+                item.x += dx * 0.1;
+                item.y += dy * 0.1;
+            }
+        }
+
         item.update();
         item.draw();
 
@@ -367,6 +397,10 @@ function update() {
                 score += 50;
                 createParticles(item.x, item.y, '#fbbf24', 40);
                 createFloatingText(item.x, item.y, '🎟️ GOLDEN TICKET!', '#fbbf24');
+            } else if (item.type === 'magnet') {
+                activateMagnet();
+                createParticles(item.x, item.y, '#3b82f6', 30);
+                createFloatingText(item.x, item.y, '🧲 MAGNET POWER!', '#3b82f6');
             } else {
                 score = Math.max(0, score - 5);
                 resetCombo();
@@ -390,7 +424,15 @@ function update() {
 
     requestAnimationFrame(update);
 }
-
+ 
+function activateMagnet() {
+    magnetActive = true;
+    if (magnetTimer) clearTimeout(magnetTimer);
+    magnetTimer = setTimeout(() => {
+        magnetActive = false;
+    }, 8000);
+}
+ 
 function updateCombo() {
     combo++;
     comboElement.textContent = `x${combo}`;
