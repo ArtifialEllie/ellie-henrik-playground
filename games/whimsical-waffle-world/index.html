@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whimsical Waffle World 🧇✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Score: <span id="score">0</span></div>
+            <div id="timer">Time: <span id="time">60</span>s</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <div id="start-screen">
+                <h1>Whimsical Waffle World 🧇</h1>
+                <p>Catch the falling waffles and sweet toppings!</p>
+                <p>Avoid the salty pickles! 🥒</p>
+                <button id="start-btn">Start Breakfast! 🍓</button>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h1>Breakfast Over! 🥞</h1>
+                <p>You gathered <span id="final-score">0</span> delicious treats!</p>
+                <button id="restart-btn">Try Again! 🍯</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
