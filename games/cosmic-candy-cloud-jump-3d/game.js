@@ -9,6 +9,7 @@ const MOVE_SPEED = 0.15;
 const COLORS = [0xffb6c1, 0x87ceeb, 0x98fb98, 0xffd700, 0xdda0dd, 0xff69b4];
 
 let scene, camera, renderer, player, clock;
+let particles = [];
 let clouds = [];
 let score = 0;
 let isGameOver = false;
@@ -39,6 +40,7 @@ function init() {
 
     createPlayer();
     createInitialClouds();
+    createStars();
 
     clock = new THREE.Clock();
 
@@ -60,6 +62,38 @@ function createPlayer() {
     player = new THREE.Mesh(geometry, material);
     player.position.set(0, 2, 0);
     scene.add(player);
+}
+
+function createStars() {
+    const starGeometry = new THREE.BufferGeometry();
+    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
+
+    const starVertices = [];
+    for (let i = 0; i < 1000; i++) {
+        const x = (Math.random() - 0.5) * 100;
+        const y = (Math.random() - 0.5) * 100;
+        const z = (Math.random() - 0.5) * 100;
+        starVertices.push(x, y, z);
+    }
+
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+}
+
+function spawnParticles(position, color) {
+    for (let i = 0; i < 10; i++) {
+        const geo = new THREE.SphereGeometry(0.1, 8, 8);
+        const mat = new THREE.MeshPhongMaterial({ color: color });
+        const p = new THREE.Mesh(geo, mat);
+        p.position.copy(position);
+        p.userData = {
+            velocity: new THREE.Vector3((Math.random() - 0.5) * 0.2, Math.random() * 0.2, (Math.random() - 0.5) * 0.2),
+            life: 1.0
+        };
+        particles.push(p);
+        scene.add(p);
+    }
 }
 
 function createCloud(x, y, z) {
@@ -111,6 +145,8 @@ function restartGame() {
     // Clean up
     clouds.forEach(c => scene.remove(c.mesh));
     clouds = [];
+    particles.forEach(p => scene.remove(p));
+    particles = [];
     score = 0;
     velocityY = 0;
     isGameOver = false;
@@ -143,6 +179,7 @@ function animate() {
         const dist = player.position.distanceTo(cloud.mesh.position);
         if (velocityY < 0 && dist < cloud.radius) {
             velocityY = JUMP_FORCE;
+            spawnParticles(player.position, 0xffffff);
             
             // If we've jumped higher than the previous best cloud, increase score
             if (cloud.mesh.position.y > -score * CLOUD_SPACING) {
@@ -157,6 +194,23 @@ function animate() {
         score = currentCloudIndex;
         document.getElementById('score').innerText = `Clouds Jumped: ${score}`;
     }
+
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.position.add(p.userData.velocity);
+        p.userData.life -= 0.02;
+        p.scale.setScalar(p.userData.life);
+        if (p.userData.life <= 0) {
+            scene.remove(p);
+            particles.splice(i, 1);
+        }
+    }
+
+    // Rotate clouds slightly for whimsey
+    clouds.forEach(cloud => {
+        cloud.mesh.rotation.y += 0.01;
+    });
 
     // Camera follows player
     camera.position.y = player.position.y + 5;
