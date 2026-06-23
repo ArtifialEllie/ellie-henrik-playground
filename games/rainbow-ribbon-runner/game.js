@@ -34,6 +34,7 @@ let player = {
 };
 
 let stars = [];
+let rainbowStars = [];
 let obstacles = [];
 let particles = [];
 let frameCount = 0;
@@ -58,12 +59,12 @@ function playSound(freq, type, duration, volume = 0.1) {
 
 const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'];
 
-function createStar() {
+function createStar(isRainbow = false) {
     return {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: 8,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        radius: isRainbow ? 12 : 8,
+        color: isRainbow ? 'rainbow' : colors[Math.floor(Math.random() * colors.length)],
         pulse: 0
     };
 }
@@ -134,6 +135,10 @@ function update() {
     if (stars.length < 5) {
         stars.push(createStar());
     }
+    if (frameCount % 300 === 0) {
+        rainbowStars.push(createStar(true));
+    }
+
 
     // Spawn obstacles
     frameCount++;
@@ -152,7 +157,7 @@ function update() {
     if (vortex && vortex.radius < vortex.maxRadius) vortex.radius += 2;
 
     if (vortex) {
-        stars.forEach(star => {
+        [...stars, ...rainbowStars].forEach(star => {
             const dist = Math.hypot(vortex.x - star.x, vortex.y - star.y);
             if (dist < vortex.maxRadius * 2) {
                 const angle = Math.atan2(vortex.y - star.y, vortex.x - star.x);
@@ -192,20 +197,28 @@ function update() {
     }
 
     // Collision check: Player & Stars
-    stars.forEach((star, index) => {
+    [...stars, ...rainbowStars].forEach((star, index) => {
+        const isRainbow = star.color === 'rainbow';
+        const realIndex = isRainbow ? index - stars.length : index;
         const dist = Math.hypot(player.x - star.x, player.y - star.y);
         if (dist < player.radius + star.radius) {
-            score++;
+            const points = isRainbow ? 5 : 1;
+            score += points;
             scoreEl.innerText = `Stars: ${score}`;
-            shakeAmount = 5;
-            playSound(440 + Math.random() * 440, 'sine', 0.1);
-            createParticle(star.x, star.y, star.color);
-            stars.splice(index, 1);
-            stars.push(createStar());
+            shakeAmount = isRainbow ? 10 : 5;
+            playSound(isRainbow ? 880 : 440 + Math.random() * 440, 'sine', isRainbow ? 0.2 : 0.1);
+            createParticle(star.x, star.y, isRainbow ? '#ffff00' : star.color);
+            
+            if (isRainbow) {
+                rainbowStars.splice(rainbowStars.indexOf(star), 1);
+            } else {
+                stars.splice(stars.indexOf(star), 1);
+                stars.push(createStar());
+            }
 
             // Increase fever
             if (!feverActive) {
-                fever = Math.min(FEVER_MAX, fever + 10);
+                fever = Math.min(FEVER_MAX, fever + (isRainbow ? 25 : 10));
                 updateFeverUI();
             }
         }
@@ -251,22 +264,43 @@ function draw() {
     }
 
     // Draw Stars
-    stars.forEach(star => {
+    [...stars, ...rainbowStars].forEach(star => {
         star.pulse += 0.1;
         const r = star.radius + Math.sin(star.pulse) * 2;
-        ctx.fillStyle = star.color;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, r, 0, Math.PI * 2);
-        ctx.fill();
         
-        // Star Glow
-        const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, r * 3);
-        gradient.addColorStop(0, star.color);
-        gradient.addColorStop(1, 'transparent');
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, r * 3, 0, Math.PI * 2);
-        ctx.fill();
+        if (star.color === 'rainbow') {
+            // Rainbow star effect
+            const grad = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, r * 2);
+            grad.addColorStop(0, '#fff');
+            grad.addColorStop(0.2, '#ff00ff');
+            grad.addColorStop(0.4, '#ffff00');
+            grad.addColorStop(0.6, '#00ffff');
+            grad.addColorStop(0.8, '#ff00ff');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, r * 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, r * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.fillStyle = star.color;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, r, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Star Glow
+            const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, r * 3);
+            gradient.addColorStop(0, star.color);
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, r * 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
     });
 
     // Draw Obstacles
@@ -366,6 +400,7 @@ function startGame() {
     player.y = canvas.height / 2;
     player.trail = [];
     stars = [];
+    rainbowStars = [];
     obstacles = [];
     particles = [];
     frameCount = 0;
