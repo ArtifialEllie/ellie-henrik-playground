@@ -24,9 +24,9 @@ const canvas = document.getElementById('gameCanvas');
             normal: ['#ffc1e3', '#b3e5fc', '#e1bee7', '#c8e6c9', '#fff59d', '#ffccbc'],
             gold: ['#ffd700', '#ffecb3', '#fff176'],
             rainbow: ['#ff80ab', '#80d8ff', '#ccff90', '#ffff8d', '#cfd8dc'],
-            glitter: ['#f3e5f5', '#e1bee7', '#ce93d8']
+            glitter: ['#f3e5f5', '#e1bee7', '#ce93d8', '#f8bbd0']
         };
-        const toppings = ['🍓', '🫐', '🍯', '🧈', '✨', '🌸'];
+        const toppings = ['🍓', '🫐', '🍯', '🧈', '✨', '🌸', '🥞'];
 
         // Audio Context for "Juice"
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -79,6 +79,7 @@ const canvas = document.getElementById('gameCanvas');
                 this.scaleY = 1; 
                 this.targetScaleY = 1;
                 this.tiltOffset = 0;
+                this.butterMelt = 0;
             }
 
             update() {
@@ -98,6 +99,7 @@ const canvas = document.getElementById('gameCanvas');
                 if (Math.abs(this.scaleY - this.targetScaleY) < 0.01) {
                     this.scaleY = this.targetScaleY;
                 }
+                this.butterMelt += 0.02;
             }
 
             draw(cumulativeTilt) {
@@ -131,6 +133,14 @@ const canvas = document.getElementById('gameCanvas');
                     ctx.textAlign = 'center';
                     ctx.fillText(this.topping, 0, -this.height/2 + 5);
                 }
+
+                if (this.topping === '🧈' && this.butterMelt < 1) {
+                    ctx.fillStyle = '#fff176';
+                    ctx.beginPath();
+                    ctx.arc(0, -this.height/2, 8 * (1 - this.butterMelt), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
                 ctx.restore();
             }
 
@@ -186,11 +196,15 @@ const canvas = document.getElementById('gameCanvas');
             let isSpecial = false;
             let specialType = '';
 
-            if (rand > 0.95) {
+            if (rand > 0.97) {
+                colorSet = pancakeColors.glitter;
+                specialType = 'glitter';
+                isSpecial = true;
+            } else if (rand > 0.94) {
                 colorSet = pancakeColors.gold;
                 specialType = 'gold';
                 isSpecial = true;
-            } else if (rand > 0.90) {
+            } else if (rand > 0.88) {
                 colorSet = pancakeColors.rainbow;
                 specialType = 'rainbow';
                 isSpecial = true;
@@ -255,6 +269,12 @@ const canvas = document.getElementById('gameCanvas');
                         playSound(500, 'sine', 0.2);
                     }
 
+                    if (activePancake.topping === '🧈') {
+                        currentTotalLean *= 0.8; // Butter makes it slide less!
+                        showFloatingText("BUTTERY! 🧈 Smooth!", activePancake.x + activePancake.width/2, activePancake.y - 40);
+                        playSound(400, 'triangle', 0.2);
+                    }
+
                     if (Math.abs(centerDiff) < 10) {
                         showPerfect();
                         combo++;
@@ -282,9 +302,15 @@ const canvas = document.getElementById('gameCanvas');
                             score += 3;
                             showFloatingText("RAINBOW! 🌈 +3", activePancake.x + activePancake.width/2, activePancake.y - 30);
                             playSound(523.25, 'triangle', 0.2);
+                        } else if (activePancake.specialType === 'glitter') {
+                            score += 2;
+                            currentTotalLean *= 0.5; // Glitter magic clears the lean!
+                            showFloatingText("GLITTER! ✨ Magic Balance!", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(1000, 'sine', 0.1);
+                            for(let i=0; i<20; i++) particles.push(new Particle(activePancake.x + activePancake.width/2, activePancake.y, '#ffffff'));
                         }
                     }
-        
+
                     activePancake.targetScaleY = 0.7;
                     setTimeout(() => activePancake.targetScaleY = 1, 100);
         
@@ -410,5 +436,4 @@ const canvas = document.getElementById('gameCanvas');
 
         initStack();
         update();
-    </script>
-</body>
+
