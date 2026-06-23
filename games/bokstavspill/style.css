@@ -1,6 +1,6 @@
 body {
     font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
-    background-color: #f0fdfa;
+    background: linear-gradient(135deg, #f0fdfa 0%, #e0f7fa 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -10,6 +10,36 @@ body {
     color: #333;
     text-align: center;
     overflow: hidden;
+    position: relative;
+}
+
+.bg-bubble {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(110vh) scale(1); opacity: 0; }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.8; }
+    100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 1000;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
 }
 
 h1 {

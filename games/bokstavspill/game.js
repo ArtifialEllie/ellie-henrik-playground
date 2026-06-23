@@ -165,10 +165,41 @@ function updateStatus() {
     streakText.innerText = `Streak: ${streak} 🔥`;
 }
 
+function createBackgroundBubbles() {
+    for (let i = 0; i < 15; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bg-bubble';
+        const size = Math.random() * 60 + 20 + 'px';
+        bubble.style.width = size;
+        bubble.style.height = size;
+        bubble.style.left = Math.random() * 100 + 'vw';
+        bubble.style.animationDuration = Math.random() * 10 + 5 + 's';
+        bubble.style.animationDelay = Math.random() * 5 + 's';
+        document.body.appendChild(bubble);
+    }
+}
+
+function spawnConfetti() {
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.top = '-10px';
+        confetti.style.width = Math.random() * 10 + 5 + 'px';
+        confetti.style.height = confetti.style.width;
+        confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+        confetti.style.animationDelay = Math.random() * 1 + 's';
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+    }
+}
+
 function levelUp() {
     currentLevel++;
     streak = 0;
     levelUpBanner.style.display = 'block';
+    spawnConfetti();
     speak(`Wow! Du er superflink! Nå går vi opp til nivå ${currentLevel}!`);
     
     setTimeout(() => {
@@ -178,6 +209,7 @@ function levelUp() {
 
 startBtn.onclick = () => {
     startScreen.style.display = 'none';
+    createBackgroundBubbles();
     updateStatus();
     nextRound();
 };
