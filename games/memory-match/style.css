@@ -66,6 +66,13 @@ h1 {
     border: 3px solid var(--primary);
 }
 
+.button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
 .game-container {
     display: grid;
     gap: 12px;
