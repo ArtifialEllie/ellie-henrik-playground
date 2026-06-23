@@ -27,7 +27,8 @@ let feverTimer = 0;
 const COLORS = {
     NORMAL: ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'],
     GOLD: '#FFD700',
-    BOMB: '#333333'
+    BOMB: '#333333',
+    RAINBOW: 'RAINBOW'
 };
 
 // Simple Audio Context for pops
@@ -43,6 +44,10 @@ function playPopSound(type) {
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
         oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+    } else if (type === 'RAINBOW') {
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1600, audioCtx.currentTime + 0.2);
     } else if (type === 'BOMB') {
         oscillator.type = 'sawtooth';
         oscillator.frequency.setValueAtTime(100, audioCtx.currentTime);
@@ -63,7 +68,12 @@ function playPopSound(type) {
 class Balloon {
     constructor() {
         const rand = Math.random();
-        if (rand < 0.1) {
+        if (rand < 0.05) {
+            this.type = 'RAINBOW';
+            this.color = COLORS.RAINBOW;
+            this.points = 10;
+            this.speedMultiplier = 1.2;
+        } else if (rand < 0.1) {
             this.type = 'GOLD';
             this.color = COLORS.GOLD;
             this.points = 5;
@@ -96,9 +106,29 @@ class Balloon {
 
     draw() {
         ctx.beginPath();
-        ctx.fillStyle = this.color;
-        ctx.ellipse(this.x, this.y, this.radius * 0.8, this.radius, 0, 0, Math.PI * 2);
-        ctx.fill();
+        if (this.color === COLORS.RAINBOW) {
+            const gradient = ctx.createRadialGradient(this.x, this.y, this.radius * 0.2, this.x, this.y, this.radius);
+            gradient.addColorStop(0, '#fff');
+            gradient.addColorStop(0.2, '#ff00ff');
+            gradient.addColorStop(0.4, '#00ffff');
+            gradient.addColorStop(0.6, '#ffff00');
+            gradient.addColorStop(0.8, '#00ff00');
+            gradient.addColorStop(1, '#ff0000');
+            ctx.fillStyle = gradient;
+            
+            // Animate rainbow color shift
+            const time = Date.now() * 0.002;
+            ctx.translate(this.x, this.y);
+            ctx.rotate(time);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.radius * 0.8, this.radius, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        } else {
+            ctx.fillStyle = this.color;
+            ctx.ellipse(this.x, this.y, this.radius * 0.8, this.radius, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
         
         // String
         ctx.beginPath();
@@ -113,7 +143,7 @@ class Balloon {
         ctx.ellipse(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.2, this.radius * 0.3, 0.4, 0, Math.PI * 2);
         ctx.fill();
 
-        if (this.type === 'GOLD') {
+        if (this.type === 'GOLD' || this.type === 'RAINBOW') {
             ctx.strokeStyle = 'white';
             ctx.lineWidth = 2;
             ctx.stroke();
