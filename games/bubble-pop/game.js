@@ -1230,6 +1230,7 @@ function triggerMirrorRealm() {
                 twin.speed = sourceBubble.speed;
                 twin.vx = -sourceBubble.vx;
                 bubbles.push(twin);
+                floatingTexts.push(new FloatingText(twin.x, twin.y, 'TWIN! 👯‍♀️', twin.color));
             }
         }
     }, 100);
