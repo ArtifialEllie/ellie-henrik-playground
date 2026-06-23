@@ -352,6 +352,11 @@ class Bubble {
         } else if (rand > 0.277 && rand < 0.307) {
             this.type = 'pet-treat';
             this.color = '#ffca28';
+        } else if (rand > 0.267 && rand < 0.277) {
+            this.type = 'candy-cloud';
+            this.color = '#f8bbd0';
+            this.radius = 35;
+            this.hits = 1;
         } else if (rand > 0.227 && rand < 0.257) {
             this.type = 'magnetic-bubble';
             this.color = '#9c27b0';
@@ -1637,6 +1642,20 @@ function handlePop(e) {
                 totalGoldEl.innerText = totalGold;
                 floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY CLOVER! 🍀 +${goldBonus} ✨`, '#81c784'));
                 createPopEffect(b.x, b.y, '#81c784');
+            } else if (b.type === 'candy-cloud') {
+                playPopSound(true, false);
+                score += 150;
+                floatingTexts.push(new FloatingText(b.x, b.y, `CANDY CLOUD! ☁️🍭 +150`, '#f8bbd0'));
+                createPopEffect(b.x, b.y, '#f8bbd0');
+                for (let j = 0; j < 5; j++) {
+                    const candy = new Bubble(false);
+                    candy.radius = 10;
+                    candy.x = b.x + (Math.random() - 0.5) * 40;
+                    candy.y = b.y + (Math.random() - 0.5) * 40;
+                    candy.color = '#ff80ab';
+                    candy.type = 'normal';
+                    bubbles.push(candy);
+                }
             } else if (b.type === 'freeze') {
                 playPopSound();
                 floatingTexts.push(new FloatingText(b.x, b.y, 'FREEZE! ❄️', '#b2ebf2'));
