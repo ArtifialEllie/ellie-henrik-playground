@@ -59,6 +59,7 @@ const SKINS = [
     { color: '#ff69b4', name: 'Neon Dream 🍭', cost: 30000 },
     { color: '#7fffd4', name: 'Aquamarine Glow 💎', cost: 35000 },
     { color: 'rainbow-glitter', name: 'Rainbow Glitter ✨', cost: 50000 },
+    { color: '#ff1493', name: 'Sugar-Rush Pink 🍭', cost: 60000 },
 ];
 
 const ACCESSORIES = [

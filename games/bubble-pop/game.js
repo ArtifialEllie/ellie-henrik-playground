@@ -32,6 +32,8 @@ let level = 1;
 let comboTimer;
 let isFrenzy = false;
 let isVortex = false;
+let isRibbonActive = false;
+let ribbon = { x: 0, y: 0, vx: 0, vy: 0 };
 let isMagnetic = false;
 let bossActive = false;
 let boss = null;
@@ -352,6 +354,11 @@ class Bubble {
         } else if (rand > 0.277 && rand < 0.307) {
             this.type = 'pet-treat';
             this.color = '#ffca28';
+        } else if (rand > 0.267 && rand < 0.277) {
+            this.type = 'candy-cloud';
+            this.color = '#f8bbd0';
+            this.radius = 35;
+            this.hits = 1;
         } else if (rand > 0.227 && rand < 0.257) {
             this.type = 'magnetic-bubble';
             this.color = '#9c27b0';
@@ -1225,6 +1232,7 @@ function triggerMirrorRealm() {
                 twin.speed = sourceBubble.speed;
                 twin.vx = -sourceBubble.vx;
                 bubbles.push(twin);
+                floatingTexts.push(new FloatingText(twin.x, twin.y, 'TWIN! 👯‍♀️', twin.color));
             }
         }
     }, 100);
@@ -1251,6 +1259,7 @@ function triggerRainbowBridge() {
     setTimeout(() => { bridgeAlert.style.display = 'none'; }, 6000);
 }
 
+<<<<<<< HEAD
 function triggerStarfall() {
     const starAlert = document.getElementById('starfall-alert');
     starAlert.style.display = 'block';
@@ -1282,25 +1291,44 @@ function triggerMagicRain() {
     rainAlert.style.display = 'block';
     rainAlert.style.color = '#e1bee7';
     rainAlert.style.textShadow = '3px 3px #ffffff';
+=======
+function triggerRibbon() {
+    isRibbonActive = true;
+    const ribbonAlert = document.getElementById('ribbon-alert');
+    ribbonAlert.style.display = 'block';
+>>>>>>> e389e25f3bf26da0d2ea6bd5a398c23eb2610c9e
     
-    for (let i = 0; i < 30; i++) {
-        setTimeout(() => {
-            if (!gameActive) return;
-            const rainBubble = new Bubble(false);
-            rainBubble.type = 'normal';
-            rainBubble.color = '#b3e5fc';
-            rainBubble.radius = 15;
-            rainBubble.x = Math.random() * canvasWidth;
-            rainBubble.y = -rainBubble.radius;
-            rainBubble.speed = Math.random() * 4 + 3;
-            bubbles.push(rainBubble);
-        }, i * 100);
-    }
+    ribbon.x = -50;
+    ribbon.y = canvasHeight / 2;
+    ribbon.vx = 8;
+    ribbon.vy = 2;
     
-    setTimeout(() => {
-        rainAlert.style.display = 'none';
-    }, 6000);
+    const ribbonInterval = setInterval(() => {
+        if (!isRibbonActive || !gameActive) {
+            clearInterval(ribbonInterval);
+            return;
+        }
+        ribbon.x += ribbon.vx;
+        ribbon.y += ribbon.vy;
+        if (ribbon.y < 0 || ribbon.y > canvasHeight) ribbon.vy *= -1;
+        if (ribbon.x > canvasWidth + 100) {
+            isRibbonActive = false;
+            ribbonAlert.style.display = 'none';
+            clearInterval(ribbonInterval);
+        }
+        
+        // Ribbon pops nearby bubbles
+        bubbles.forEach(b => {
+            const dist = Math.hypot(ribbon.x - b.x, ribbon.y - b.y);
+            if (dist < 60) {
+                b.hits = 0; // Mark for removal
+                createPopEffect(b.x, b.y, 'pink');
+                score += 5;
+            }
+        });
+    }, 20);
 }
+
 
 function triggerMagnetism() {
     isMagnetic = true;
@@ -1436,6 +1464,7 @@ function handlePop(e) {
                     { text: 'PARTY TIME! 🥳', action: () => triggerParty(), bonus: 1000, color: '#ff4081' },
                     { text: 'GOLDEN RAIN! ✨', action: () => triggerGoldenRain(), bonus: 1000, color: '#ffd700' },
                     { text: 'DISCO FEVER! 💃', action: () => triggerDiscoParty(), bonus: 1500, color: '#ff00ff' },
+                    { text: 'MELODY MODE! 🎵', action: () => triggerMelodyMode(), bonus: 1200, color: '#ffeb3b' },
                     { text: 'OOPS! PRANKED! 😜', action: () => { score = Math.max(0, score - 500); }, bonus: -500, color: '#9e9e9e' },
                 ];
                 const outcome = mysteryOutcomes[Math.floor(Math.random() * mysteryOutcomes.length)];
@@ -1663,6 +1692,20 @@ function handlePop(e) {
                 totalGoldEl.innerText = totalGold;
                 floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY CLOVER! 🍀 +${goldBonus} ✨`, '#81c784'));
                 createPopEffect(b.x, b.y, '#81c784');
+            } else if (b.type === 'candy-cloud') {
+                playPopSound(true, false);
+                score += 150;
+                floatingTexts.push(new FloatingText(b.x, b.y, `CANDY CLOUD! ☁️🍭 +150`, '#f8bbd0'));
+                createPopEffect(b.x, b.y, '#f8bbd0');
+                for (let j = 0; j < 5; j++) {
+                    const candy = new Bubble(false);
+                    candy.radius = 10;
+                    candy.x = b.x + (Math.random() - 0.5) * 40;
+                    candy.y = b.y + (Math.random() - 0.5) * 40;
+                    candy.color = '#ff80ab';
+                    candy.type = 'normal';
+                    bubbles.push(candy);
+                }
             } else if (b.type === 'freeze') {
                 playPopSound();
                 floatingTexts.push(new FloatingText(b.x, b.y, 'FREEZE! ❄️', '#b2ebf2'));
@@ -1745,6 +1788,15 @@ function handlePop(e) {
                 score += treatBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `YUMMY! 🦴 +${treatBonus}`, '#ffca28'));
                 createPopEffect(b.x, b.y, '#ffca28');
+            } else if (b.type === 'pet-snack') {
+                playPopSound(true, false);
+                pet.gainEnergy(20);
+                pet.mood = 'Happy';
+                pet.moodTimer = 600;
+                const snackBonus = 50;
+                score += snackBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `YUM! 🍪 +${snackBonus}`, '#ffcc80'));
+                createPopEffect(b.x, b.y, '#ffcc80');
             } else if (b.type === 'bomb') {
                 playSound(100, 'square', 0.5);
                 bubbles = [];
@@ -1939,7 +1991,8 @@ function handlePop(e) {
     if (Math.random() < 0.005) triggerWindGust();
     if (Math.random() < 0.002) triggerRainbowCascade();
     if (Math.random() < 0.003) triggerRainbowBridge();
-    if (Math.random() < 0.002) triggerMagicRain();
+    if (Math.random() < 0.002) triggerGlitterStorm();
+    if (Math.random() < 0.003) triggerRibbon();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
     updateCombo();
@@ -2039,12 +2092,12 @@ function update() {
 
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
-+
-+    clouds.forEach(c => {
-+        c.update();
-+        c.draw();
-+    });
-+
+
+    clouds.forEach(c => {
+        c.update();
+        c.draw();
+    });
+
     if (bossActive && boss) {
 
         boss.draw();
@@ -2078,6 +2131,23 @@ function update() {
             bubbles.splice(i, 1);
         }
     }
+    if (isRibbonActive) {
+        ctx.beginPath();
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = 'pink';
+        ctx.lineCap = 'round';
+        
+        // Draw a whimsical wavy ribbon instead of a straight line! ✨
+        ctx.moveTo(ribbon.x - 20, ribbon.y);
+        for (let i = -20; i <= 20; i += 2) {
+            const wave = Math.sin(Date.now() / 200 + i / 10) * 5;
+            ctx.lineTo(ribbon.x + i, ribbon.y + wave);
+        }
+        
+        ctx.stroke();
+        ctx.closePath();
+    }
+
 
     for (let i = particles.length - 1; i >= 0; i--) {
         particles[i].update();
@@ -2154,12 +2224,12 @@ function resetGame() {
     updateQuest();
     overlay.style.display = 'none';
     comboText.style.opacity = '0';
-+
-+    clouds = [];
-+    for (let i = 0; i < 6; i++) {
-+        clouds.push(new Cloud());
-+    }
-+
+
+    clouds = [];
+    for (let i = 0; i < 6; i++) {
+        clouds.push(new Cloud());
+    }
+
     clearInterval(timerInterval);
     clearTimeout(spawnTimeout);
 

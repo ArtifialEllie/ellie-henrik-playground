@@ -5,6 +5,8 @@ let scene, camera, renderer, controls, raycaster, mouse;
 let prisms = []; let magicFlowers = [];
 let orbitals = [];
 let score = 0;
+let companionLevel = 1;
+let companionXP = 0;
 let goldenPrisms = [];
 let combo = 0;
 let portal;
@@ -503,6 +505,21 @@ function onMouseDown(event) {
         }
         createFloatingText(`+${points}`, event.clientX, event.clientY);
         
+        // Update Companion XP and Level! 🎀
+        companionXP += points * 2;
+        if (companionXP >= 100) {
+            companionLevel++;
+            companionXP -= 100;
+            createFloatingText(`ELLIE'S HELPER LEVEL UP! Lv.${companionLevel} 🌟`, window.innerWidth/2, window.innerHeight/2);
+            playSound(1500, 'sine', 0.3, 0.1);
+            playSound(1800, 'sine', 0.3, 0.1);
+            
+            // Give a reward for leveling up
+            score += 500 * companionLevel;
+            scoreElement.innerText = Math.floor(score);
+        }
+        updateCompanionUI();
+
         // Increase magic energy
         magicEnergy = Math.min(MAX_MAGIC_ENERGY, magicEnergy + 5 * combo);
         updateEnergyUI();
@@ -1286,6 +1303,15 @@ function createCompanion() {
 
     companion = group;
     scene.add(companion);
+}
+
+function updateCompanionUI() {
+    const levelEl = document.getElementById('companion-level');
+    const xpEl = document.getElementById('companion-xp');
+    if (levelEl && xpEl) {
+        levelEl.innerText = companionLevel;
+        xpEl.innerText = companionXP;
+    }
 }
 
 function updateCompanion() {
