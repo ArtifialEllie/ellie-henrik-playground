@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Potion Mixer ✨</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>Pastel Potion Mixer ✨</h1>
+            <p>Mix magical ingredients to discover secret potions!</p>
+        </header>
+
+        <div id="main-area">
+            <div id="ingredient-shelf">
+                <div class="ingredient" data-color="pink" draggable="true">
+                    <div class="icon">🌸</div>
+                    <span class="name">Cherry Blossom</span>
+                </div>
+                <div class="ingredient" data-color="blue" draggable="true">
+                    <div class="icon">💎</div>
+                    <span class="name">Azure Crystal</span>
+                </div>
+                <div class="ingredient" data-color="yellow" draggable="true">
+                    <div class="icon">⭐</div>
+                    <span class="name">Sun Dust</span>
+                </div>
+                <div class="ingredient" data-color="green" draggable="true">
+                    <div class="icon">🌿</div>
+                    <span class="name">Minty Leaf</span>
+                </div>
+                <div class="ingredient" data-color="purple" draggable="true">
+                    <div class="icon">🔮</div>
+                    <span class="name">Void Pearl</span>
+                </div>
+            </div>
+
+            <div id="cauldron-area">
+                <div id="cauldron">
+                    <div id="potion-liquid"></div>
+                    <div id="bubbles"></div>
+                </div>
+                <div id="cauldron-label">Drag ingredients here! 🌈</div>
+            </div>
+
+            <div id="recipe-book">
+                <h2>Recipe Book 📖</h2>
+                <ul id="recipe-list">
+                    <li class="recipe" id="recipe-pink">Pink Potion: ? ? ?</li>
+                    <li class="recipe" id="recipe-purple">Purple Potion: ? ? ?</li>
+                    <li class="recipe" id="recipe-green">Green Potion: ? ? ?</li>
+                    <li class="recipe" id="recipe-orange">Orange Potion: ? ? ?</li>
+                    <li class="recipe" id="recipe-cyan">Cyan Potion: ? ? ?</li>
+                    <li class="recipe" id="recipe-white">Pure Light: ? ? ?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="controls">
+            <button id="clear-btn">Empty Cauldron 🧹</button>
+        </div>
+
+        <div id="message-overlay" class="hidden">
+            <div id="message-content">
+                <h2 id="potion-name">You made a Potion!</h2>
+                <p id="potion-desc">It smells like rainbows!</p>
+                <button id="close-msg">Yay! ✨</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

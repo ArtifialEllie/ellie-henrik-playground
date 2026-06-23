@@ -256,8 +256,6 @@ class Bubble {
         this.speed = (Math.random() * 2 + 1) * (frenzy ? 1.5 : 1);
         this.color = currentSkin === 'rainbow' ? `hsl(${Math.random() * 360}, 70%, 70%)` : currentSkin;
         this.vx = (Math.random() - 0.5) * 2;
-        this.vx = (Math.random() - 0.5) * 2;
-        this.vx = (Math.random() - 0.5) * 2;
         this.pulse = 0;
         this.pulseDir = 1;
         this.isSneezing = false;
@@ -367,9 +365,6 @@ class Bubble {
             const emotions = ['😊', '😢', '😡', '😱', '🥳'];
             this.emoji = emotions[Math.floor(Math.random() * emotions.length)];
             this.color = '#ffccbc';
-        } else if (rand >= 0.05 && rand < 0.10) {
-            this.type = 'bomb';
-            this.color = '#424242';
         } else if (rand > 0.207 && rand < 0.237) {
             this.type = 'magic-mushroom';
             this.color = '#ff69b4';
@@ -377,9 +372,6 @@ class Bubble {
             this.type = 'rainbow-portal';
             this.color = '#ff00ff';
             this.radius = 45;
-        } else if (rand >= 0.05 && rand < 0.10) {
-            this.type = 'bomb';
-            this.color = '#424242';
         } else if (rand > 0.10 && rand < 0.13) {
             this.type = 'sneeze';
             this.color = '#ffeb3b';
