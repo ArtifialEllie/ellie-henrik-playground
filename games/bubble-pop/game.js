@@ -1251,44 +1251,41 @@ function triggerRainbowBridge() {
     setTimeout(() => { bridgeAlert.style.display = 'none'; }, 6000);
 }
 
-<<<<<<< HEAD
-function triggerStarfall() {
-    const starAlert = document.getElementById('starfall-alert');
-    starAlert.style.display = 'block';
-    starAlert.style.color = '#fff176';
-    starAlert.style.textShadow = '0 0 10px #ffd700, 0 0 20px #ffeb3b';
-    
-    for (let i = 0; i < 40; i++) {
-        setTimeout(() => {
-            if (!gameActive) return;
-            const star = new Bubble(false);
-            star.type = 'lucky-star';
-            star.color = '#fff176';
-            star.radius = 15 + Math.random() * 10;
-            star.x = Math.random() * canvasWidth;
-            star.y = -star.radius;
-            star.speed = Math.random() * 5 + 2;
-            star.vx = (Math.random() - 0.5) * 2;
-            bubbles.push(star);
-        }, i * 80);
-    }
-    
-    setTimeout(() => {
-        starAlert.style.display = 'none';
-    }, 6000);
-}
-
-function triggerMagicRain() {
-    const rainAlert = document.getElementById('rain-cloud-alert');
-    rainAlert.style.display = 'block';
-    rainAlert.style.color = '#e1bee7';
-    rainAlert.style.textShadow = '3px 3px #ffffff';
-=======
 function triggerRibbon() {
     isRibbonActive = true;
     const ribbonAlert = document.getElementById('ribbon-alert');
     ribbonAlert.style.display = 'block';
->>>>>>> e389e25f3bf26da0d2ea6bd5a398c23eb2610c9e
+    
+    ribbon.x = -50;
+    ribbon.y = canvasHeight / 2;
+    ribbon.vx = 8;
+    ribbon.vy = 2;
+    
+    const ribbonInterval = setInterval(() => {
+        if (!isRibbonActive || !gameActive) {
+            clearInterval(ribbonInterval);
+            return;
+        }
+        ribbon.x += ribbon.vx;
+        ribbon.y += ribbon.vy;
+        if (ribbon.y < 0 || ribbon.y > canvasHeight) ribbon.vy *= -1;
+        if (ribbon.x > canvasWidth + 100) {
+            isRibbonActive = false;
+            ribbonAlert.style.display = 'none';
+            clearInterval(ribbonInterval);
+        }
+        
+        // Ribbon pops nearby bubbles
+        bubbles.forEach(b => {
+            const dist = Math.hypot(ribbon.x - b.x, ribbon.y - b.y);
+            if (dist < 60) {
+                b.hits = 0; // Mark for removal
+                createPopEffect(b.x, b.y, 'pink');
+                score += 5;
+            }
+        });
+    }, 20);
+}
     
     ribbon.x = -50;
     ribbon.y = canvasHeight / 2;
