@@ -1754,6 +1754,15 @@ function handlePop(e) {
                 score += treatBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `YUMMY! 🦴 +${treatBonus}`, '#ffca28'));
                 createPopEffect(b.x, b.y, '#ffca28');
+            } else if (b.type === 'pet-snack') {
+                playPopSound(true, false);
+                pet.gainEnergy(20);
+                pet.mood = 'Happy';
+                pet.moodTimer = 600;
+                const snackBonus = 50;
+                score += snackBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `YUM! 🍪 +${snackBonus}`, '#ffcc80'));
+                createPopEffect(b.x, b.y, '#ffcc80');
             } else if (b.type === 'bomb') {
                 playSound(100, 'square', 0.5);
                 bubbles = [];
