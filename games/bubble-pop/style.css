@@ -257,10 +257,9 @@ h1 {
 @keyframes bgShift {
     0% { filter: hue-rotate(0deg); }
     100% { filter: hue-rotate(360deg); }
-}
-#party-alert {
-    color: #ff4081;
-    text-shadow: 4px 4px #ffd700;
+#ribbon-alert {
+    color: #ff69b4;
+    text-shadow: 4px 4px #fff;
 }
 @keyframes flash {
     from { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }

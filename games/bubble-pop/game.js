@@ -32,6 +32,8 @@ let level = 1;
 let comboTimer;
 let isFrenzy = false;
 let isVortex = false;
+let isRibbonActive = false;
+let ribbon = { x: 0, y: 0, vx: 0, vy: 0 };
 let isMagnetic = false;
 let bossActive = false;
 let boss = null;
@@ -1257,30 +1259,42 @@ function triggerRainbowBridge() {
     setTimeout(() => { bridgeAlert.style.display = 'none'; }, 6000);
 }
 
-function triggerGlitterStorm() {
-    const glitterAlert = document.getElementById('glitter-storm-alert');
-    glitterAlert.style.display = 'block';
-    glitterAlert.style.color = '#ffffff';
-    glitterAlert.style.textShadow = '0 0 10px #ff00ff, 0 0 20px #00ffff';
+function triggerRibbon() {
+    isRibbonActive = true;
+    const ribbonAlert = document.getElementById('ribbon-alert');
+    ribbonAlert.style.display = 'block';
     
-    // Glitter Storm: Rain of tiny, high-value, fast-moving bubbles
-    for (let i = 0; i < 50; i++) {
-        setTimeout(() => {
-            if (!gameActive) return;
-            const glitter = new Bubble(false);
-            glitter.type = 'gold';
-            glitter.radius = 10;
-            glitter.speed = Math.random() * 5 + 3;
-            glitter.x = Math.random() * canvasWidth;
-            glitter.y = -glitter.radius;
-            bubbles.push(glitter);
-        }, i * 50);
-    }
+    ribbon.x = -50;
+    ribbon.y = canvasHeight / 2;
+    ribbon.vx = 8;
+    ribbon.vy = 2;
     
-    setTimeout(() => {
-        glitterAlert.style.display = 'none';
-    }, 5000);
+    const ribbonInterval = setInterval(() => {
+        if (!isRibbonActive || !gameActive) {
+            clearInterval(ribbonInterval);
+            return;
+        }
+        ribbon.x += ribbon.vx;
+        ribbon.y += ribbon.vy;
+        if (ribbon.y < 0 || ribbon.y > canvasHeight) ribbon.vy *= -1;
+        if (ribbon.x > canvasWidth + 100) {
+            isRibbonActive = false;
+            ribbonAlert.style.display = 'none';
+            clearInterval(ribbonInterval);
+        }
+        
+        // Ribbon pops nearby bubbles
+        bubbles.forEach(b => {
+            const dist = Math.hypot(ribbon.x - b.x, ribbon.y - b.y);
+            if (dist < 60) {
+                b.hits = 0; // Mark for removal
+                createPopEffect(b.x, b.y, 'pink');
+                score += 5;
+            }
+        });
+    }, 20);
 }
+
 
 function triggerMagnetism() {
     isMagnetic = true;
@@ -1935,6 +1949,7 @@ function handlePop(e) {
     if (Math.random() < 0.002) triggerRainbowCascade();
     if (Math.random() < 0.003) triggerRainbowBridge();
     if (Math.random() < 0.002) triggerGlitterStorm();
+    if (Math.random() < 0.003) triggerRibbon();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
     updateCombo();
@@ -2073,6 +2088,17 @@ function update() {
             bubbles.splice(i, 1);
         }
     }
+    if (isRibbonActive) {
+        ctx.beginPath();
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = 'pink';
+        ctx.lineCap = 'round';
+        ctx.moveTo(ribbon.x - 20, ribbon.y);
+        ctx.lineTo(ribbon.x + 20, ribbon.y);
+        ctx.stroke();
+        ctx.closePath();
+    }
+
 
     for (let i = particles.length - 1; i >= 0; i--) {
         particles[i].update();
