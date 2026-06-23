@@ -21,7 +21,12 @@ const wishTypes = [
     { icon: '🦋', text: 'A glitter butterfly!' },
     { icon: '🍬', text: 'Cosmic candy!' },
     { icon: '🦄', text: 'A mini unicorn!' },
-    { icon: '🌸', text: 'A floating flower!' }
+    { icon: '🌸', text: 'A floating flower!' },
+    { icon: '🐱‍🚀', text: 'An astronaut kitty!' },
+    { icon: '🍕', text: 'A floating pizza slice!' },
+    { icon: '💎', text: 'A sparkling diamond!' },
+    { icon: '🍄', text: 'A dancing mushroom!' },
+    { icon: '🌙', text: 'A crescent moon slice!' }
 ];
 
 function resize() {
@@ -103,9 +108,17 @@ function handleMove(e) {
     const y = e.clientY || (e.touches && e.touches[0].clientY);
     
     if (!x || !y) return;
-
+    
     wand.style.left = `${x - 25}px`;
     wand.style.top = `${y - 25}px`;
+    
+    // Rotate wand based on movement
+    if (lastX !== 0 && lastY !== 0) {
+        const dx = x - lastX;
+        const dy = y - lastY;
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        wand.style.transform = `rotate(${angle + 90}deg)`;
+    }
 
     if (isDrawing) {
         const dist = Math.hypot(x - lastX, y - lastY);
@@ -118,6 +131,10 @@ function handleMove(e) {
             lastX = x;
             lastY = y;
         }
+    } else {
+        // Keep track of lastX, lastY even when not drawing for rotation
+        lastX = x;
+        lastY = y;
     }
 }
 
@@ -140,12 +157,13 @@ function grantWish() {
     const x = Math.random() * (width - 100) + 50;
     const y = Math.random() * (height - 100) + 50;
     
-    wishes.push(createWish(x, y));
+    const wish = createWish(x, y);
+    wishes.push(wish);
     score++;
     scoreElement.innerText = score;
     magicLevel = 0;
     
-    messageElement.innerText = "You granted a wish! ✨";
+    messageElement.innerText = `You granted a wish: ${wish.text}! ${wish.icon}`;
     setTimeout(() => {
         messageElement.innerText = "Wave your wand more to gather magic! ✨";
     }, 2000);
