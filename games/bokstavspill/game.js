@@ -38,6 +38,9 @@ const levelData = {
             'Ng': { name: 'Ring', emoji: '💍', audioHint: 'lyden i slutten av ring' },
             'Øy': { name: 'Øy', emoji: '🏝️', audioHint: 'lyden i starten av øy' },
             'Hj': { name: 'Hjerte', emoji: '❤️', audioHint: 'lyden i starten av hjerte' },
+            'Kv': { name: 'Kveld', emoji: '🌙', audioHint: 'lyden i starten av kveld' },
+            'Tj': { name: 'Tjære', emoji: '🪵', audioHint: 'lyden i starten av tjære' },
+            'Gj': { name: 'Gjøk', emoji: '🐦', audioHint: 'lyden i starten av gjøk' },
         }
     },
     3: {
@@ -49,6 +52,11 @@ const levelData = {
             'Is': { name: 'Is', emoji: '🍦' },
             'Ball': { name: 'Ball', emoji: '⚽' },
             'Kake': { name: 'Kake', emoji: '🍰' },
+            'Måne': { name: 'Måne', emoji: '🌙' },
+            'Stjerne': { name: 'Stjerne', emoji: '⭐' },
+            'Hjerte': { name: 'Hjerte', emoji: '❤️' },
+            'Regnbue': { name: 'Regnbue', emoji: '🌈' },
+            'Sky': { name: 'Sky', emoji: '☁️' },
         }
     }
 };
