@@ -1254,11 +1254,32 @@ function triggerRainbowBridge() {
     setTimeout(() => { bridgeAlert.style.display = 'none'; }, 6000);
 }
 
-function triggerRibbon() {
-    isRibbonActive = true;
-    const ribbonAlert = document.getElementById('ribbon-alert');
-    ribbonAlert.style.display = 'block';
+function triggerCelestialSparkle() {
+    const celestialSparkleAlert = document.getElementById('celestial-sparkle-alert');
+    celestialSparkleAlert.style.display = 'block';
+    celestialSparkleAlert.style.color = '#fff9c4';
+    celestialSparkleAlert.style.textShadow = '0 0 10px #fbc02d, 0 0 20px #fbc02d';
     
+    const duration = 5000;
+    const end = Date.now() + duration;
+    
+    // Spawn a flurry of tiny, sparkling star-bubbles
+    const spawnInterval = setInterval(() => {
+        if (Date.now() > end) {
+            clearInterval(spawnInterval);
+            celestialSparkleAlert.style.display = 'none';
+            return;
+        }
+        
+        const bubble = new Bubble();
+        bubble.radius = Math.random() * 10 + 5;
+        bubble.color = '#fff';
+        bubble.type = 'magic-star';
+        bubble.speed = Math.random() * 3 + 2;
+        bubble.vx = (Math.random() - 0.5) * 4;
+        bubbles.push(bubble);
+    }, 50);
+}
     ribbon.x = -50;
     ribbon.y = canvasHeight / 2;
     ribbon.vx = 8;
@@ -1289,38 +1310,6 @@ function triggerRibbon() {
         });
     }, 20);
 }
-    
-    ribbon.x = -50;
-    ribbon.y = canvasHeight / 2;
-    ribbon.vx = 8;
-    ribbon.vy = 2;
-    
-    const ribbonInterval = setInterval(() => {
-        if (!isRibbonActive || !gameActive) {
-            clearInterval(ribbonInterval);
-            return;
-        }
-        ribbon.x += ribbon.vx;
-        ribbon.y += ribbon.vy;
-        if (ribbon.y < 0 || ribbon.y > canvasHeight) ribbon.vy *= -1;
-        if (ribbon.x > canvasWidth + 100) {
-            isRibbonActive = false;
-            ribbonAlert.style.display = 'none';
-            clearInterval(ribbonInterval);
-        }
-        
-        // Ribbon pops nearby bubbles
-        bubbles.forEach(b => {
-            const dist = Math.hypot(ribbon.x - b.x, ribbon.y - b.y);
-            if (dist < 60) {
-                b.hits = 0; // Mark for removal
-                createPopEffect(b.x, b.y, 'pink');
-                score += 5;
-            }
-        });
-    }, 20);
-}
-
 
 function triggerMagnetism() {
     isMagnetic = true;
