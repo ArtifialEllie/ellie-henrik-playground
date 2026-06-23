@@ -150,6 +150,7 @@ function handleMove(e) {
     // Calculate angle based on movement direction
     if (Math.hypot(dx, dy) > 1) {
         wandAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 45; // Offset by 45 deg for wand orientation
+        wand.style.setProperty('--wand-angle', `${wandAngle}deg`);
         wand.style.transform = `rotate(${wandAngle}deg)`;
     }
 
@@ -244,8 +245,10 @@ setInterval(() => {
         magicBar.style.backgroundColor = 'gold';
         messageElement.innerText = "MAGIC FULL! Let go to grant a wish! 🌟";
         messageElement.style.color = "gold";
+        wand.classList.add('wand-pulse');
     } else {
         magicBar.style.backgroundColor = '';
+        wand.classList.remove('wand-pulse');
         if (combo > 1) {
             messageElement.innerText = `Magic Combo x${combo}! ⚡✨`;
         }

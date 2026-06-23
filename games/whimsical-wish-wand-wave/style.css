@@ -26,6 +26,12 @@ body {
     font-size: 24px;
     text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
     margin-bottom: 10px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
 }
 
 #magic-bar-container {
@@ -69,4 +75,13 @@ body {
     z-index: 100;
     transition: transform 0.05s linear;
     filter: drop-shadow(0 0 10px gold);
+}
+
+.wand-pulse {
+    animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: scale(1) rotate(var(--wand-angle)); filter: drop-shadow(0 0 10px gold); }
+    to { transform: scale(1.2) rotate(var(--wand-angle)); filter: drop-shadow(0 0 20px gold); }
 }
