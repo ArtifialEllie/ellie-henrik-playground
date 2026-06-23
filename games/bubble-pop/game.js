@@ -352,6 +352,9 @@ class Bubble {
         } else if (rand > 0.277 && rand < 0.307) {
             this.type = 'pet-treat';
             this.color = '#ffca28';
+        } else if (rand > 0.257 && rand < 0.267) {
+            this.type = 'pet-snack';
+            this.color = '#ffcc80';
         } else if (rand > 0.267 && rand < 0.277) {
             this.type = 'candy-cloud';
             this.color = '#f8bbd0';
