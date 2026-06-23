@@ -1,0 +1,106 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, #ffdef2 0%, #e0f7fa 100%);
+    font-family: 'Quicksand', sans-serif;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#score-board, #timer-board {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 24px;
+    color: #ff69b4;
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+    border: 3px solid #fff;
+}
+
+canvas {
+    display: block;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    text-align: center;
+    transition: opacity 0.5s ease;
+}
+
+.overlay h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 48px;
+    color: #ff69b4;
+    text-shadow: 3px 3px 0px #fff;
+    margin-bottom: 20px;
+}
+
+.overlay p {
+    font-size: 20px;
+    color: #888;
+    margin-bottom: 15px;
+}
+
+.hint {
+    font-style: italic;
+    font-size: 16px !important;
+}
+
+button {
+    font-family: 'Fredoka One', cursive;
+    font-size: 24px;
+    padding: 15px 40px;
+    background: linear-gradient(45deg, #ff69b4, #ffb6c1);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+}
+
+button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(255, 105, 180, 0.6);
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+.hidden {
+    display: none !important;
+}

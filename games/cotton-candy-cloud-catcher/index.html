@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotton Candy Cloud Catcher 🍬☁️</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Poeng: <span id="score">0</span></div>
+            <div id="timer-board">Tid: <span id="timer">60</span>s</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="start-screen" class="overlay">
+            <h1>Cotton Candy Cloud Catcher</h1>
+            <p>Fang så mange sukkerspinn-skyer du kan! ✨</p>
+            <p class="hint">Bruk musen eller fingeren for å bevege kurven 🧺</p>
+            <button id="start-button">Start Magien! 🌈</button>
+        </div>
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>Tiden er ute! 🌟</h1>
+            <p>Du fanget <span id="final-score">0</span> magiske skyer!</p>
+            <button id="restart-button">Prøv igjen! 🍭</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
