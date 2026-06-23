@@ -2093,8 +2093,14 @@ function update() {
         ctx.lineWidth = 10;
         ctx.strokeStyle = 'pink';
         ctx.lineCap = 'round';
+        
+        // Draw a whimsical wavy ribbon instead of a straight line! ✨
         ctx.moveTo(ribbon.x - 20, ribbon.y);
-        ctx.lineTo(ribbon.x + 20, ribbon.y);
+        for (let i = -20; i <= 20; i += 2) {
+            const wave = Math.sin(Date.now() / 200 + i / 10) * 5;
+            ctx.lineTo(ribbon.x + i, ribbon.y + wave);
+        }
+        
         ctx.stroke();
         ctx.closePath();
     }
