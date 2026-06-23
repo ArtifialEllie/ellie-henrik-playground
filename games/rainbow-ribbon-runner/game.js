@@ -16,6 +16,7 @@ window.addEventListener('resize', () => {
 let score = 0;
 let highScore = localStorage.getItem('rrr_highscore') || 0;
 highScoreEl.innerText = `Best: ${highScore}`;
+let shakeAmount = 0;
 
 let fever = 0;
 let feverActive = false;
@@ -36,6 +37,24 @@ let stars = [];
 let obstacles = [];
 let particles = [];
 let frameCount = 0;
+
+let vortex = null;
+let vortexTimer = 0;
+
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioCtx();
+function playSound(freq, type, duration, volume = 0.1) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
 
 const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'];
 
@@ -122,6 +141,27 @@ function update() {
         obstacles.push(createObstacle());
     }
 
+    // Vortex Logic
+    if (vortex) {
+        vortexTimer--;
+        if (vortexTimer <= 0) vortex = null;
+    } else if (frameCount % 600 === 0) {
+        vortex = { x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: 0, maxRadius: 150, timer: 300 };
+        vortexTimer = 300;
+    }
+    if (vortex && vortex.radius < vortex.maxRadius) vortex.radius += 2;
+
+    if (vortex) {
+        stars.forEach(star => {
+            const dist = Math.hypot(vortex.x - star.x, vortex.y - star.y);
+            if (dist < vortex.maxRadius * 2) {
+                const angle = Math.atan2(vortex.y - star.y, vortex.x - star.x);
+                star.x += Math.cos(angle) * 3;
+                star.y += Math.sin(angle) * 3;
+            }
+        });
+    }
+
     // Update obstacles
     obstacles.forEach((obs, index) => {
         obs.x += obs.vx;
@@ -157,6 +197,8 @@ function update() {
         if (dist < player.radius + star.radius) {
             score++;
             scoreEl.innerText = `Stars: ${score}`;
+            shakeAmount = 5;
+            playSound(440 + Math.random() * 440, 'sine', 0.1);
             createParticle(star.x, star.y, star.color);
             stars.splice(index, 1);
             stars.push(createStar());
@@ -173,12 +215,21 @@ function update() {
     obstacles.forEach(obs => {
         const dist = Math.hypot(player.x - obs.x, player.y - obs.y);
         if (dist < player.radius + obs.size/2) {
+            shakeAmount = 20;
+            playSound(150, 'sawtooth', 0.3);
             gameOver();
         }
     });
 }
 
 function draw() {
+    ctx.save();
+    if (shakeAmount > 0) {
+        ctx.translate((Math.random() - 0.5) * shakeAmount, (Math.random() - 0.5) * shakeAmount);
+        shakeAmount *= 0.9;
+        if (shakeAmount < 0.1) shakeAmount = 0;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw Trail
@@ -226,6 +277,18 @@ function draw() {
         ctx.fill();
     });
 
+    // Draw Vortex
+    if (vortex) {
+        const grad = ctx.createRadialGradient(vortex.x, vortex.y, 0, vortex.x, vortex.y, vortex.radius);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        grad.addColorStop(0.5, 'rgba(200, 150, 255, 0.4)');
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(vortex.x, vortex.y, vortex.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
     // Draw Player
     ctx.fillStyle = player.color;
     ctx.beginPath();
@@ -245,6 +308,7 @@ function draw() {
         ctx.globalAlpha = 1.0;
     });
 
+    ctx.restore();
     requestAnimationFrame(draw);
 }
 
@@ -253,6 +317,7 @@ function activateFever() {
     feverTimer = 300; // 5 seconds at 60fps
     player.speed = 8;
     player.color = '#ffff00';
+    playSound(523.25, 'sine', 0.3);
     document.getElementById('fever-text').innerText = '🌈 FEVER MODE! 🌈';
     document.getElementById('fever-text').style.color = '#ffea00';
     
@@ -311,6 +376,7 @@ function startGame() {
     for (let i = 0; i < 5; i++) {
         stars.push(createStar());
     }
+    audioCtx.resume();
     
     gameActive = true;
     overlay.style.display = 'none';
