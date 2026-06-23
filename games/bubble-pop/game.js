@@ -2033,12 +2033,12 @@ function update() {
 
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
-+
-+    clouds.forEach(c => {
-+        c.update();
-+        c.draw();
-+    });
-+
+
+    clouds.forEach(c => {
+        c.update();
+        c.draw();
+    });
+
     if (bossActive && boss) {
 
         boss.draw();
@@ -2148,12 +2148,12 @@ function resetGame() {
     updateQuest();
     overlay.style.display = 'none';
     comboText.style.opacity = '0';
-+
-+    clouds = [];
-+    for (let i = 0; i < 6; i++) {
-+        clouds.push(new Cloud());
-+    }
-+
+
+    clouds = [];
+    for (let i = 0; i < 6; i++) {
+        clouds.push(new Cloud());
+    }
+
     clearInterval(timerInterval);
     clearTimeout(spawnTimeout);
 
