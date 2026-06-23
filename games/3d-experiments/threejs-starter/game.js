@@ -20,7 +20,7 @@ let stardustParticles = [];
 let constellationPrisms = [];
 let constellationLines = [];
 let gravityWells = [];
-let companion, companionRing, companionTarget = new THREE.Vector3();
+let companion, companionBody, companionRing, companionTarget = new THREE.Vector3();
 let superNovaMesh, isSuperNovaActive = false, superNovaTimer = 0;
 soundEnabled = true;
 let windActive = false;
@@ -518,7 +518,8 @@ function onMouseDown(event) {
             score += 500 * companionLevel;
             scoreElement.innerText = Math.floor(score);
         }
-        updateCompanionUI();
+            updateCompanionUI();
+            evolveCompanion();
 
         // Increase magic energy
         magicEnergy = Math.min(MAX_MAGIC_ENERGY, magicEnergy + 5 * combo);
@@ -1282,8 +1283,8 @@ function createCompanion() {
         emissiveIntensity: 0.5,
         shininess: 100 
     });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    group.add(body);
+    companionBody = new THREE.Mesh(bodyGeo, bodyMat);
+    group.add(companionBody);
 
     // Little eyes
     const eyeGeo = new THREE.SphereGeometry(0.04, 8, 8);
@@ -1314,6 +1315,20 @@ function updateCompanionUI() {
     }
 }
 
+function evolveCompanion() {
+    if (!companion) return;
+    
+    const scale = 1 + (companionLevel - 1) * 0.05;
+    companion.scale.set(scale, scale, scale);
+    
+    createFloatingText(`ELLIE'S HELPER EVOLVED! ✨🎀`, window.innerWidth/2, window.innerHeight/2);
+    playSound(1000, 'sine', 0.2, 0.1);
+    playSound(1200, 'sine', 0.2, 0.1);
+    
+    cameraShake = 0.2;
+}
+
+
 function updateCompanion() {
     if (!companion) return;
     
@@ -1325,6 +1340,9 @@ function updateCompanion() {
     companion.position.y += Math.sin(time * 2) * 0.002;
     companion.rotation.y += 0.01;
     companionRing.rotation.z += 0.02;
+    if (companionLevel >= 20 && companionBody) {
+        companionBody.material.color.setHSL((time * 0.5) % 1, 0.8, 0.6);
+    }
 }
 
 init();
