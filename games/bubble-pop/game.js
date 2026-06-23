@@ -1415,6 +1415,7 @@ function handlePop(e) {
                     { text: 'PARTY TIME! 🥳', action: () => triggerParty(), bonus: 1000, color: '#ff4081' },
                     { text: 'GOLDEN RAIN! ✨', action: () => triggerGoldenRain(), bonus: 1000, color: '#ffd700' },
                     { text: 'DISCO FEVER! 💃', action: () => triggerDiscoParty(), bonus: 1500, color: '#ff00ff' },
+                    { text: 'MELODY MODE! 🎵', action: () => triggerMelodyMode(), bonus: 1200, color: '#ffeb3b' },
                     { text: 'OOPS! PRANKED! 😜', action: () => { score = Math.max(0, score - 500); }, bonus: -500, color: '#9e9e9e' },
                 ];
                 const outcome = mysteryOutcomes[Math.floor(Math.random() * mysteryOutcomes.length)];
