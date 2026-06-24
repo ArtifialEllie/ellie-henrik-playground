@@ -262,12 +262,17 @@ class Bubble {
         this.sneezeTimer = 0;
         this.sneezeOffset = { x: 0, y: 0 };
         
-        this.type = 'normal';
-        const rand = Math.random();
-        if (rand > 0.998) {
-            this.type = 'ellie-wish';
-            this.color = '#ff00ff';
-            this.radius = 40;
+       this.type = 'normal';
+       const rand = Math.random();
+       if (rand > 0.999) {
+           this.type = 'rainbow-vortex';
+           this.color = '#ff00ff';
+           this.radius = 45;
+           this.hits = 1;
+       } else if (rand > 0.998) {
+           this.type = 'ellie-wish';
+           this.color = '#ff00ff';
+           this.radius = 40;
             this.hits = 1;
         } else if (rand > 0.995) {
             this.type = 'mystery-box';
@@ -388,10 +393,22 @@ class Bubble {
         }
 
     }
-    update() {
-        this.y -= this.speed * gameSpeed;
-        this.x += this.vx * gameSpeed;
-        
+   update() {
+       if (this.type === 'rainbow-vortex') {
+           bubbles.forEach(b => {
+               if (b === this) return;
+               const dx = this.x - b.x;
+               const dy = this.y - b.y;
+               const dist = Math.hypot(dx, dy);
+               if (dist < 200) {
+                   b.vx += dx / dist * 0.15;
+                   b.vy += dy / dist * 0.15;
+               }
+           });
+       }
+       this.y -= this.speed * gameSpeed;
+       this.x += this.vx * gameSpeed;
+       
         if (this.isSneezing) {
             this.sneezeTimer--;
             if (this.sneezeTimer <= 0) {
@@ -552,10 +569,17 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🧲', drawX, drawY + currentRadius/3);
-        } else if (this.type === 'rainbow-spiral') {
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('🌀', drawX, drawY + currentRadius/3);
+       } else if (this.type === 'rainbow-spiral') {
+       } else if (this.type === 'rainbow-vortex') {
+           ctx.font = `${currentRadius}px Arial`;
+           ctx.textAlign = 'center';
+           ctx.fillText('🌀', drawX, drawY + currentRadius/3);
+           ctx.shadowBlur = 20;
+           ctx.shadowColor = `hsl(${Date.now() / 5 % 360}, 100%, 50%)`;
+       } else if (this.type === 'rainbow-spiral') {
+           ctx.font = `${currentRadius}px Arial`;
+           ctx.textAlign = 'center';
+           ctx.fillText('🌀', drawX, drawY + currentRadius/3);
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'magenta';
         } else if (this.type === 'magic-burst') {
@@ -1489,12 +1513,19 @@ function handlePop(e) {
                 const ticketBonus = 1000;
                 score += ticketBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `GOLDEN TICKET! 🎫 +${ticketBonus}`, 'gold'));
-                createPopEffect(b.x, b.y, 'gold');
-                triggerFrenzy();
-            } else if (b.type === 'ellie-wish') {
-                playPopSound(true, false);
-                const wishes = [
-                    { text: 'GOLD RAIN! ✨', action: () => triggerGoldenRain(), bonus: 0 },
+           createPopEffect(b.x, b.y, 'gold');
+           triggerFrenzy();
+       } else if (b.type === 'ellie-wish') {
+       } else if (b.type === 'rainbow-vortex') {
+           playPopSound(true, false);
+           triggerRainbowCascade();
+           score += 500;
+           floatingTexts.push(new FloatingText(b.x, b.y, 'VORTEX POP! 🌈🌀', 'magenta'));
+           createBigExplosion(b.x, b.y);
+       } else if (b.type === 'ellie-wish') {
+           playPopSound(true, false);
+           const wishes = [
+               { text: 'GOLD RAIN! ✨', action: () => triggerGoldenRain(), bonus: 0 },
                     { text: 'TIME GIFT! ⏰', action: () => { timeLeft += 15; }, bonus: 0 },
                     { text: 'JACKPOT! 💰', action: () => { totalGold += 500; localStorage.setItem('bubblePopTotalGold', totalGold); totalGoldEl.innerText = totalGold; }, bonus: 5000 },
                 ];
