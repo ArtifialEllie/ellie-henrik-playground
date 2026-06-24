@@ -1280,6 +1280,10 @@ function triggerCelestialSparkle() {
         bubbles.push(bubble);
     }, 50);
 }
+function triggerRibbon() {
+    const ribbonAlert = document.getElementById('ribbon-alert');
+    if (ribbonAlert) ribbonAlert.style.display = 'block';
+    isRibbonActive = true;
     ribbon.x = -50;
     ribbon.y = canvasHeight / 2;
     ribbon.vx = 8;
@@ -1295,7 +1299,7 @@ function triggerCelestialSparkle() {
         if (ribbon.y < 0 || ribbon.y > canvasHeight) ribbon.vy *= -1;
         if (ribbon.x > canvasWidth + 100) {
             isRibbonActive = false;
-            ribbonAlert.style.display = 'none';
+            if (ribbonAlert) ribbonAlert.style.display = 'none';
             clearInterval(ribbonInterval);
         }
         
@@ -1309,6 +1313,31 @@ function triggerCelestialSparkle() {
             }
         });
     }, 20);
+}
+
+function triggerStarfall() {
+    const starfallAlert = document.getElementById('starfall-alert');
+    if (starfallAlert) starfallAlert.style.display = 'block';
+    
+    const duration = 5000;
+    const end = Date.now() + duration;
+    
+    const spawnInterval = setInterval(() => {
+        if (Date.now() > end) {
+            clearInterval(spawnInterval);
+            if (starfallAlert) starfallAlert.style.display = 'none';
+            return;
+        }
+        
+        const star = new Bubble(false);
+        star.type = 'lucky-star';
+        star.radius = Math.random() * 15 + 10;
+        star.x = Math.random() * canvasWidth;
+        star.y = -star.radius;
+        star.speed = Math.random() * 5 + 3;
+        star.vx = (Math.random() - 0.5) * 2;
+        bubbles.push(star);
+    }, 100);
 }
 
 function triggerMagnetism() {
@@ -1974,6 +2003,7 @@ function handlePop(e) {
     if (Math.random() < 0.003) triggerRainbowBridge();
     if (Math.random() < 0.002) triggerGlitterStorm();
     if (Math.random() < 0.003) triggerRibbon();
+    if (Math.random() < 0.002) triggerStarfall();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
     updateCombo();
