@@ -62,6 +62,16 @@ function plantFlower() {
     
     const flower = document.createElement('div');
     flower.className = 'flower';
+    
+    // Rare flower chance! (10% chance)
+    const isRare = Math.random() < 0.1;
+    if (isRare) {
+        flower.className = 'flower rare-flower';
+        messageEl.textContent = "OII! Du plantet en SELDEN magisk blomst! 🌟";
+    } else {
+        messageEl.textContent = "Du plantet en magisk blomst! 🌸";
+    }
+
     flower.textContent = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
     
     const x = Math.random() * (gardenArea.clientWidth - 50);
@@ -72,9 +82,10 @@ function plantFlower() {
     
     flower.onclick = (e) => {
         createGlitterParticle(e.clientX, e.clientY);
-        glitter += glitterPerClick;
+        const reward = isRare ? glitterPerClick * 5 : glitterPerClick;
+        glitter += reward;
         updateUI();
-        messageEl.textContent = "En blomst ga deg litt glitter! ✨";
+        messageEl.textContent = isRare ? `Den sjeldne blomsten ga deg masse glitter! ✨ (${reward})` : "En blomst ga deg litt glitter! ✨";
         
         // Check for level up!
         if (flowers >= level * 5) {
@@ -84,7 +95,6 @@ function plantFlower() {
     
     gardenArea.appendChild(flower);
     updateUI();
-    messageEl.textContent = "Du plantet en magisk blomst! 🌸";
 }
 
 function collectGlitter() {

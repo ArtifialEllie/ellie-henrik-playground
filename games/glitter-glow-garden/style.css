@@ -65,11 +65,22 @@ h1 {
     user-select: none;
     cursor: pointer;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2), opacity 0.3s;
-    animation: sway 3s ease-in-out infinite;
+    animation: sway 3s ease-in-out infinite, bloom 0.5s ease-out forwards;
 }
 
-.flower:hover {
-    transform: scale(1.2) rotate(10deg);
+.rare-flower {
+    filter: drop-shadow(0 0 10px gold);
+    animation: sway 3s ease-in-out infinite, bloom 0.5s ease-out forwards, pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes bloom {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1) rotate(-5deg); filter: drop-shadow(0 0 10px gold); }
+    50% { transform: scale(1.2) rotate(5deg); filter: drop-shadow(0 0 20px yellow); }
 }
 
 @keyframes sway {
