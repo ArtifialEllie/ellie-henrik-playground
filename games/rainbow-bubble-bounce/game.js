@@ -25,6 +25,7 @@ let rushHeightInterval = 500;
 let nextRushHeight = 500;
 let wind = 0;
 let windTimer = 0;
+let shake = 0;
 
 const PLAYER_RADIUS = 20;
 const GRAVITY = 0.25;
@@ -84,7 +85,11 @@ function spawnPlatform(y, isFirst = false) {
         type = 'rainbow';
         width = PLATFORM_WIDTH * 1.5;
         color = 'rainbow';
-    } else if (rand > 0.85) {
+    } else if (rand > 0.88) {
+        type = 'portal';
+        width = PLATFORM_WIDTH * 0.8;
+        color = '#bf00ff';
+    } else if (rand > 0.82) {
         type = 'cloud';
         width = CLOUD_WIDTH;
         color = '#ffffff';
@@ -206,6 +211,10 @@ function update() {
     
     player.vx *= 0.9; // Friction
     
+    if (shake > 0) {
+        shake *= 0.9;
+    }
+    
     player.x += player.vx;
     
     // Screen wrap
@@ -298,11 +307,18 @@ function update() {
                     bounceForce = -50; // MEGA BOUNCE!
                     createSparkles(player.x, player.y + player.radius, '#ffd700', 30);
                     player.vx *= 1.2; // Give a little push
+                    shake = 10;
                 } else if (superBounceTimer > 0) {
                     bounceForce = SUPER_BOUNCE_FORCE;
                 }
                 
                 player.vy = bounceForce;
+                
+                if (plat.type === 'portal') {
+                    player.x = Math.random() * canvas.width;
+                    createSparkles(player.x, player.y, '#bf00ff', 20);
+                    shake = 5;
+                }
                 
                 // Combo system
                 combo++;
@@ -398,6 +414,9 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     ctx.save();
+    if (shake > 0) {
+        ctx.translate(Math.random() * shake - shake / 2, Math.random() * shake - shake / 2);
+    }
     ctx.translate(0, -cameraY);
     
     // Draw Background Bubbles
