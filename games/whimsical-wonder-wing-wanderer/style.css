@@ -1,0 +1,90 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #1a0a2e;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    color: #fff;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#score-board {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+    pointer-events: auto;
+}
+
+#message-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 30px;
+    border: 4px solid #ff77ff;
+    box-shadow: 0 0 30px rgba(255, 119, 255, 0.5);
+    pointer-events: auto;
+}
+
+#message-overlay.hidden {
+    display: none;
+}
+
+#message-title {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #ffccff;
+    text-shadow: 0 0 15px #ff00ff;
+}
+
+#message-text {
+    font-size: 20px;
+    margin-bottom: 30px;
+    color: #e0e0ff;
+}
+
+#restart-btn {
+    padding: 15px 30px;
+    font-size: 20px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ff77ff, #00ffff);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+#restart-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px #ff77ff;
+}
+
+canvas {
+    display: block;
+}
