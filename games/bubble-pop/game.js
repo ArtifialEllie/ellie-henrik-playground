@@ -2066,6 +2066,7 @@ function handlePop(e) {
     if (Math.random() < 0.003) triggerRainbowBridge();
     if (Math.random() < 0.002) triggerGlitterStorm();
     if (Math.random() < 0.003) triggerRibbon();
+    if (Math.random() < 0.002) triggerCosmicBloom();
     if (Math.random() < 0.002) triggerStarfall();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
@@ -2206,6 +2207,8 @@ function update() {
         return;
     }
 
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
 
@@ -2215,7 +2218,6 @@ function update() {
     });
 
     if (bossActive && boss) {
-
         boss.draw();
     }
 
@@ -2225,7 +2227,6 @@ function update() {
         if (Math.random() < 0.02) clone.tryAutoPop(); // Clones pop occasionally
     });
 
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
  
     for (let i = trail.length - 1; i >= 0; i--) {
         trail[i].update();

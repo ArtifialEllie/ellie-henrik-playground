@@ -6,7 +6,10 @@ const CLOUD_SPACING = 6;
 const JUMP_FORCE = 0.2;
 const GRAVITY = 0.008;
 const MOVE_SPEED = 0.15;
-const COLORS = [0xffb6c1, 0x87ceeb, 0x98fb98, 0xffd700, 0xdda0dd, 0xff69b4];
+const COLORS = [0xffb6c1, 0x87ceeb, 0x98fb98, 0xdda0dd, 0xff69b4];
+const POWERUP_CHANCE = 0.2;
+const SUPER_JUMP_FORCE = 0.4;
+const POWERUP_COLOR = 0xffd700;
 
 let scene, camera, renderer, player, clock;
 let clouds = [];
@@ -87,7 +90,8 @@ function createCloud(x, y, z) {
     
     // Make a fluffy cloud using multiple spheres
     const sphereCount = 5;
-    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const isPowerup = Math.random() < POWERUP_CHANCE;
+    const color = isPowerup ? POWERUP_COLOR : COLORS[Math.floor(Math.random() * COLORS.length)];
     
     for (let i = 0; i < sphereCount; i++) {
         const size = 0.4 + Math.random() * 0.6;
@@ -109,6 +113,7 @@ function createCloud(x, y, z) {
     return {
         mesh: cloudGroup,
         radius: 1.5,
+        isPowerup: isPowerup,
         bobOffset: Math.random() * Math.PI * 2,
         bobSpeed: 0.5 + Math.random() * 0.5
     };
@@ -186,7 +191,14 @@ function animate() {
     clouds.forEach((cloud, index) => {
         const dist = player.position.distanceTo(cloud.mesh.position);
         if (velocityY < 0 && dist < cloud.radius) {
-            velocityY = JUMP_FORCE;
+            velocityY = cloud.isPowerup ? SUPER_JUMP_FORCE : JUMP_FORCE;
+            
+            if (cloud.isPowerup) {
+                document.getElementById('message').innerText = "SUPER JUMP! ✨🍭";
+                setTimeout(() => {
+                    document.getElementById('message').innerText = "Jump on the Candy Clouds! 🌈";
+                }, 1000);
+            }
             
             // Sparkle effect!
             const cloudColor = clouds[index].mesh.children[0].material.color;

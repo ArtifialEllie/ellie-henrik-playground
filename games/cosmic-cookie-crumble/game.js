@@ -223,17 +223,6 @@ function handleInput(e) {
     const dist = Math.hypot(mouseX - cookie.x, mouseY - cookie.y);
     
     if (dist < cookie.radius) {
-        // Check if Golden Cookie was clicked
-        if (goldenCookie) {
-            const gDist = Math.hypot(mouseX - goldenCookie.x, mouseY - goldenCookie.y);
-            if (gDist < goldenCookie.radius) {
-                score += 50;
-                scoreElement.innerText = score;
-                goldenCookie = null;
-                return; // Priority to golden cookie
-            }
-        }
-
         // Clicked inside cookie
         score += 1;
         scoreElement.innerText = score;

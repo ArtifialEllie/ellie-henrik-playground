@@ -88,6 +88,10 @@ function spawnPlatform(y, isFirst = false) {
         type = 'cloud';
         width = CLOUD_WIDTH;
         color = '#ffffff';
+    } else if (rand > 0.05 && rand < 0.08) {
+        type = 'star';
+        width = PLATFORM_WIDTH * 0.8;
+        color = '#ffd700';
     }
 
     const x = Math.random() * (canvas.width - width);
@@ -239,6 +243,22 @@ function update() {
         score += Math.floor(diff);
     }
 
+    // Dynamic Background Color
+    const altitude = Math.floor(score / 10);
+    let bgGradient = '';
+    if (altitude < 1000) {
+        bgGradient = 'linear-gradient(to bottom, #a2d2ff, #fef9ef)';
+    } else if (altitude < 3000) {
+        bgGradient = 'linear-gradient(to bottom, #ffc6ff, #a2d2ff)';
+    } else if (altitude < 6000) {
+        bgGradient = 'linear-gradient(to bottom, #c8b6ff, #ffc6ff)';
+    } else {
+        bgGradient = 'linear-gradient(to bottom, #2c3e50, #4b0082)';
+    }
+    if (document.body.style.background !== bgGradient) {
+        document.body.style.background = bgGradient;
+    }
+
     // Rush Mode Logic
     const currentHeight = Math.floor(score / 10);
     if (!isRushMode && currentHeight >= nextRushHeight) {
@@ -274,6 +294,10 @@ function update() {
                     createSparkles(player.x, player.y + player.radius, '#ffff00', 15);
                     createSparkles(player.x, player.y + player.radius, '#0000ff', 15);
                     createSparkles(player.x, player.y + player.radius, '#ffffff', 15);
+                } else if (plat.type === 'star') {
+                    bounceForce = -50; // MEGA BOUNCE!
+                    createSparkles(player.x, player.y + player.radius, '#ffd700', 30);
+                    player.vx *= 1.2; // Give a little push
                 } else if (superBounceTimer > 0) {
                     bounceForce = SUPER_BOUNCE_FORCE;
                 }
@@ -388,8 +412,9 @@ function draw() {
     // Draw Gems
     gems.forEach(gem => {
         if (!gem.collected) {
+            const pulse = Math.sin(Date.now() / 200) * 2;
             ctx.beginPath();
-            ctx.arc(gem.x, gem.y, gem.radius, 0, Math.PI * 2);
+            ctx.arc(gem.x, gem.y, gem.radius + pulse, 0, Math.PI * 2);
             ctx.fillStyle = '#ffd700';
             ctx.fill();
             ctx.strokeStyle = '#fff';
@@ -408,8 +433,9 @@ function draw() {
     // Draw Powerups
     powerups.forEach(pu => {
         if (!pu.collected) {
+            const pulse = Math.sin(Date.now() / 150) * 3;
             ctx.beginPath();
-            ctx.arc(pu.x, pu.y, pu.radius, 0, Math.PI * 2);
+            ctx.arc(pu.x, pu.y, pu.radius + pulse, 0, Math.PI * 2);
             ctx.fillStyle = pu.type === 'super-bounce' ? '#ff00ff' : '#00ffff';
             ctx.fill();
             ctx.strokeStyle = '#fff';
