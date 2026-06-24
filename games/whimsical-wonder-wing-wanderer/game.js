@@ -25,12 +25,15 @@ const player = {
     velocity: 0,
     gravity: 0.4,
     lift: -8,
-    color: '#ffccff'
+    color: '#ffccff',
+    powerUp: null,
+    powerUpTimer: 0
 };
 
 const stars = [];
 const particles = [];
 const clouds = [];
+const curiosities = [];
 
 class Star {
     constructor() {
@@ -93,6 +96,52 @@ class Cloud {
     }
 }
 
+class Curiosity {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = canvas.width + 100;
+        this.y = Math.random() * canvas.height;
+        this.radius = 15;
+        this.speed = Math.random() * 2 + 2;
+        const types = [
+            { name: 'Quick Wing', color: '#00ffff', effect: 'lift' },
+            { name: 'Stardust Shield', color: '#ff00ff', effect: 'shield' },
+            { name: 'Magic Float', color: '#ffff00', effect: 'gravity' }
+        ];
+        const type = types[Math.floor(Math.random() * types.length)];
+        this.type = type.name;
+        this.color = type.color;
+        this.effect = type.effect;
+        this.pulse = 0;
+    }
+
+    update() {
+        this.x -= this.speed;
+        this.pulse += 0.1;
+        if (this.x < -50) this.reset();
+    }
+
+    draw() {
+        const s = this.radius + Math.sin(this.pulse) * 3;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = this.color;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, s, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw a little star inside
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, s/3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
+
 class Particle {
     constructor(x, y, color) {
         this.x = x;
@@ -133,14 +182,18 @@ function spawnCloud() {
     }
 }
 
+function spawnCuriosity() {
+    if (frames % 600 === 0 && curiosities.length < 2) {
+        curiosities.push(new Curiosity());
+    }
+}
+
 function handleInput() {
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space' || e.code === 'ArrowUp') {
             if (gameActive) {
                 player.velocity = player.lift;
                 createParticles(player.x, player.y, '#ffccff');
-            } else if (messageOverlay.classList.contains('hidden')) {
-                // To prevent immediate jump on restart
             }
         }
     });
@@ -163,13 +216,23 @@ function update() {
     if (!gameActive) return;
 
     frames++;
+    
+    // Power-up logic
+    if (player.powerUpTimer > 0) {
+        player.powerUpTimer--;
+        if (player.powerUpTimer <= 0) {
+            player.powerUp = null;
+            player.gravity = 0.4;
+            player.lift = -8;
+        }
+    }
+
     player.velocity += player.gravity;
     player.y += player.velocity;
 
     if (player.y + player.radius > canvas.height) {
         player.y = canvas.height - player.radius;
         player.velocity = 0;
-        // Touching bottom doesn't kill you, but it slows you down
     }
     if (player.y - player.radius < 0) {
         player.y = player.radius;
@@ -190,6 +253,19 @@ function update() {
         }
     });
 
+    curiosities.forEach((curiosity, index) => {
+        curiosity.update();
+        if (player.x + player.radius > curiosity.x - curiosity.radius && 
+            player.x - player.radius < curiosity.x + curiosity.radius && 
+            player.y + player.radius > curiosity.y - curiosity.radius && 
+            player.y - player.radius < curiosity.y + curiosity.radius) {
+            
+            applyPowerUp(curiosity);
+            curiosity.reset();
+            createParticles(curiosity.x, curiosity.y, curiosity.color);
+        }
+    });
+
     clouds.forEach(cloud => cloud.update());
 
     particles.forEach((particle, index) => {
@@ -199,6 +275,7 @@ function update() {
 
     spawnStar();
     spawnCloud();
+    spawnCuriosity();
 
     // Increase difficulty
     if (frames % 1000 === 0) {
@@ -207,11 +284,33 @@ function update() {
     }
 }
 
+function applyPowerUp(curiosity) {
+    player.powerUp = curiosity.type;
+    player.powerUpTimer = 300; // 5 seconds at 60fps
+    
+    if (curiosity.effect === 'lift') {
+        player.lift = -12;
+    } else if (curiosity.effect === 'gravity') {
+        player.gravity = 0.1;
+    } else if (curiosity.effect === 'shield') {
+        // Shield effect could be visual or prevent death (if death existed)
+        // For now, let's give a big score boost
+        score += 10;
+        scoreElement.textContent = score;
+    }
+}
+
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Dreamy Gradient Background
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#1a0a2e');
+    grad.addColorStop(1, '#3a1a4e');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     clouds.forEach(cloud => cloud.draw());
     stars.forEach(star => star.draw());
+    curiosities.forEach(curiosity => curiosity.draw());
     particles.forEach(particle => particle.draw());
 
     // Draw Player
@@ -220,9 +319,18 @@ function draw() {
     ctx.rotate(player.velocity * 0.05);
     
     ctx.shadowBlur = 20;
-    ctx.shadowColor = '#ffccff';
+    ctx.shadowColor = player.powerUp ? '#fff' : '#ffccff';
     ctx.fillStyle = player.color;
     
+    // Power-up aura
+    if (player.powerUp) {
+        ctx.beginPath();
+        ctx.arc(0, 0, player.radius + 10, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    }
+
     // Draw a cute wing-like shape
     ctx.beginPath();
     ctx.ellipse(0, 0, 25, 15, 0, 0, Math.PI * 2);
@@ -258,10 +366,13 @@ function resetGame() {
     player.velocity = 0;
     player.gravity = 0.4;
     player.lift = -8;
+    player.powerUp = null;
+    player.powerUpTimer = 0;
     gameActive = true;
     stars.length = 0;
     clouds.length = 0;
     particles.length = 0;
+    curiosities.length = 0;
     frames = 0;
     messageOverlay.classList.add('hidden');
 }

@@ -23,7 +23,7 @@ body {
     z-index: 10;
 }
 
-#score-board, #timer, #combo-board, #fever-board {
+#score-board, #timer, #combo-board, #fever-board, #wind-indicator {
     background: rgba(255, 255, 255, 0.8);
     padding: 10px 20px;
     border-radius: 25px;
