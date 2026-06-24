@@ -2207,6 +2207,8 @@ function update() {
         return;
     }
 
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
 
@@ -2216,7 +2218,6 @@ function update() {
     });
 
     if (bossActive && boss) {
-
         boss.draw();
     }
 
@@ -2226,7 +2227,6 @@ function update() {
         if (Math.random() < 0.02) clone.tryAutoPop(); // Clones pop occasionally
     });
 
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
  
     for (let i = trail.length - 1; i >= 0; i--) {
         trail[i].update();
