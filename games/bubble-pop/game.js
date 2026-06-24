@@ -265,13 +265,18 @@ class Bubble {
         
        this.type = 'normal';
        const rand = Math.random();
-       if (rand > 0.999) {
-           this.type = 'rainbow-vortex';
-           this.color = '#ff00ff';
-           this.radius = 45;
-           this.hits = 1;
-       } else if (rand > 0.998) {
-           this.type = 'ellie-wish';
+      if (rand > 0.999) {
+          this.type = 'rainbow-vortex';
+          this.color = '#ff00ff';
+          this.radius = 45;
+          this.hits = 1;
+      } else if (rand > 0.9985) {
+          this.type = 'cosmic-candy';
+          this.color = '#ff69b4';
+          this.radius = 30;
+          this.hits = 1;
+      } else if (rand > 0.998) {
+          this.type = 'ellie-wish';
            this.color = '#ff00ff';
            this.radius = 40;
             this.hits = 1;
@@ -602,8 +607,13 @@ class Bubble {
             ctx.fillText('🎫', drawX, drawY + currentRadius/3);
         } else if (this.type === 'cupcake') {
             ctx.font = `${currentRadius}px Arial`;
+           ctx.textAlign = 'center';
+           ctx.fillText('🧁', drawX, drawY + currentRadius/3);
+       } else if (this.type === 'prism') {
+        } else if (this.type === 'cosmic-candy') {
+            ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
-            ctx.fillText('🧁', drawX, drawY + currentRadius/3);
+            ctx.fillText('🍭', drawX, drawY + currentRadius/3);
         } else if (this.type === 'prism') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -1490,10 +1500,11 @@ function handlePop(e) {
                 }
                 if (b.hits > 1) {
                 b.hits--;
-                createPopEffect(b.x, b.y, b.color);
-                playSound(300, 'sine', 0.1);
-                floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
-            continue; 
+               createPopEffect(b.x, b.y, b.color);
+               playSound(300, 'sine', 0.1);
+               floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
+                continue; 
+               }
         }
         createPopEffect(b.x, b.y, b.color);
         if (b.type === 'sparkle-blast') {
@@ -1615,11 +1626,30 @@ function handlePop(e) {
                     special.speed = Math.random() * 2 + 1;
                     bubbles.push(special);
                 }
-                triggerFrenzy();
-            } else if (b.type === 'shimmer-shell') {
+               triggerFrenzy();
+           } else if (b.type === 'shimmer-shell') {
+               playPopSound(true, false);
+            } else if (b.type === 'cosmic-candy') {
                 playPopSound(true, false);
-                const shellBonus = 150;
-                score += shellBonus;
+                const candyBonus = 100;
+                score += candyBonus;
+                floatingTexts.push(new FloatingText(b.x, b.y, `COSMIC CANDY! 🍭 +${candyBonus}`, '#ff69b4'));
+                createPopEffect(b.x, b.y, '#ff69b4');
+                for (let j = 0; j < 3; j++) {
+                    const mini = new Bubble(false);
+                    mini.type = 'normal';
+                    mini.color = '#ff69b4';
+                    mini.radius = 15;
+                    mini.x = b.x;
+                    mini.y = b.y;
+                    mini.vx = (Math.random() - 0.5) * 15;
+                    mini.vy = (Math.random() - 0.5) * 15 - 5;
+                    mini.speed = Math.random() * 2 + 1;
+                    bubbles.push(mini);
+                }
+            } else if (b.type === 'shimmer-shell') {
+               const shellBonus = 150;
+               score += shellBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `SHIMMER SHELL! 🐚 +${shellBonus}`, '#e0f7fa'));
                 createPopEffect(b.x, b.y, '#e0f7fa');
                 for (let j = 0; j < 3; j++) {
