@@ -28,7 +28,9 @@ const COLORS = {
     NORMAL: ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'],
     GOLD: '#FFD700',
     BOMB: '#333333',
-    RAINBOW: 'RAINBOW'
+    RAINBOW: 'RAINBOW',
+    HEART: '#FF69B4',
+    SPARKLE: '#E0B0FF'
 };
 
 // Simple Audio Context for pops
@@ -78,7 +80,17 @@ class Balloon {
             this.color = COLORS.GOLD;
             this.points = 5;
             this.speedMultiplier = 1.5;
+        } else if (rand < 0.15) {
+            this.type = 'HEART';
+            this.color = COLORS.HEART;
+            this.points = 2;
+            this.speedMultiplier = 1.1;
         } else if (rand < 0.2) {
+            this.type = 'SPARKLE';
+            this.color = COLORS.SPARKLE;
+            this.points = 3;
+            this.speedMultiplier = 1.3;
+        } else if (rand < 0.3) {
             this.type = 'BOMB';
             this.color = COLORS.BOMB;
             this.points = -3;
@@ -124,6 +136,16 @@ class Balloon {
             ctx.ellipse(0, 0, this.radius * 0.8, this.radius, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.setTransform(1, 0, 0, 1, 0, 0);
+        } else if (this.type === 'HEART') {
+            ctx.fillStyle = this.color;
+            const x = this.x;
+            const y = this.y;
+            const r = this.radius;
+            ctx.beginPath();
+            ctx.moveTo(x, y + r * 0.3);
+            ctx.bezierCurveTo(x - r, y - r * 0.5, x - r * 1.5, y + r * 0.3, x, y + r * 0.8);
+            ctx.bezierCurveTo(x + r * 1.5, y + r * 0.3, x + r, y - r * 0.5, x, y + r * 0.3);
+            ctx.fill();
         } else {
             ctx.fillStyle = this.color;
             ctx.ellipse(this.x, this.y, this.radius * 0.8, this.radius, 0, 0, Math.PI * 2);
@@ -143,7 +165,7 @@ class Balloon {
         ctx.ellipse(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.2, this.radius * 0.3, 0.4, 0, Math.PI * 2);
         ctx.fill();
 
-        if (this.type === 'GOLD' || this.type === 'RAINBOW') {
+        if (this.type === 'GOLD' || this.type === 'RAINBOW' || this.type === 'SPARKLE') {
             ctx.strokeStyle = 'white';
             ctx.lineWidth = 2;
             ctx.stroke();
