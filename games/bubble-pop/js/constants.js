@@ -75,4 +75,5 @@ const ACCESSORIES = [
     { name: 'Cosmic Cape', emoji: '🌌', cost: 5000, effect: 'frenzy_chance' },
     { name: 'Rainbow Tutu', emoji: '👗', cost: 7000, effect: 'rainbow_bonus' },
     { name: 'Magic Bubble Wand', emoji: '🪄', cost: 9000, effect: 'score_boost' },
+    { name: 'Heart Glasses', emoji: '❤️🕶️', cost: 12000, effect: 'heart_bonus' },
 ];

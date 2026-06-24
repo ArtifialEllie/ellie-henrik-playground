@@ -1620,7 +1620,11 @@ function handlePop(e) {
                 }
             } else if (b.type === 'heart') {
                 playPopSound();
-                const heartBonus = 50;
+                let heartBonus = 50;
+                if (currentAccessory === '❤️🕶️') {
+                    heartBonus *= 2;
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'LOVE VISION! ❤️✨', '#ff4081'));
+                }
                 score += heartBonus;
                 pet.gainFriendship(5);
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
@@ -1680,7 +1684,11 @@ function handlePop(e) {
                 createPopEffect(b.x, b.y, 'rainbow');
             } else if (b.type === 'heart') {
                 playPopSound();
-                const heartBonus = 50;
+                let heartBonus = 50;
+                if (currentAccessory === '❤️🕶️') {
+                    heartBonus *= 2;
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'LOVE VISION! ❤️✨', '#ff4081'));
+                }
                 score += heartBonus;
                 pet.gainFriendship(5);
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
@@ -1772,7 +1780,11 @@ function handlePop(e) {
                 }, 7000);
             } else if (b.type === 'heart') {
                 playPopSound();
-                const heartBonus = 50;
+                let heartBonus = 50;
+                if (currentAccessory === '❤️🕶️') {
+                    heartBonus *= 2;
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'LOVE VISION! ❤️✨', '#ff4081'));
+                }
                 score += heartBonus;
                 pet.gainFriendship(5);
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
@@ -1998,7 +2010,11 @@ function handlePop(e) {
                 }
             } else if (b.type === 'heart') {
                 playPopSound();
-                const heartBonus = 50;
+                let heartBonus = 50;
+                if (currentAccessory === '❤️🕶️') {
+                    heartBonus *= 2;
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'LOVE VISION! ❤️✨', '#ff4081'));
+                }
                 score += heartBonus;
                 pet.gainFriendship(5);
                 floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
