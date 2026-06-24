@@ -10,13 +10,30 @@ let glitter = 20; // Start with some glitter!
 let flowers = 0;
 let level = 1;
 let glitterPerClick = 1;
+let gps = 0; // Glitter per second (passive income)
 
 const flowerEmojis = ['🌸', '🌼', '🌻', '🌹', '🌷', '🌺', '🍀', '🍄'];
+
+const upgrades = {
+    butterfly: { cost: 50, power: 1, elementId: 'upgrade-butterfly', label: '🦋 Glitter-sommerfugl' },
+    can: { cost: 200, power: 5, elementId: 'upgrade-can', label: '🚿 Magisk Vannkanne' },
+    soil: { cost: 1000, power: 25, elementId: 'upgrade-soil', label: '🌈 Regnbue-jord' }
+};
 
 function updateUI() {
     glitterCountEl.textContent = glitter;
     flowerCountEl.textContent = flowers;
     levelCountEl.textContent = level;
+    document.getElementById('gps').textContent = gps;
+    
+    // Update upgrade buttons availability
+    for (const key in upgrades) {
+        const up = upgrades[key];
+        const btn = document.getElementById(up.elementId);
+        if (btn) {
+            btn.disabled = glitter < up.cost;
+        }
+    }
 }
 
 function createGlitterParticle(x, y) {
@@ -100,8 +117,41 @@ function levelUp() {
     updateUI();
 }
 
+// Handle upgrades
+function setupUpgrades() {
+    for (const key in upgrades) {
+        const up = upgrades[key];
+        const btn = document.getElementById(up.elementId);
+        if (btn) {
+            btn.onclick = () => {
+                if (glitter >= up.cost) {
+                    glitter -= up.cost;
+                    gps += up.power;
+                    updateUI();
+                    messageEl.textContent = `Du kjøpte ${up.label}! Nå får du mer glitter automatisk! ✨`;
+                    
+                    // Visual effect
+                    const rect = btn.getBoundingClientRect();
+                    for(let i=0; i<10; i++) {
+                        createGlitterParticle(rect.left + rect.width/2, rect.top + rect.height/2);
+                    }
+                }
+            };
+        }
+    }
+}
+
+// Passive income loop
+setInterval(() => {
+    if (gps > 0) {
+        glitter += gps;
+        updateUI();
+    }
+}, 1000);
+
 plantBtn.addEventListener('click', plantFlower);
 collectBtn.addEventListener('click', collectGlitter);
 
 // Initialize
+setupUpgrades();
 updateUI();

@@ -147,3 +147,33 @@ button:active {
     background: #ffb7ce;
     color: white;
 }
+
+#upgrades {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    border: 2px dashed #ffb7ce;
+}
+
+#upgrade-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.upgrade-btn {
+    font-size: 0.9rem !important;
+    padding: 8px 16px !important;
+    background: #e1bee7 !important;
+    box-shadow: 0 3px 0 #ba68c8 !important;
+}
+
+.upgrade-btn:disabled {
+    background: #ddd !important;
+    box-shadow: 0 3px 0 #bbb !important;
+    color: #888 !important;
+    cursor: not-allowed;
+}
+
