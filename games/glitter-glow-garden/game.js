@@ -51,6 +51,56 @@ function createGlitterParticle(x, y) {
     setTimeout(() => particle.remove(), 1000);
 }
 
+function spawnGoldenBee() {
+    const bee = document.createElement('div');
+    bee.className = 'golden-bee';
+    bee.textContent = '🐝';
+    gardenArea.appendChild(bee);
+
+    bee.onclick = (e) => {
+        const bonus = level * 50;
+        glitter += bonus;
+        messageEl.textContent = `OMG! Du fanget den gylne bien! 🐝 Du fikk ${bonus} glitter-støv! ✨`;
+        
+        // Burst of glitter
+        for(let i=0; i<20; i++) {
+            createGlitterParticle(e.clientX, e.clientY);
+        }
+        
+        updateUI();
+        bee.remove();
+    };
+
+    // Bee flies away if not clicked after 8 seconds
+    setTimeout(() => {
+        if (bee.parentNode) {
+            bee.remove();
+        }
+    }, 8000);
+}
+
+function triggerRainbowRain() {
+    messageEl.textContent = "Se! Det regner regnbue-glitter! 🌈✨";
+    const colors = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff'];
+    
+    for(let i=0; i<30; i++) {
+        setTimeout(() => {
+            const drop = document.createElement('div');
+            drop.className = 'rainbow-drop';
+            drop.style.left = Math.random() * gardenArea.clientWidth + 'px';
+            drop.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            gardenArea.appendChild(drop);
+            
+            setTimeout(() => drop.remove(), 2000);
+        }, i * 100);
+    }
+
+    // Bonus glitter for everyone!
+    const rainBonus = level * 20;
+    glitter += rainBonus;
+    updateUI();
+}
+
 function plantFlower() {
     if (glitter < 10) {
         messageEl.textContent = "Du trenger mer glitter-støv for å plante! ✨";
@@ -156,6 +206,14 @@ setInterval(() => {
     if (gps > 0) {
         glitter += gps;
         updateUI();
+    }
+    
+    // Random Events!
+    if (Math.random() < 0.05) { // 5% chance every second
+        spawnGoldenBee();
+    }
+    if (Math.random() < 0.02) { // 2% chance every second
+        triggerRainbowRain();
     }
 }, 1000);
 
