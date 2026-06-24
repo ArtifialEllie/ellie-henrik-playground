@@ -1,0 +1,129 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: radial-gradient(circle, #1a0033 0%, #000022 100%);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    text-align: center;
+    pointer-events: none;
+    z-index: 10;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+}
+
+#ui h1 {
+    margin: 0;
+    font-size: 3rem;
+    color: #ffccff;
+    text-shadow: 0 0 15px #ff00ff;
+}
+
+#ui p {
+    font-size: 1.2rem;
+    margin: 5px 0;
+}
+
+#score-board, #timer {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+#score-board {
+    margin-right: 20px;
+    color: #ffccff;
+}
+
+#timer {
+    color: #ccffff;
+}
+
+#gameCanvas {
+    display: block;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    transition: opacity 0.5s ease;
+}
+
+#overlay-content {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    border-radius: 30px;
+    border: 4px solid #ff00ff;
+    box-shadow: 0 0 30px #ff00ff, inset 0 0 20px #ff00ff;
+    max-width: 80%;
+}
+
+#overlay-title {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #ffccff;
+    text-shadow: 0 0 15px #ff00ff;
+}
+
+#overlay-text {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    color: #eee;
+}
+
+#start-button {
+    padding: 15px 40px;
+    font-size: 1.8rem;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(255, 0, 255, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#start-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #ff00ff;
+}
+
+#start-button:active {
+    transform: scale(0.95);
+}
