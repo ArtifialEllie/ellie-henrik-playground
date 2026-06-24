@@ -2066,6 +2066,7 @@ function handlePop(e) {
     if (Math.random() < 0.003) triggerRainbowBridge();
     if (Math.random() < 0.002) triggerGlitterStorm();
     if (Math.random() < 0.003) triggerRibbon();
+    if (Math.random() < 0.002) triggerCosmicBloom();
     if (Math.random() < 0.002) triggerStarfall();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
