@@ -1520,16 +1520,17 @@ function handlePop(e) {
             if (b.type === 'mystery-box') {
                 playPopSound(true, false);
                 const mysteryOutcomes = [
-                    { text: 'JACKPOT! 💰', action: () => { totalGold += 1000; localStorage.setItem('bubblePopTotalGold', totalGold); totalGoldEl.innerText = totalGold; }, bonus: 2000, color: 'gold' },
-                    { text: 'TIME WARP! ⏰', action: () => { timeLeft += 20; }, bonus: 500, color: '#81d4fa' },
-                    { text: 'PARTY TIME! 🥳', action: () => triggerParty(), bonus: 1000, color: '#ff4081' },
-                    { text: 'GOLDEN RAIN! ✨', action: () => triggerGoldenRain(), bonus: 1000, color: '#ffd700' },
-                    { text: 'DISCO FEVER! 💃', action: () => triggerDiscoParty(), bonus: 1500, color: '#ff00ff' },
-                    { text: 'MELODY MODE! 🎵', action: () => triggerMelodyMode(), bonus: 1200, color: '#ffeb3b' },
-                    { text: 'OOPS! PRANKED! 😜', action: () => { score = Math.max(0, score - 500); }, bonus: -500, color: '#9e9e9e' },
+                    { text: 'JACKPOT! 💰', action: () => { totalGold += 1000; localStorage.setItem('bubblePopTotalGold', totalGold); totalGoldEl.innerText = totalGold; }, bonus: 2000, color: 'gold', energy: 20 },
+                    { text: 'TIME WARP! ⏰', action: () => { timeLeft += 20; }, bonus: 500, color: '#81d4fa', energy: 10 },
+                    { text: 'PARTY TIME! 🥳', action: () => triggerParty(), bonus: 1000, color: '#ff4081', energy: 30 },
+                    { text: 'GOLDEN RAIN! ✨', action: () => triggerGoldenRain(), bonus: 1000, color: '#ffd700', energy: 20 },
+                    { text: 'DISCO FEVER! 💃', action: () => triggerDiscoParty(), bonus: 1500, color: '#ff00ff', energy: 50 },
+                    { text: 'MELODY MODE! 🎵', action: () => triggerMelodyMode(), bonus: 1200, color: '#ffeb3b', energy: 25 },
+                    { text: 'OOPS! PRANKED! 😜', action: () => { score = Math.max(0, score - 500); }, bonus: -500, color: '#9e9e9e', energy: -20 },
                 ];
                 const outcome = mysteryOutcomes[Math.floor(Math.random() * mysteryOutcomes.length)];
                 score += outcome.bonus;
+                if (outcome.energy) pet.gainEnergy(outcome.energy);
                 floatingTexts.push(new FloatingText(b.x, b.y, `MYSTERY BOX: ${outcome.text}`, outcome.color));
                 outcome.action();
                 createBigExplosion(b.x, b.y);

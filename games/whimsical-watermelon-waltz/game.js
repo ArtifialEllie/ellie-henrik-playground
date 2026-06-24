@@ -10,6 +10,7 @@ const finalScoreElement = document.getElementById('final-score');
 
 let score = 0;
 let combo = 0;
+let lives = 3;
 let gameActive = false;
 let slices = [];
 let particles = [];
@@ -27,13 +28,14 @@ resize();
 
 class Slice {
     constructor() {
+        this.type = Math.random() < 0.1 ? 'golden' : 'normal';
         this.radius = 30 + Math.random() * 20;
         this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
         this.y = -this.radius;
         this.speed = gameSpeed + Math.random() * 2;
         this.rotation = Math.random() * Math.PI * 2;
         this.rotationSpeed = (Math.random() - 0.5) * 0.05;
-        this.color = '#ff4d6d'; // Watermelon red
+        this.color = this.type === 'golden' ? '#ffd700' : '#ff4d6d';
     }
 
     update() {
@@ -56,11 +58,11 @@ class Slice {
         ctx.beginPath();
         ctx.arc(0, 0, this.radius, 0, Math.PI, false);
         ctx.lineWidth = 5;
-        ctx.strokeStyle = '#2ecc71'; // Green rind
+        ctx.strokeStyle = this.type === 'golden' ? '#fff' : '#2ecc71';
         ctx.stroke();
 
         // Seeds
-        ctx.fillStyle = '#333';
+        ctx.fillStyle = this.type === 'golden' ? '#b8860b' : '#333';
         for (let i = 0; i < 5; i++) {
             const seedX = -this.radius * 0.6 + Math.random() * this.radius * 1.2;
             const seedY = -Math.random() * this.radius * 0.5;
@@ -103,7 +105,7 @@ class Particle {
 }
 
 function createParticles(x, y, color) {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
         particles.push(new Particle(x, y, color));
     }
 }
@@ -113,7 +115,6 @@ function spawnSlice() {
     if (now - lastSliceTime > spawnRate) {
         slices.push(new Slice());
         lastSliceTime = now;
-        // Gradually increase difficulty
         spawnRate = Math.max(600, spawnRate - 10);
         gameSpeed = Math.min(6, gameSpeed + 0.01);
     }
@@ -135,86 +136,22 @@ function handleInput(e) {
         const s = slices[i];
         const dist = Math.hypot(x - s.x, y - s.y);
         if (dist < s.radius + 10) {
-            // Hit!
-            score += 10 * (combo + 1);
+            if (s.type === 'golden') {
+                score += 50 * (combo + 1);
+                createParticles(s.x, s.y, '#ffd700');
+            } else {
+                score += 10 * (combo + 1);
+                createParticles(s.x, s.y, '#ff4d6d');
+            }
             combo++;
-            createParticles(s.x, s.y, '#ff4d6d');
             slices.splice(i, 1);
             updateUI();
             return;
         }
     }
     
-    // Miss!
     combo = 0;
     updateUI();
-}
-
-function updateUI() {
-    scoreElement.innerText = `Score: ${score}`;
-    comboElement.innerText = `Combo: x${combo + 1}`;
-}
-
-function gameLoop() {
-    if (!gameActive) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    spawnSlice();
-
-    slices.forEach((s, index) => {
-        s.update();
-        s.draw();
-        if (s.y > canvas.height + s.radius) {
-            slices.splice(index, 1);
-            combo = 0;
-            updateUI();
-        }
-    });
-
-    particles.forEach((p, index) => {
-        p.update();
-        p.draw();
-        if (p.life <= 0) {
-            particles.splice(index, 1);
-        }
-    });
-
-    requestAnimationFrame(gameLoop);
-}
-
-function startGame() {
-    score = 0;
-    combo = 0;
-    slices = [];
-    particles = [];
-    spawnRate = 1500;
-    gameSpeed = 2;
-    gameActive = true;
-    
-    updateUI();
-    startScreen.classList.add('hidden');
-    gameOverScreen.classList.add('hidden');
-    
-    gameLoop();
-}
-
-function gameOver() {
-    gameActive = false;
-    finalScoreElement.innerText = `Your score: ${score}`;
-    gameOverScreen.classList.remove('hidden');
-}
-
-let lives = 3;
-
-function handleMiss() {
-    combo = 0;
-    lives--;
-    updateUI();
-    createParticles(canvas.width / 2, canvas.height / 2, '#fff');
-    if (lives <= 0) {
-        gameOver();
-    }
 }
 
 function updateUI() {
@@ -239,15 +176,49 @@ function gameLoop() {
         }
     }
 
-    particles.forEach((p, index) => {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
         p.update();
         p.draw();
         if (p.life <= 0) {
-            particles.splice(index, 1);
+            particles.splice(i, 1);
         }
-    });
+    }
 
     requestAnimationFrame(gameLoop);
+}
+
+function startGame() {
+    score = 0;
+    combo = 0;
+    lives = 3;
+    slices = [];
+    particles = [];
+    spawnRate = 1500;
+    gameSpeed = 2;
+    gameActive = true;
+    
+    updateUI();
+    startScreen.classList.add('hidden');
+    gameOverScreen.classList.add('hidden');
+    
+    gameLoop();
+}
+
+function gameOver() {
+    gameActive = false;
+    finalScoreElement.innerText = `Your score: ${score}`;
+    gameOverScreen.classList.remove('hidden');
+}
+
+function handleMiss() {
+    combo = 0;
+    lives--;
+    updateUI();
+    createParticles(canvas.width / 2, canvas.height / 2, '#fff');
+    if (lives <= 0) {
+        gameOver();
+    }
 }
 
 startButton.addEventListener('click', startGame);
