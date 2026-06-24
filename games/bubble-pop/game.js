@@ -2064,6 +2064,7 @@ function handlePop(e) {
     if (Math.random() < 0.005) triggerWindGust();
     if (Math.random() < 0.002) triggerRainbowCascade();
     if (Math.random() < 0.003) triggerRainbowBridge();
+    if (Math.random() < 0.002) triggerGravityFlip();
     if (Math.random() < 0.002) triggerGlitterStorm();
     if (Math.random() < 0.003) triggerRibbon();
     if (Math.random() < 0.002) triggerCosmicBloom();

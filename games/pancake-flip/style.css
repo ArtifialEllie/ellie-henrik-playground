@@ -118,3 +118,35 @@ h1 { color: var(--primary-pink); }
     0% { transform: translateY(0); opacity: 1; }
     100% { transform: translateY(-50px); opacity: 0; }
 }
+
+@keyframes rainbowBg {
+    0% { background-color: #fff9c4; }
+    20% { background-color: #ffc1e3; }
+    40% { background-color: #b3e5fc; }
+    60% { background-color: #c8e6c9; }
+    80% { background-color: #e1bee7; }
+    100% { background-color: #fff9c4; }
+}
+
+.fever-mode {
+    animation: rainbowBg 2s linear infinite;
+}
+
+#fever-text {
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: bold;
+    color: #ff4081;
+    text-shadow: 2px 2px white;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+#fever-text.show {
+    opacity: 1;
+}
