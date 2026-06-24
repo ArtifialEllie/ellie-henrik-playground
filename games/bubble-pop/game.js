@@ -826,6 +826,12 @@ class MagicalPet {
             this.shieldTimer--;
         }
 
+        // Update Energy Bar UI
+        const energyFill = document.getElementById('pet-energy-fill');
+        if (energyFill) {
+            energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
+        }
+
         // Friendship Level 5: Occasionally spawn a gold bubble!
         if (this.friendshipLevel >= 5 && Math.random() < 0.002) {
             const goldBubble = new Bubble(false);
