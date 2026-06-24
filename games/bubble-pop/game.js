@@ -242,6 +242,7 @@ let trail = [];
 let floatingTexts = [];
 let magicFlowers = [];
 let clouds = [];
+let shockwaves = [];
 let lastMouseX = canvasWidth / 2;
 let lastMouseY = canvasHeight / 2;
 let petClones = [];
@@ -306,6 +307,11 @@ class Bubble {
         } else if (rand > 0.777) {
             this.type = 'magic-star';
             this.color = '#ffff00';
+        } else if (rand > 0.767) {
+            this.type = 'sparkle-blast';
+            this.color = '#00ffff';
+            this.radius = 35;
+            this.hits = 1;
         } else if (rand > 0.727) {
             this.type = 'lucky-star';
             this.color = '#ffeb3b';
@@ -1487,12 +1493,16 @@ function handlePop(e) {
                 createPopEffect(b.x, b.y, b.color);
                 playSound(300, 'sine', 0.1);
                 floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
-                continue; 
-            }
-            createPopEffect(b.x, b.y, b.color);
-            
-            // Pass the bubble's color to the sound function for musical pops! 🎵
-            pet.gainEnergy(1);
+            continue; 
+        }
+        createPopEffect(b.x, b.y, b.color);
+        if (b.type === 'sparkle-blast') {
+            triggerShockwave(b.x, b.y, b.color);
+            floatingTexts.push(new FloatingText(b.x, b.y, 'SPARKLE BLAST! ✨', b.color));
+        }
+        
+        // Pass the bubble's color to the sound function for a more musical experience! 🎵
+        pet.gainEnergy(1);
             const popColor = b.color;
             bubbles.splice(i, 1); // Remove bubble first so it's not found in playPopSound's find()
             playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
@@ -2084,6 +2094,48 @@ function createPopEffect(x, y, color) {
     }
 }
 
+class Shockwave {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = 0;
+        this.maxRadius = 150;
+        this.alpha = 1;
+        this.done = false;
+    }
+    update() {
+        this.radius += 10;
+        this.alpha -= 0.03;
+        if (this.alpha <= 0 || this.radius >= this.maxRadius) {
+            this.done = true;
+        }
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = this.color;
+        ctx.globalAlpha = this.alpha;
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+        ctx.closePath();
+    }
+}
+
+function triggerShockwave(x, y, color = '#00ffff') {
+    shockwaves.push(new Shockwave(x, y, color));
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        if (Math.hypot(x - b.x, y - b.y) < 150) {
+            createPopEffect(b.x, b.y, b.color);
+            playPopSound(b.type === 'gold', b.type === 'stinky', b.color);
+            bubbles.splice(i, 1);
+            score += 10; // Small bonus for shockwave pop
+        }
+    }
+}
+
 function playSuperPopSound() {
     playSound(200, 'sine', 0.5, 0.2);
     playSound(100, 'sine', 0.5, 0.2);
@@ -2219,6 +2271,12 @@ function update() {
         if (particles[i].life <= 0) {
             particles.splice(i, 1);
         }
+    }
+
+    for (let i = shockwaves.length - 1; i >= 0; i--) {
+        shockwaves[i].update();
+        shockwaves[i].draw();
+        if (shockwaves[i].done) shockwaves.splice(i, 1);
     }
 
     for (let i = floatingTexts.length - 1; i >= 0; i--) {
