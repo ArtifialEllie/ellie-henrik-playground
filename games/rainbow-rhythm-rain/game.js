@@ -179,6 +179,22 @@ function handleInput(key) {
     updateUI();
 }
 
+function triggerComboPop() {
+    const comboEl = document.getElementById('combo');
+    comboEl.classList.add('combo-pop');
+    setTimeout(() => comboEl.classList.remove('combo-pop'), 100);
+}
+
+function updateUI() {
+    scoreElement.innerText = `Score: ${score}`;
+    comboElement.innerText = `Combo: ${combo}`;
+    feverBar.style.width = `${fever}%`;
+
+    if (combo > 0 && combo % 10 === 0) {
+        triggerComboPop();
+    }
+}
+
 const sparkles = [];
 const backgroundRain = [];
 
@@ -251,11 +267,6 @@ function showRating(text, color) {
     setTimeout(() => ratingDisplay.classList.remove('show'), 300);
 }
 
-function updateUI() {
-    scoreElement.innerText = `Score: ${score}`;
-    comboElement.innerText = `Combo: ${combo}`;
-    feverBar.style.width = `${fever}%`;
-}
 
 function activateFever() {
     feverActive = true;
