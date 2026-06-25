@@ -49,7 +49,8 @@ let currentAccessory = localStorage.getItem('bubblePopAccessory') || '';
 
 highscoreEl.innerText = highscore;
 totalGoldEl.innerText = totalGold;
-const colors = COLORS;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
 
 // Quests System
 let currentQuest = 0;
@@ -1549,19 +1550,20 @@ function handlePop(e) {
                     floatingTexts.push(new FloatingText(b.x, b.y, 'BOSS DAMAGE! -10', 'white'));
                 }
                 if (b.hits > 1) {
-                b.hits--;
-               createPopEffect(b.x, b.y, b.color);
-               playSound(300, 'sine', 0.1);
-               floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
-                continue; 
-               }
-        }
-        createPopEffect(b.x, b.y, b.color);
-        if (b.type === 'sparkle-blast') {
-            triggerShockwave(b.x, b.y, b.color);
-            floatingTexts.push(new FloatingText(b.x, b.y, 'SPARKLE BLAST! ✨', b.color));
-        }
-        
+                    b.hits--;
+                    createPopEffect(b.x, b.y, b.color);
+                    playSound(300, 'sine', 0.1);
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
+                    continue; 
+                } else {
+                    createPopEffect(b.x, b.y, b.color);
+                    totalPops++;
+                    updateQuest();
+                    if (b.type === 'sparkle-blast') {
+                        triggerShockwave(b.x, b.y, b.color);
+                        floatingTexts.push(new FloatingText(b.x, b.y, 'SPARKLE BLAST! ✨', b.color));
+                    }
+
         // Pass the bubble's color to the sound function for a more musical experience! 🎵
         pet.gainEnergy(1);
             const popColor = b.color;
