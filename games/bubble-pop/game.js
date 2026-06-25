@@ -244,6 +244,7 @@ let trail = [];
 let floatingTexts = [];
 let magicFlowers = [];
 let clouds = [];
+let singularities = [];
 let shockwaves = [];
 let lastMouseX = canvasWidth / 2;
 let lastMouseY = canvasHeight / 2;
@@ -267,12 +268,17 @@ class Bubble {
         
        this.type = 'normal';
        const rand = Math.random();
-      if (rand > 0.999) {
-          this.type = 'rainbow-vortex';
-          this.color = '#ff00ff';
-          this.radius = 45;
-          this.hits = 1;
-      } else if (rand > 0.9985) {
+       if (rand > 0.9995) {
+           this.type = 'cosmic-singularity';
+           this.color = '#000033';
+           this.radius = 30;
+           this.hits = 1;
+       } else if (rand > 0.999) {
+           this.type = 'rainbow-vortex';
+           this.color = '#ff00ff';
+           this.radius = 45;
+           this.hits = 1;
+       } else if (rand > 0.9985) {
           this.type = 'prism';
           this.color = '#e0f7fa';
           this.radius = 30;
@@ -1650,8 +1656,14 @@ function handlePop(e) {
                     special.speed = Math.random() * 2 + 1;
                     bubbles.push(special);
                 }
-               triggerFrenzy();
-           } else if (b.type === 'shimmer-shell') {
+            triggerFrenzy();
+        } else if (b.type === 'cosmic-singularity') {
+            playPopSound(true, false);
+            floatingTexts.push(new FloatingText(b.x, b.y, 'COSMIC SINGULARITY! 🌌🌀', 'indigo'));
+            singularities.push(new Singularity(b.x, b.y));
+            createPopEffect(b.x, b.y, 'indigo');
+            score += 300;
+        } else if (b.type === 'shimmer-shell') {
                playPopSound(true, false);
             } else if (b.type === 'cosmic-candy') {
                 playPopSound(true, false);
@@ -2224,6 +2236,50 @@ function createBigExplosion(x, y) {
     }
 }
 
+class Singularity {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 0;
+        this.maxRadius = 150;
+        this.life = 120;
+        this.done = false;
+    }
+    update() {
+        this.life--;
+        this.radius += 1.25;
+        if (this.life <= 0) {
+            this.done = true;
+            this.explode();
+        }
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(100, 0, 255, 0.5)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = 'black';
+        ctx.fill();
+        ctx.closePath();
+    }
+    explode() {
+        bubbles.forEach(b => {
+            const dist = Math.hypot(this.x - b.x, this.y - b.y);
+            if (dist < this.maxRadius) {
+                createPopEffect(b.x, b.y, b.color);
+                score += 10;
+                b.hits = 0;
+            }
+        });
+        createBigExplosion(this.x, this.y);
+        playSound(100, 'sine', 0.5, 0.4);
+    }
+}
+
 class Cloud {
     constructor() {
         this.reset();
@@ -2311,8 +2367,24 @@ function update() {
     petClones.forEach(clone => {
         clone.update(lastMouseX, lastMouseY);
         clone.draw();
-        if (Math.random() < 0.02) clone.tryAutoPop(); // Clones pop occasionally
+        if (Math.random() < 0.02) clone.tryAutoPop();
     });
+
+    for (let i = singularities.length - 1; i >= 0; i--) {
+        const s = singularities[i];
+        s.update();
+        s.draw();
+        bubbles.forEach(b => {
+            const dx = s.x - b.x;
+            const dy = s.y - b.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < s.maxRadius * 2) {
+                b.vx += dx / dist * 0.5;
+                b.vy += dy / dist * 0.5;
+            }
+        });
+        if (s.done) singularities.splice(i, 1);
+    }
 
  
     for (let i = trail.length - 1; i >= 0; i--) {
