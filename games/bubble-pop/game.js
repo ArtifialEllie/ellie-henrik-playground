@@ -525,7 +525,8 @@ class Bubble {
             ctx.shadowBlur = 20;
             ctx.shadowColor = 'white';
             ctx.font = `${currentRadius}px Arial`;
-            ctx.stroke();
+            ctx.textAlign = 'center';
+            ctx.fillText('✨', drawX, drawY + currentRadius/3);
         }
         if (this.type === 'golden-ticket') {
             ctx.font = `${currentRadius}px Arial`;
