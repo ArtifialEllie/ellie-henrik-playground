@@ -8,6 +8,7 @@ const overlayText = document.getElementById('overlay-text');
 const startButton = document.getElementById('start-button');
 const powerUpFill = document.getElementById('power-up-fill');
 const powerUpText = document.getElementById('power-up-text');
+const livesElement = document.getElementById('lives');
 
 let score = 0;
 let highScore = localStorage.getItem('cosmicCandyHighScore') || 0;
@@ -20,6 +21,7 @@ let candies = [];
 let particles = [];
 let stars = [];
 let powerUpEnergy = 0;
+let lives = 3;
 let gameSpeed = 1;
 let spawnRate = 1500;
 let lastSpawnTime = 0;
@@ -186,6 +188,13 @@ function handleCollisions() {
             }
         } else if (c.y > canvas.height + c.radius) {
             // Candy missed
+            if (c.type.label !== '🍩') {
+                lives--;
+                updateLivesDisplay();
+                if (lives <= 0) {
+                    gameOver();
+                }
+            }
             combo = 0;
             comboTimer = 0;
             const comboDisplay = document.getElementById('combo-display');
@@ -194,7 +203,11 @@ function handleCollisions() {
             }
             candies.splice(i, 1);
         }
+        }
     }
+
+function updateLivesDisplay() {
+    livesElement.innerText = '❤️'.repeat(Math.max(0, lives));
 }
 
 function triggerMagicBurst() {
@@ -301,12 +314,14 @@ function updateCombo() {
 function startGame() {
     gameActive = true;
     score = 0;
+    lives = 3;
     powerUpEnergy = 0;
     gameSpeed = 1;
     spawnRate = 1500;
     candies = [];
     particles = [];
     scoreElement.innerText = '0';
+    updateLivesDisplay();
     overlay.classList.add('hidden');
     gameLoop();
 }

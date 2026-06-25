@@ -14,10 +14,10 @@ const canvas = document.getElementById('gameCanvas');
         let score = 0;
         let combo = 0;
         let highscore = localStorage.getItem('pancakeFlipHighscore') || 0;
-        let gameActive = true;
-    let canvasWidth, canvasHeight;
-    let shakeAmount = 0;
-    let currentWind = 0;
+        let gameActive = false;
+        let canvasWidth, canvasHeight;
+        let shakeAmount = 0;
+        let currentWind = 0;
     let scoreMult = 1;
     let scoreMultTimer = 0;
     let slideSpeedMult = 1;
@@ -486,3 +486,10 @@ const canvas = document.getElementById('gameCanvas');
         initStack();
         update();
 
+        function startGame() {
+            document.getElementById('how-to-play').style.display = 'none';
+            gameActive = true;
+            resumeAudio();
+        }
+
+        window.addEventListener('mousedown', flipPancake);
