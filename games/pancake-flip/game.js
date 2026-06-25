@@ -18,6 +18,10 @@ const canvas = document.getElementById('gameCanvas');
     let canvasWidth, canvasHeight;
     let shakeAmount = 0;
     let currentWind = 0;
+    let scoreMult = 1;
+    let scoreMultTimer = 0;
+    let slideSpeedMult = 1;
+    let slideSpeedMultTimer = 0;
         
         highscoreEl.innerText = highscore;
 
@@ -201,6 +205,10 @@ const canvas = document.getElementById('gameCanvas');
                 colorSet = pancakeColors.glitter;
                 specialType = 'glitter';
                 isSpecial = true;
+            } else if (rand > 0.95) {
+                colorSet = ['#ff00ff', '#ff00ff']; // Neon Purple for Power-up
+                specialType = 'powerup';
+                isSpecial = true;
             } else if (rand > 0.94) {
                 colorSet = pancakeColors.gold;
                 specialType = 'gold';
@@ -279,7 +287,7 @@ const canvas = document.getElementById('gameCanvas');
                     if (Math.abs(centerDiff) < 10) {
                         showPerfect();
                         combo++;
-                        score += 2;
+                        score += Math.round(2 * scoreMult);
                         showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
                         playSound(660, 'sine', 0.1);
                         if (combo > 1) {
@@ -326,9 +334,20 @@ const canvas = document.getElementById('gameCanvas');
                             showFloatingText("GLITTER! ✨ Magic Balance!", activePancake.x + activePancake.width/2, activePancake.y - 30);
                             playSound(1000, 'sine', 0.1);
                             for(let i=0; i<20; i++) particles.push(new Particle(activePancake.x + activePancake.width/2, activePancake.y, '#ffffff'));
+                        } else if (activePancake.specialType === 'powerup') {
+                            const powerUpType = Math.random() < 0.5 ? 'SCORE' : 'SPEED';
+                            if (powerUpType === 'SCORE') {
+                                scoreMult = 3;
+                                scoreMultTimer = 300;
+                                showFloatingText("SCORE BOOST! x3 🚀", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            } else {
+                                slideSpeedMult = 0.5;
+                                slideSpeedMultTimer = 300;
+                                showFloatingText("SLOW-MO! ⏳ Stability!", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            }
+                            playSound(1200, 'sine', 0.2);
                         }
                     }
-
                     activePancake.targetScaleY = 0.7;
                     setTimeout(() => activePancake.targetScaleY = 1, 100);
         
@@ -399,11 +418,23 @@ const canvas = document.getElementById('gameCanvas');
         }
 
         function update() {
-            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-            slideSpeed = 3 + (score * 0.1); // Increase speed as score goes up
-            // Wind logic
-            if (windChangeTimer <= 0) {
+        slideSpeed = 3 + (score * 0.1); // Increase speed as score goes up
+
+        // Handle timers for power-ups
+        if (scoreMultTimer > 0) {
+            scoreMultTimer--;
+            if (scoreMultTimer <= 0) scoreMult = 1;
+        }
+        if (slideSpeedMultTimer > 0) {
+            slideSpeedMultTimer--;
+            if (slideSpeedMultTimer <= 0) slideSpeedMult = 1;
+        }
+        slideSpeed *= slideSpeedMult;
+
+        // Wind logic
+        if (windChangeTimer <= 0) {
                 currentWind = (Math.random() - 0.5) * 1.5;
                 windChangeTimer = 120 + Math.random() * 120;
             }
