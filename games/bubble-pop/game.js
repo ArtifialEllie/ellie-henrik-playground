@@ -273,11 +273,16 @@ class Bubble {
           this.radius = 45;
           this.hits = 1;
       } else if (rand > 0.9985) {
+          this.type = 'prism';
+          this.color = '#e0f7fa';
+          this.radius = 30;
+          this.hits = 1;
+      } else if (rand > 0.998) {
           this.type = 'cosmic-candy';
           this.color = '#ff69b4';
           this.radius = 30;
           this.hits = 1;
-      } else if (rand > 0.998) {
+      } else if (rand > 0.997) {
           this.type = 'ellie-wish';
            this.color = '#ff00ff';
            this.radius = 40;
@@ -611,7 +616,12 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
            ctx.textAlign = 'center';
            ctx.fillText('🧁', drawX, drawY + currentRadius/3);
-       } else if (this.type === 'prism') {
+        } else if (this.type === 'prism') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('💎', drawX, drawY + currentRadius/3);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'white';
         } else if (this.type === 'cosmic-candy') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -1678,19 +1688,23 @@ function handlePop(e) {
                     pearl.speed = Math.random() * 2 + 1;
                     bubbles.push(pearl);
                 }
-            } else if (b.type === 'heart') {
-                playPopSound();
-                let heartBonus = 50;
-                if (currentAccessory === '❤️🕶️') {
-                    heartBonus *= 2;
-                    floatingTexts.push(new FloatingText(b.x, b.y, 'LOVE VISION! ❤️✨', '#ff4081'));
+            } else if (b.type === 'prism') {
+                playPopSound(true, false);
+                score += 200;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'PRISM POP! 💎', '#e0f7fa'));
+                createPopEffect(b.x, b.y, '#e0f7fa');
+                for (let j = 0; j < 3; j++) {
+                    const shard = new Bubble(false);
+                    shard.type = 'normal';
+                    shard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    shard.radius = 15;
+                    shard.x = b.x;
+                    shard.y = b.y;
+                    shard.vx = (Math.random() - 0.5) * 10;
+                    shard.vy = (Math.random() - 0.5) * 10 - 5;
+                    bubbles.push(shard);
                 }
-                score += heartBonus;
-                pet.gainFriendship(5);
-                floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
-                createHeartEffect(b.x, b.y);
-                magicFlowers.push(new MagicFlower(b.x, b.y));
-            } else if (b.type === 'lucky-star') {
+            } else if (b.type === 'heart') {
                 bubbles.forEach(bub => {
                     if (bub !== b) {
                         const dx = bub.x - b.x;
@@ -1742,19 +1756,23 @@ function handlePop(e) {
                 
                 triggerFrenzy();
                 createPopEffect(b.x, b.y, 'rainbow');
-            } else if (b.type === 'heart') {
-                playPopSound();
-                let heartBonus = 50;
-                if (currentAccessory === '❤️🕶️') {
-                    heartBonus *= 2;
-                    floatingTexts.push(new FloatingText(b.x, b.y, 'LOVE VISION! ❤️✨', '#ff4081'));
+            } else if (b.type === 'prism') {
+                playPopSound(true, false);
+                score += 200;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'PRISM POP! 💎', '#e0f7fa'));
+                createPopEffect(b.x, b.y, '#e0f7fa');
+                for (let j = 0; j < 3; j++) {
+                    const shard = new Bubble(false);
+                    shard.type = 'normal';
+                    shard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    shard.radius = 15;
+                    shard.x = b.x;
+                    shard.y = b.y;
+                    shard.vx = (Math.random() - 0.5) * 10;
+                    shard.vy = (Math.random() - 0.5) * 10 - 5;
+                    bubbles.push(shard);
                 }
-                score += heartBonus;
-                pet.gainFriendship(5);
-                floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
-                createHeartEffect(b.x, b.y);
-                magicFlowers.push(new MagicFlower(b.x, b.y));
-            } else if (b.type === 'lucky-star') {
+            } else if (b.type === 'heart') {
                 playPopSound(true, false);
                 const starBonus = 40;
                 score += starBonus;
@@ -1838,19 +1856,23 @@ function handlePop(e) {
                 setTimeout(() => {
                     shieldActive = false;
                 }, 7000);
-            } else if (b.type === 'heart') {
-                playPopSound();
-                let heartBonus = 50;
-                if (currentAccessory === '❤️🕶️') {
-                    heartBonus *= 2;
-                    floatingTexts.push(new FloatingText(b.x, b.y, 'LOVE VISION! ❤️✨', '#ff4081'));
+            } else if (b.type === 'prism') {
+                playPopSound(true, false);
+                score += 200;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'PRISM POP! 💎', '#e0f7fa'));
+                createPopEffect(b.x, b.y, '#e0f7fa');
+                for (let j = 0; j < 3; j++) {
+                    const shard = new Bubble(false);
+                    shard.type = 'normal';
+                    shard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    shard.radius = 15;
+                    shard.x = b.x;
+                    shard.y = b.y;
+                    shard.vx = (Math.random() - 0.5) * 10;
+                    shard.vy = (Math.random() - 0.5) * 10 - 5;
+                    bubbles.push(shard);
                 }
-                score += heartBonus;
-                pet.gainFriendship(5);
-                floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
-                createHeartEffect(b.x, b.y);
-                magicFlowers.push(new MagicFlower(b.x, b.y));
-            } else if (b.type === 'lucky-star') {
+            } else if (b.type === 'heart') {
                     mini.x = b.x + (Math.random() - 0.5) * 50;
                     mini.y = b.y + (Math.random() - 0.5) * 50;
                     mini.speed = Math.random() * 3 + 2;
@@ -2068,19 +2090,23 @@ function handlePop(e) {
                     mini.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
                     bubbles.push(mini);
                 }
-            } else if (b.type === 'heart') {
-                playPopSound();
-                let heartBonus = 50;
-                if (currentAccessory === '❤️🕶️') {
-                    heartBonus *= 2;
-                    floatingTexts.push(new FloatingText(b.x, b.y, 'LOVE VISION! ❤️✨', '#ff4081'));
+            } else if (b.type === 'prism') {
+                playPopSound(true, false);
+                score += 200;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'PRISM POP! 💎', '#e0f7fa'));
+                createPopEffect(b.x, b.y, '#e0f7fa');
+                for (let j = 0; j < 3; j++) {
+                    const shard = new Bubble(false);
+                    shard.type = 'normal';
+                    shard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    shard.radius = 15;
+                    shard.x = b.x;
+                    shard.y = b.y;
+                    shard.vx = (Math.random() - 0.5) * 10;
+                    shard.vy = (Math.random() - 0.5) * 10 - 5;
+                    bubbles.push(shard);
                 }
-                score += heartBonus;
-                pet.gainFriendship(5);
-                floatingTexts.push(new FloatingText(b.x, b.y, `+${heartBonus} LOVE! ❤️`, '#ff4081'));
-                createHeartEffect(b.x, b.y);
-                magicFlowers.push(new MagicFlower(b.x, b.y));
-            } else if (b.type === 'lucky-star') {
+            } else if (b.type === 'heart') {
                 combo++;
                 const points = (Math.ceil(60 / b.radius * 2) + (combo > 5 ? 5 : 0)) * multiplier;
                 if (currentAccessory === '🪄') {
