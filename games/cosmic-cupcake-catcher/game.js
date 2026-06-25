@@ -60,6 +60,8 @@ let nebulae = [];
 
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioCtx();
+const resumeAudio = () => { if (audioCtx.state === 'suspended') audioCtx.resume(); };
+
         function playSound(freq, type, duration) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -480,6 +482,7 @@ const audioCtx = new AudioCtx();
         document.getElementById('start-btn').addEventListener('click', () => {
             document.getElementById('start-overlay').style.display = 'none';
             gameActive = true;
+            resumeAudio();
             spawnItem();
         });
 
