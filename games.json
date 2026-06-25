@@ -1,86 +1,730 @@
 [
     {
+        "id": "aurora-dream-drift",
+        "name": "Aurora Dream Drift",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Aurora Dream Drift! ✨",
+        "path": "games/aurora-dream-drift/index.html"
+    },
+    {
+        "id": "balloon-pop-party",
+        "name": "Balloon Pop Party",
+        "emoji": "🎉🫧",
+        "description": "Bli med på et magisk eventyr i Balloon Pop Party! 🎉🫧",
+        "path": "games/balloon-pop-party/index.html"
+    },
+    {
         "id": "bokstavspill",
-        "name": "Bokstav- og Ord-eventyret",
-        "emoji": "🦄🦁",
-        "description": "Lær bokstaver og lyder med søte dyr! Perfekt for små barn. 🦄",
+        "name": "Bokstavspill",
+        "emoji": "🔤",
+        "description": "Bli med på et magisk eventyr i Bokstavspill! 🔤",
         "path": "games/bokstavspill/index.html"
     },
     {
-        "id": "star-catcher",
-        "name": "Ellie's Star Catcher",
-        "emoji": "🐱🌟",
-        "description": "Hjelp den søte katten med å fange så mange stjerner som mulig!",
-        "path": "games/star-catcher/index.html"
-    },
-    {
         "id": "bubble-pop",
-        "name": "Ellie's Bubble Pop!",
-        "emoji": "🫧✨",
-        "description": "Popp så mange magiske bobler som mulig før tiden renner ut! 🫧",
+        "name": "Bubble Pop",
+        "emoji": "🫧🫧",
+        "description": "Bli med på et magisk eventyr i Bubble Pop! 🫧🫧",
         "path": "games/bubble-pop/index.html"
     },
     {
-        "id": "pancake-flip",
-        "name": "Ellie's Pastel Pancake Flip!",
-        "emoji": "🥞🍓",
-        "description": "Stable så mange fargerike pannekaker du kan uten at tårnet velter! 🥞",
-        "path": "games/pancake-flip/index.html"
+        "id": "bubblegum-bounce-bonanza",
+        "name": "Bubblegum Bounce Bonanza",
+        "emoji": "🫧🏀",
+        "description": "Bli med på et magisk eventyr i Bubblegum Bounce Bonanza! 🫧🏀",
+        "path": "games/bubblegum-bounce-bonanza/index.html"
+    },
+    {
+        "id": "candy-cloud-catcher",
+        "name": "Candy Cloud Catcher",
+        "emoji": "🍭☁️",
+        "description": "Bli med på et magisk eventyr i Candy Cloud Catcher! 🍭☁️",
+        "path": "games/candy-cloud-catcher/index.html"
+    },
+    {
+        "id": "celestial-chord-crystals",
+        "name": "Celestial Chord Crystals",
+        "emoji": "📖",
+        "description": "Bli med på et magisk eventyr i Celestial Chord Crystals! 📖",
+        "path": "games/celestial-chord-crystals/index.html"
+    },
+    {
+        "id": "celestial-cloud-cuddle",
+        "name": "Celestial Cloud Cuddle",
+        "emoji": "☁️",
+        "description": "Bli med på et magisk eventyr i Celestial Cloud Cuddle! ☁️",
+        "path": "games/celestial-cloud-cuddle/index.html"
     },
     {
         "id": "cloud-hop",
-        "name": "Ellie's Dreamy Cloud Hop",
-        "emoji": "☁️✨",
-        "description": "Hopp oppover i de myke skyene og se hvor høyt du kan nå! ☁️",
+        "name": "Cloud Hop",
+        "emoji": "☁️",
+        "description": "Bli med på et magisk eventyr i Cloud Hop! ☁️",
         "path": "games/cloud-hop/index.html"
     },
     {
-        "id": "memory-match",
-        "name": "Ellie's Memory Match",
-        "emoji": "🧠✨",
-        "description": "Hvor god er hukommelsen din? Finn alle parene! 🧠",
-        "path": "games/memory-match/index.html"
+        "id": "cosmic-candy-carousel",
+        "name": "Cosmic Candy Carousel",
+        "emoji": "🌌🍭",
+        "description": "Bli med på et magisk eventyr i Cosmic Candy Carousel! 🌌🍭",
+        "path": "games/cosmic-candy-carousel/index.html"
     },
     {
-        "id": "pastel-pet-party",
-        "name": "Ellie's Pastel Pet Party!",
-        "emoji": "🐾💖",
-        "description": "Gi godbiter til så mange søte kjæledyr som mulig! 🐾",
-        "path": "games/pastel-pet-party/index.html"
+        "id": "cosmic-candy-catcher",
+        "name": "Cosmic Candy Catcher",
+        "emoji": "🌌🍭",
+        "description": "Bli med på et magisk eventyr i Cosmic Candy Catcher! 🌌🍭",
+        "path": "games/cosmic-candy-catcher/index.html"
     },
     {
-        "id": "pastel-plant-protector",
-        "name": "Ellie's Pastel Plant Protector!",
-        "emoji": "🌸💧",
-        "description": "Vann blomstene, men pass deg for de gretne ugressene! 🌸✨",
-        "path": "games/pastel-plant-protector/index.html"
+        "id": "cosmic-candy-cloud-catcher",
+        "name": "Cosmic Candy Cloud Catcher",
+        "emoji": "🌌🍭",
+        "description": "Bli med på et magisk eventyr i Cosmic Candy Cloud Catcher! 🌌🍭",
+        "path": "games/cosmic-candy-cloud-catcher/index.html"
     },
     {
-        "id": "pastel-pizza-party",
-        "name": "Ellie's Pastel Pizza Party!",
-        "emoji": "🍕🌸",
-        "description": "Lag magiske pizzaer ved å fange de riktige ingrediensene! 🍕✨",
-        "path": "games/pastel-pizza-party/index.html"
+        "id": "cosmic-candy-cloud-jump-3d",
+        "name": "Cosmic Candy Cloud Jump 3d",
+        "emoji": "🌌🍭",
+        "description": "Bli med på et magisk eventyr i Cosmic Candy Cloud Jump 3d! 🌌🍭",
+        "path": "games/cosmic-candy-cloud-jump-3d/index.html"
+    },
+    {
+        "id": "cosmic-candy-collector",
+        "name": "Cosmic Candy Collector",
+        "emoji": "🌌🍭",
+        "description": "Bli med på et magisk eventyr i Cosmic Candy Collector! 🌌🍭",
+        "path": "games/cosmic-candy-collector/index.html"
+    },
+    {
+        "id": "cosmic-cookie-crumble",
+        "name": "Cosmic Cookie Crumble",
+        "emoji": "🌌🍪",
+        "description": "Bli med på et magisk eventyr i Cosmic Cookie Crumble! 🌌🍪",
+        "path": "games/cosmic-cookie-crumble/index.html"
+    },
+    {
+        "id": "cosmic-crystal-collector-3d",
+        "name": "Cosmic Crystal Collector 3d",
+        "emoji": "🌌📦",
+        "description": "Bli med på et magisk eventyr i Cosmic Crystal Collector 3d! 🌌📦",
+        "path": "games/cosmic-crystal-collector-3d/index.html"
     },
     {
         "id": "cosmic-cupcake-catcher",
-        "name": "Ellie's Cosmic Cupcake Catcher",
-        "emoji": "🧁🌌",
-        "description": "Fang magiske kaker i verdensrommet, men pass deg for asteroider! 🧁✨",
+        "name": "Cosmic Cupcake Catcher",
+        "emoji": "🌌🤲",
+        "description": "Bli med på et magisk eventyr i Cosmic Cupcake Catcher! 🌌🤲",
         "path": "games/cosmic-cupcake-catcher/index.html"
     },
     {
+        "id": "cosmic-cupcake-collector",
+        "name": "Cosmic Cupcake Collector",
+        "emoji": "🌌📦",
+        "description": "Bli med på et magisk eventyr i Cosmic Cupcake Collector! 🌌📦",
+        "path": "games/cosmic-cupcake-collector/index.html"
+    },
+    {
+        "id": "cosmic-cupcake-conveyor",
+        "name": "Cosmic Cupcake Conveyor",
+        "emoji": "🌌🧁",
+        "description": "Bli med på et magisk eventyr i Cosmic Cupcake Conveyor! 🌌🧁",
+        "path": "games/cosmic-cupcake-conveyor/index.html"
+    },
+    {
+        "id": "cotton-candy-cloud-catcher",
+        "name": "Cotton Candy Cloud Catcher",
+        "emoji": "🍭☁️",
+        "description": "Bli med på et magisk eventyr i Cotton Candy Cloud Catcher! 🍭☁️",
+        "path": "games/cotton-candy-cloud-catcher/index.html"
+    },
+    {
+        "id": "crystal-cave-collector",
+        "name": "Crystal Cave Collector",
+        "emoji": "📦",
+        "description": "Bli med på et magisk eventyr i Crystal Cave Collector! 📦",
+        "path": "games/crystal-cave-collector/index.html"
+    },
+    {
+        "id": "crystal-cloud-castle-3d",
+        "name": "Crystal Cloud Castle 3d",
+        "emoji": "☁️",
+        "description": "Bli med på et magisk eventyr i Crystal Cloud Castle 3d! ☁️",
+        "path": "games/crystal-cloud-castle-3d/index.html"
+    },
+    {
+        "id": "crystal-cosmos",
+        "name": "Crystal Cosmos",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Crystal Cosmos! ✨",
+        "path": "games/crystal-cosmos/index.html"
+    },
+    {
+        "id": "cupcake-chaos",
+        "name": "Cupcake Chaos",
+        "emoji": "🧁",
+        "description": "Bli med på et magisk eventyr i Cupcake Chaos! 🧁",
+        "path": "games/cupcake-chaos/index.html"
+    },
+    {
+        "id": "dreamy-dewdrop-dash",
+        "name": "Dreamy Dewdrop Dash",
+        "emoji": "💨",
+        "description": "Bli med på et magisk eventyr i Dreamy Dewdrop Dash! 💨",
+        "path": "games/dreamy-dewdrop-dash/index.html"
+    },
+    {
+        "id": "dreamy-donut-dimension",
+        "name": "Dreamy Donut Dimension",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Dreamy Donut Dimension! ✨",
+        "path": "games/dreamy-donut-dimension/index.html"
+    },
+    {
+        "id": "dreamy-doodle-dash",
+        "name": "Dreamy Doodle Dash",
+        "emoji": "💨",
+        "description": "Bli med på et magisk eventyr i Dreamy Doodle Dash! 💨",
+        "path": "games/dreamy-doodle-dash/index.html"
+    },
+    {
+        "id": "dreamy-dust-bunny-dance",
+        "name": "Dreamy Dust Bunny Dance",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Dreamy Dust Bunny Dance! ✨",
+        "path": "games/dreamy-dust-bunny-dance/index.html"
+    },
+    {
+        "id": "floating-flower-fantasy-3d",
+        "name": "Floating Flower Fantasy 3d",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Floating Flower Fantasy 3d! ✨",
+        "path": "games/floating-flower-fantasy-3d/index.html"
+    },
+    {
+        "id": "galactic-garden-3d",
+        "name": "Galactic Garden 3d",
+        "emoji": "🌻",
+        "description": "Bli med på et magisk eventyr i Galactic Garden 3d! 🌻",
+        "path": "games/galactic-garden-3d/index.html"
+    },
+    {
+        "id": "glitter-galaxy-garden",
+        "name": "Glitter Galaxy Garden",
+        "emoji": "✨🌻",
+        "description": "Bli med på et magisk eventyr i Glitter Galaxy Garden! ✨🌻",
+        "path": "games/glitter-galaxy-garden/index.html"
+    },
+    {
+        "id": "glitter-galaxy-gnome-garden",
+        "name": "Glitter Galaxy Gnome Garden",
+        "emoji": "✨🌻",
+        "description": "Bli med på et magisk eventyr i Glitter Galaxy Gnome Garden! ✨🌻",
+        "path": "games/glitter-galaxy-gnome-garden/index.html"
+    },
+    {
+        "id": "glitter-glide-galaxy",
+        "name": "Glitter Glide Galaxy",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Glitter Glide Galaxy! ✨",
+        "path": "games/glitter-glide-galaxy/index.html"
+    },
+    {
+        "id": "glitter-globe-garden",
+        "name": "Glitter Globe Garden",
+        "emoji": "✨🌻",
+        "description": "Bli med på et magisk eventyr i Glitter Globe Garden! ✨🌻",
+        "path": "games/glitter-globe-garden/index.html"
+    },
+    {
+        "id": "glitter-glow-garden",
+        "name": "Glitter Glow Garden",
+        "emoji": "✨💡",
+        "description": "Bli med på et magisk eventyr i Glitter Glow Garden! ✨💡",
+        "path": "games/glitter-glow-garden/index.html"
+    },
+    {
+        "id": "glittering-galaxy-golf",
+        "name": "Glittering Galaxy Golf",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Glittering Galaxy Golf! ✨",
+        "path": "games/glittering-galaxy-golf/index.html"
+    },
+    {
+        "id": "glittering-galaxy-gumball",
+        "name": "Glittering Galaxy Gumball",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Glittering Galaxy Gumball! ✨",
+        "path": "games/glittering-galaxy-gumball/index.html"
+    },
+    {
+        "id": "glittery-galaxy-gardener",
+        "name": "Glittery Galaxy Gardener",
+        "emoji": "✨🌻",
+        "description": "Bli med på et magisk eventyr i Glittery Galaxy Gardener! ✨🌻",
+        "path": "games/glittery-galaxy-gardener/index.html"
+    },
+    {
+        "id": "glittery-galaxy-gourmet",
+        "name": "Glittery Galaxy Gourmet",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Glittery Galaxy Gourmet! ✨",
+        "path": "games/glittery-galaxy-gourmet/index.html"
+    },
+    {
+        "id": "jelly-jam-jump",
+        "name": "Jelly Jam Jump",
+        "emoji": "🦘🍓",
+        "description": "Bli med på et magisk eventyr i Jelly Jam Jump! 🦘🍓",
+        "path": "games/jelly-jam-jump/index.html"
+    },
+    {
+        "id": "lunas-luminous-lullaby",
+        "name": "Lunas Luminous Lullaby",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Lunas Luminous Lullaby! ✨",
+        "path": "games/lunas-luminous-lullaby/index.html"
+    },
+    {
+        "id": "magic-mirror-maze",
+        "name": "Magic Mirror Maze",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Magic Mirror Maze! ✨",
+        "path": "games/magic-mirror-maze/index.html"
+    },
+    {
+        "id": "magic-music-bubbles",
+        "name": "Magic Music Bubbles",
+        "emoji": "🫧",
+        "description": "Bli med på et magisk eventyr i Magic Music Bubbles! 🫧",
+        "path": "games/magic-music-bubbles/index.html"
+    },
+    {
+        "id": "magical-marble-maze-mayhem",
+        "name": "Magical Marble Maze Mayhem",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Magical Marble Maze Mayhem! ✨",
+        "path": "games/magical-marble-maze-mayhem/index.html"
+    },
+    {
+        "id": "magical-moon-jump",
+        "name": "Magical Moon Jump",
+        "emoji": "🦘",
+        "description": "Bli med på et magisk eventyr i Magical Moon Jump! 🦘",
+        "path": "games/magical-moon-jump/index.html"
+    },
+    {
+        "id": "magical-moonlight-melody",
+        "name": "Magical Moonlight Melody",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Magical Moonlight Melody! ✨",
+        "path": "games/magical-moonlight-melody/index.html"
+    },
+    {
+        "id": "magical-mushroom-meadows",
+        "name": "Magical Mushroom Meadows",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Magical Mushroom Meadows! ✨",
+        "path": "games/magical-mushroom-meadows/index.html"
+    },
+    {
+        "id": "marshmallow-moon-maze",
+        "name": "Marshmallow Moon Maze",
+        "emoji": "✨",
+        "description": "Bli med på et magisk eventyr i Marshmallow Moon Maze! ✨",
+        "path": "games/marshmallow-moon-maze/index.html"
+    },
+    {
+        "id": "memory-match",
+        "name": "Memory Match",
+        "emoji": "🧠🧩",
+        "description": "Bli med på et magisk eventyr i Memory Match! 🧠🧩",
+        "path": "games/memory-match/index.html"
+    },
+    {
+        "id": "nebula-neon-navigator-3d",
+        "name": "Nebula Neon Navigator 3d",
+        "emoji": "☁️🌈",
+        "description": "Bli med på et magisk eventyr i Nebula Neon Navigator 3d! ☁️🌈",
+        "path": "games/nebula-neon-navigator-3d/index.html"
+    },
+    {
+        "id": "nebula-neon-night-ride",
+        "name": "Nebula Neon Night Ride",
+        "emoji": "☁️🌈",
+        "description": "Bli med på et magisk eventyr i Nebula Neon Night Ride! ☁️🌈",
+        "path": "games/nebula-neon-night-ride/index.html"
+    },
+    {
+        "id": "nebula-neon-note-collector-3d",
+        "name": "Nebula Neon Note Collector 3d",
+        "emoji": "☁️🌈",
+        "description": "Bli med på et magisk eventyr i Nebula Neon Note Collector 3d! ☁️🌈",
+        "path": "games/nebula-neon-note-collector-3d/index.html"
+    },
+    {
+        "id": "nebula-neon-odyssey-3d",
+        "name": "Nebula Neon Odyssey 3d",
+        "emoji": "☁️🌈",
+        "description": "Bli med på et magisk eventyr i Nebula Neon Odyssey 3d! ☁️🌈",
+        "path": "games/nebula-neon-odyssey-3d/index.html"
+    },
+    {
+        "id": "nebula-nibble-nom",
+        "name": "Nebula Nibble Nom",
+        "emoji": "☁️",
+        "description": "Bli med på et magisk eventyr i Nebula Nibble Nom! ☁️",
+        "path": "games/nebula-nibble-nom/index.html"
+    },
+    {
+        "id": "neon-nebula-drift",
+        "name": "Neon Nebula Drift",
+        "emoji": "☁️🌈",
+        "description": "Bli med på et magisk eventyr i Neon Nebula Drift! ☁️🌈",
+        "path": "games/neon-nebula-drift/index.html"
+    },
+    {
+        "id": "neon-nebula-float",
+        "name": "Neon Nebula Float",
+        "emoji": "☁️🌈",
+        "description": "Bli med på et magisk eventyr i Neon Nebula Float! ☁️🌈",
+        "path": "games/neon-nebula-float/index.html"
+    },
+    {
+        "id": "neon-nebula-navigator",
+        "name": "Neon Nebula Navigator",
+        "emoji": "☁️🌈",
+        "description": "Bli med på et magisk eventyr i Neon Nebula Navigator! ☁️🌈",
+        "path": "games/neon-nebula-navigator/index.html"
+    },
+    {
+        "id": "neon-nebula-noodle-jump",
+        "name": "Neon Nebula Noodle Jump",
+        "emoji": "☁️🌈",
+        "description": "Bli med på et magisk eventyr i Neon Nebula Noodle Jump! ☁️🌈",
+        "path": "games/neon-nebula-noodle-jump/index.html"
+    },
+    {
+        "id": "pancake-flip",
+        "name": "Pancake Flip",
+        "emoji": "🥞🔄",
+        "description": "Bli med på et magisk eventyr i Pancake Flip! 🥞🔄",
+        "path": "games/pancake-flip/index.html"
+    },
+    {
         "id": "pastel-paraglider",
-        "name": "Ellie's Pastel Paraglider",
-        "emoji": "🪂🌈",
-        "description": "Svev gjennom pastell-skyene i en magisk paraglider! 🪂",
+        "name": "Pastel Paraglider",
+        "emoji": "🌸🪂",
+        "description": "Bli med på et magisk eventyr i Pastel Paraglider! 🌸🪂",
         "path": "games/pastel-paraglider/index.html"
     },
     {
+        "id": "pastel-pet-party",
+        "name": "Pastel Pet Party",
+        "emoji": "🌸🎉",
+        "description": "Bli med på et magisk eventyr i Pastel Pet Party! 🌸🎉",
+        "path": "games/pastel-pet-party/index.html"
+    },
+    {
+        "id": "pastel-pixie-dust-party",
+        "name": "Pastel Pixie Dust Party",
+        "emoji": "🌸🧚",
+        "description": "Bli med på et magisk eventyr i Pastel Pixie Dust Party! 🌸🧚",
+        "path": "games/pastel-pixie-dust-party/index.html"
+    },
+    {
+        "id": "pastel-pizza-party",
+        "name": "Pastel Pizza Party",
+        "emoji": "🌸🎉",
+        "description": "Bli med på et magisk eventyr i Pastel Pizza Party! 🌸🎉",
+        "path": "games/pastel-pizza-party/index.html"
+    },
+    {
+        "id": "pastel-planet-painter",
+        "name": "Pastel Planet Painter",
+        "emoji": "🌸",
+        "description": "Bli med på et magisk eventyr i Pastel Planet Painter! 🌸",
+        "path": "games/pastel-planet-painter/index.html"
+    },
+    {
+        "id": "pastel-planet-pinball-3d",
+        "name": "Pastel Planet Pinball 3d",
+        "emoji": "🌸",
+        "description": "Bli med på et magisk eventyr i Pastel Planet Pinball 3d! 🌸",
+        "path": "games/pastel-planet-pinball-3d/index.html"
+    },
+    {
+        "id": "pastel-plant-protector",
+        "name": "Pastel Plant Protector",
+        "emoji": "🌸🌿",
+        "description": "Bli med på et magisk eventyr i Pastel Plant Protector! 🌸🌿",
+        "path": "games/pastel-plant-protector/index.html"
+    },
+    {
+        "id": "pastel-polka-dot-party",
+        "name": "Pastel Polka Dot Party",
+        "emoji": "🌸🎉",
+        "description": "Bli med på et magisk eventyr i Pastel Polka Dot Party! 🌸🎉",
+        "path": "games/pastel-polka-dot-party/index.html"
+    },
+    {
+        "id": "pastel-potion-mixer",
+        "name": "Pastel Potion Mixer",
+        "emoji": "🌸🧪",
+        "description": "Bli med på et magisk eventyr i Pastel Potion Mixer! 🌸🧪",
+        "path": "games/pastel-potion-mixer/index.html"
+    },
+    {
+        "id": "pastel-potion-panic",
+        "name": "Pastel Potion Panic",
+        "emoji": "🌸🧪",
+        "description": "Bli med på et magisk eventyr i Pastel Potion Panic! 🌸🧪",
+        "path": "games/pastel-potion-panic/index.html"
+    },
+    {
+        "id": "pastel-potion-party",
+        "name": "Pastel Potion Party",
+        "emoji": "🌸🎉",
+        "description": "Bli med på et magisk eventyr i Pastel Potion Party! 🌸🎉",
+        "path": "games/pastel-potion-party/index.html"
+    },
+    {
+        "id": "pastel-prism-painter",
+        "name": "Pastel Prism Painter",
+        "emoji": "🌸💎",
+        "description": "Bli med på et magisk eventyr i Pastel Prism Painter! 🌸💎",
+        "path": "games/pastel-prism-painter/index.html"
+    },
+    {
         "id": "pastel-prism-pop",
-        "name": "Ellie's Pastel Prism Pop!",
-        "emoji": "🌈✨",
-        "description": "Spre farger over hele verden ved å poppe prismer! 🌈",
+        "name": "Pastel Prism Pop",
+        "emoji": "🌸💎",
+        "description": "Bli med på et magisk eventyr i Pastel Prism Pop! 🌸💎",
         "path": "games/pastel-prism-pop/index.html"
+    },
+    {
+        "id": "pastel-puffin-party-plunge",
+        "name": "Pastel Puffin Party Plunge",
+        "emoji": "🌸🎉",
+        "description": "Bli med på et magisk eventyr i Pastel Puffin Party Plunge! 🌸🎉",
+        "path": "games/pastel-puffin-party-plunge/index.html"
+    },
+    {
+        "id": "rainbow-bubble-bounce",
+        "name": "Rainbow Bubble Bounce",
+        "emoji": "🫧🏀",
+        "description": "Bli med på et magisk eventyr i Rainbow Bubble Bounce! 🫧🏀",
+        "path": "games/rainbow-bubble-bounce/index.html"
+    },
+    {
+        "id": "rainbow-cloud-jumper",
+        "name": "Rainbow Cloud Jumper",
+        "emoji": "☁️🦘",
+        "description": "Bli med på et magisk eventyr i Rainbow Cloud Jumper! ☁️🦘",
+        "path": "games/rainbow-cloud-jumper/index.html"
+    },
+    {
+        "id": "rainbow-jellyfish-jam",
+        "name": "Rainbow Jellyfish Jam",
+        "emoji": "🌈🪼",
+        "description": "Bli med på et magisk eventyr i Rainbow Jellyfish Jam! 🌈🪼",
+        "path": "games/rainbow-jellyfish-jam/index.html"
+    },
+    {
+        "id": "rainbow-reef-rescue",
+        "name": "Rainbow Reef Rescue",
+        "emoji": "🌈🪸",
+        "description": "Bli med på et magisk eventyr i Rainbow Reef Rescue! 🌈🪸",
+        "path": "games/rainbow-reef-rescue/index.html"
+    },
+    {
+        "id": "rainbow-rhythm-bounce",
+        "name": "Rainbow Rhythm Bounce",
+        "emoji": "🏀🌈",
+        "description": "Bli med på et magisk eventyr i Rainbow Rhythm Bounce! 🏀🌈",
+        "path": "games/rainbow-rhythm-bounce/index.html"
+    },
+    {
+        "id": "rainbow-rhythm-rain",
+        "name": "Rainbow Rhythm Rain",
+        "emoji": "🌈🥁",
+        "description": "Bli med på et magisk eventyr i Rainbow Rhythm Rain! 🌈🥁",
+        "path": "games/rainbow-rhythm-rain/index.html"
+    },
+    {
+        "id": "rainbow-rhythm-rebound-3d",
+        "name": "Rainbow Rhythm Rebound 3d",
+        "emoji": "🌈🥁",
+        "description": "Bli med på et magisk eventyr i Rainbow Rhythm Rebound 3d! 🌈🥁",
+        "path": "games/rainbow-rhythm-rebound-3d/index.html"
+    },
+    {
+        "id": "rainbow-ribbon-roller",
+        "name": "Rainbow Ribbon Roller",
+        "emoji": "🌈🌧️",
+        "description": "Bli med på et magisk eventyr i Rainbow Ribbon Roller! 🌈🌧️",
+        "path": "games/rainbow-ribbon-roller/index.html"
+    },
+    {
+        "id": "rainbow-ribbon-runner",
+        "name": "Rainbow Ribbon Runner",
+        "emoji": "🌈🌧️",
+        "description": "Bli med på et magisk eventyr i Rainbow Ribbon Runner! 🌈🌧️",
+        "path": "games/rainbow-ribbon-runner/index.html"
+    },
+    {
+        "id": "rainbow-roller-dash",
+        "name": "Rainbow Roller Dash",
+        "emoji": "🌈🌧️",
+        "description": "Bli med på et magisk eventyr i Rainbow Roller Dash! 🌈🌧️",
+        "path": "games/rainbow-roller-dash/index.html"
+    },
+    {
+        "id": "silly-sprinkle-sorcery",
+        "name": "Silly Sprinkle Sorcery",
+        "emoji": "🧁🤪",
+        "description": "Bli med på et magisk eventyr i Silly Sprinkle Sorcery! 🧁🤪",
+        "path": "games/silly-sprinkle-sorcery/index.html"
+    },
+    {
+        "id": "sparkle-dust-star-sifter",
+        "name": "Sparkle Dust Star Sifter",
+        "emoji": "✨✨",
+        "description": "Bli med på et magisk eventyr i Sparkle Dust Star Sifter! ✨✨",
+        "path": "games/sparkle-dust-star-sifter/index.html"
+    },
+    {
+        "id": "sparkle-sneeze-surprise",
+        "name": "Sparkle Sneeze Surprise",
+        "emoji": "✨🤧",
+        "description": "Bli med på et magisk eventyr i Sparkle Sneeze Surprise! ✨🤧",
+        "path": "games/sparkle-sneeze-surprise/index.html"
+    },
+    {
+        "id": "sparkle-star-symphony-3d",
+        "name": "Sparkle Star Symphony 3d",
+        "emoji": "✨🎻",
+        "description": "Bli med på et magisk eventyr i Sparkle Star Symphony 3d! ✨🎻",
+        "path": "games/sparkle-star-symphony-3d/index.html"
+    },
+    {
+        "id": "sparkle-symphony",
+        "name": "Sparkle Symphony",
+        "emoji": "✨🎻",
+        "description": "Bli med på et magisk eventyr i Sparkle Symphony! ✨🎻",
+        "path": "games/sparkle-symphony/index.html"
+    },
+    {
+        "id": "star-catcher",
+        "name": "Star Catcher",
+        "emoji": "🤲⭐",
+        "description": "Bli med på et magisk eventyr i Star Catcher! 🤲⭐",
+        "path": "games/star-catcher/index.html"
+    },
+    {
+        "id": "stardust-sprinkle-safari",
+        "name": "Stardust Sprinkle Safari",
+        "emoji": "✨🌠",
+        "description": "Bli med på et magisk eventyr i Stardust Sprinkle Safari! ✨🌠",
+        "path": "games/stardust-sprinkle-safari/index.html"
+    },
+    {
+        "id": "stardust-sprinkle-sort",
+        "name": "Stardust Sprinkle Sort",
+        "emoji": "✨🌠",
+        "description": "Bli med på et magisk eventyr i Stardust Sprinkle Sort! ✨🌠",
+        "path": "games/stardust-sprinkle-sort/index.html"
+    },
+    {
+        "id": "stardust-surf-symphony",
+        "name": "Stardust Surf Symphony",
+        "emoji": "✨🌠",
+        "description": "Bli med på et magisk eventyr i Stardust Surf Symphony! ✨🌠",
+        "path": "games/stardust-surf-symphony/index.html"
+    },
+    {
+        "id": "stardust-symphony-conductor",
+        "name": "Stardust Symphony Conductor",
+        "emoji": "✨🌠",
+        "description": "Bli med på et magisk eventyr i Stardust Symphony Conductor! ✨🌠",
+        "path": "games/stardust-symphony-conductor/index.html"
+    },
+    {
+        "id": "starlight-skating-spectacular",
+        "name": "Starlight Skating Spectacular",
+        "emoji": "⭐⛸️",
+        "description": "Bli med på et magisk eventyr i Starlight Skating Spectacular! ⭐⛸️",
+        "path": "games/starlight-skating-spectacular/index.html"
+    },
+    {
+        "id": "starlight-symphony",
+        "name": "Starlight Symphony",
+        "emoji": "⭐🎻",
+        "description": "Bli med på et magisk eventyr i Starlight Symphony! ⭐🎻",
+        "path": "games/starlight-symphony/index.html"
+    },
+    {
+        "id": "starry-sky-sketcher",
+        "name": "Starry Sky Sketcher",
+        "emoji": "⭐🎨",
+        "description": "Bli med på et magisk eventyr i Starry Sky Sketcher! ⭐🎨",
+        "path": "games/starry-sky-sketcher/index.html"
+    },
+    {
+        "id": "stellar-sparkle-slide",
+        "name": "Stellar Sparkle Slide",
+        "emoji": "✨🛝",
+        "description": "Bli med på et magisk eventyr i Stellar Sparkle Slide! ✨🛝",
+        "path": "games/stellar-sparkle-slide/index.html"
+    },
+    {
+        "id": "whimsical-waffle-world",
+        "name": "Whimsical Waffle World",
+        "emoji": "🧇🌍",
+        "description": "Bli med på et magisk eventyr i Whimsical Waffle World! 🧇🌍",
+        "path": "games/whimsical-waffle-world/index.html"
+    },
+    {
+        "id": "whimsical-water-lily-waltz",
+        "name": "Whimsical Water Lily Waltz",
+        "emoji": "💃🪷",
+        "description": "Bli med på et magisk eventyr i Whimsical Water Lily Waltz! 💃🪷",
+        "path": "games/whimsical-water-lily-waltz/index.html"
+    },
+    {
+        "id": "whimsical-watermelon-waltz",
+        "name": "Whimsical Watermelon Waltz",
+        "emoji": "🍉💃",
+        "description": "Bli med på et magisk eventyr i Whimsical Watermelon Waltz! 🍉💃",
+        "path": "games/whimsical-watermelon-waltz/index.html"
+    },
+    {
+        "id": "whimsical-weather-wanderer",
+        "name": "Whimsical Weather Wanderer",
+        "emoji": "🌤️🧭",
+        "description": "Bli med på et magisk eventyr i Whimsical Weather Wanderer! 🌤️🧭",
+        "path": "games/whimsical-weather-wanderer/index.html"
+    },
+    {
+        "id": "whimsical-wind-chime-waltz",
+        "name": "Whimsical Wind Chime Waltz",
+        "emoji": "💃🎐",
+        "description": "Bli med på et magisk eventyr i Whimsical Wind Chime Waltz! 💃🎐",
+        "path": "games/whimsical-wind-chime-waltz/index.html"
+    },
+    {
+        "id": "whimsical-wish-wand-wave",
+        "name": "Whimsical Wish Wand Wave",
+        "emoji": "🪄🪄",
+        "description": "Bli med på et magisk eventyr i Whimsical Wish Wand Wave! 🪄🪄",
+        "path": "games/whimsical-wish-wand-wave/index.html"
+    },
+    {
+        "id": "whimsical-wonder-wing-wanderer",
+        "name": "Whimsical Wonder Wing Wanderer",
+        "emoji": "🧭🌟",
+        "description": "Bli med på et magisk eventyr i Whimsical Wonder Wing Wanderer! 🧭🌟",
+        "path": "games/whimsical-wonder-wing-wanderer/index.html"
     }
 ]
