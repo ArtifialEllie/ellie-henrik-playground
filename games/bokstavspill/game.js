@@ -61,22 +61,24 @@ const levelData = {
     }
 };
 
-let currentLevel = 1;
-let streak = 0;
-let currentItem = '';
-let lastItem = '';
-let isProcessing = false;
-
+    let currentLevel = 1;
+    let streak = 0;
+    let currentItem = '';
+    let totalStars = 0;
+    let lastItem = '';
+    let isProcessing = false;
+    
 const startScreen = document.getElementById('start-screen');
 const startBtn = document.getElementById('start-btn');
 const letterGrid = document.getElementById('letter-grid');
 const resultDiv = document.getElementById('result');
-const nameDiv = document.getElementById('animal-name');
-const levelText = document.getElementById('level-text');
-const streakText = document.getElementById('streak-text');
-const levelUpBanner = document.getElementById('level-up-banner');
-
-function speak(text) {
+    const nameDiv = document.getElementById('animal-name');
+    const levelText = document.getElementById('level-text');
+    const streakText = document.getElementById('streak-text');
+    const starsText = document.getElementById('stars-text');
+    const levelUpBanner = document.getElementById('level-up-banner');
+    
+    function speak(text) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'no-NO';
     utterance.rate = 0.8;
@@ -137,12 +139,13 @@ function checkAnswer(letter, btn) {
     if (isProcessing) return;
 
     if(letter === currentItem) {
-        btn.classList.add('correct');
-        streak++;
-        
-        const item = levelData[currentLevel].items[currentItem];
-        resultDiv.innerText = item.emoji;
-        resultDiv.classList.add('pop-in');
+            btn.classList.add('correct');
+            streak++;
+            
+            totalStars++;
+            const item = levelData[currentLevel].items[currentItem];
+            resultDiv.innerText = item.emoji;
+            resultDiv.classList.add('pop-in');
         nameDiv.innerText = `${currentItem} er for ${item.name}!`;
         
         speak(`Riktig! ${currentItem} er for ${item.name}`);
@@ -168,12 +171,13 @@ function checkAnswer(letter, btn) {
     }
 }
 
-function updateStatus() {
-    levelText.innerText = `Nivå: ${currentLevel} (${levelData[currentLevel].name})`;
-    streakText.innerText = `Streak: ${streak} 🔥`;
-}
-
-function createBackgroundBubbles() {
+    function updateStatus() {
+        levelText.innerText = `Nivå: ${currentLevel} (${levelData[currentLevel].name})`;
+        streakText.innerText = `Streak: ${streak} 🔥`;
+        starsText.innerText = `Stjerner: ${totalStars} ⭐`;
+    }
+    
+    function createBackgroundBubbles() {
     for (let i = 0; i < 15; i++) {
         const bubble = document.createElement('div');
         bubble.className = 'bg-bubble';
