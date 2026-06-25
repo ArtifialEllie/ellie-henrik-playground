@@ -1,0 +1,146 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    max-width: 800px;
+    max-height: 600px;
+    background: rgba(255, 255, 255, 0.3);
+    border: 10px solid white;
+    border-radius: 30px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#score-container, #timer-container {
+    background: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff7eb3;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(5px);
+    transition: opacity 0.5s ease;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#start-screen, #end-screen {
+    text-align: center;
+    background: white;
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 5px solid #ffcce5;
+}
+
+h1 {
+    color: #ff7eb3;
+    font-size: 48px;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 0px #fff;
+}
+
+p {
+    color: #888;
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+
+button {
+    background: #ff7eb3;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 24px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    font-family: inherit;
+    box-shadow: 0 5px 15px rgba(255, 126, 179, 0.4);
+}
+
+button:hover {
+    transform: scale(1.1);
+    background: #ff5c9d;
+}
+
+.dot {
+    position: absolute;
+    border-radius: 50%;
+    cursor: pointer;
+    animation: pop-in 0.3s ease-out;
+    transition: transform 0.1s;
+    box-shadow: inset -5px -5px 10px rgba(0,0,0,0.1);
+}
+
+.dot:active {
+    transform: scale(0.8);
+}
+
+@keyframes pop-in {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+.pop-effect {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    animation: pop-out 0.4s ease-out forwards;
+    border: 2px solid white;
+}
+
+@keyframes pop-out {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+}

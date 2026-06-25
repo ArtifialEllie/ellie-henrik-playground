@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Polka Dot Party! ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-container">Score: <span id="score">0</span></div>
+            <div id="timer-container">Time: <span id="timer">30</span>s</div>
+        </div>
+        <div id="game-canvas"></div>
+        <div id="overlay">
+            <div id="start-screen">
+                <h1>Pastel Polka Dot Party! 🌈</h1>
+                <p>Pop as many colorful polka dots as you can!</p>
+                <button id="start-button">Let's Party! ✨</button>
+            </div>
+            <div id="end-screen" class="hidden">
+                <h1>Party Over! 🎈</h1>
+                <p>You popped <span id="final-score">0</span> dots!</p>
+                <button id="restart-button">Party Again! 💖</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
