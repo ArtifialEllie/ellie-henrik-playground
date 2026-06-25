@@ -35,6 +35,8 @@ let isVortex = false;
 let isRibbonActive = false;
 let ribbon = { x: 0, y: 0, vx: 0, vy: 0 };
 let isMagnetic = false;
+let isGlitterGala = false;
+let glitterGalaTimer = 0;
 let bossActive = false;
 let boss = null;
 let bossHealth = 100;
@@ -1416,6 +1418,17 @@ function triggerMagnetism() {
     }, 20);
 }
 
+function triggerGlitterGala() {
+    const galaAlert = document.getElementById('glitter-gala-alert');
+    galaAlert.style.display = 'block';
+    isGlitterGala = true;
+    glitterGalaTimer = 600;
+    
+    floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, 'GLITTER GALA! ✨💎', 'gold'));
+    playSound(800, 'sine', 0.2);
+    setTimeout(() => playSound(1000, 'sine', 0.2), 100);
+}
+
 function triggerVortex() {
     isVortex = true;
     const vortexAlert = document.getElementById('vortex-alert');
@@ -2099,6 +2112,7 @@ function handlePop(e) {
     if (Math.random() < 0.002) triggerGlitterStorm();
     if (Math.random() < 0.003) triggerRibbon();
     if (Math.random() < 0.002) triggerCosmicBloom();
+    if (Math.random() < 0.001) triggerGlitterGala();
     if (Math.random() < 0.002) triggerStarfall();
     if (score > 0 && score % 500 === 0 && !bossActive) triggerBossFight();
     
@@ -2243,6 +2257,21 @@ function update() {
 
     pet.update(lastMouseX, lastMouseY);
     pet.draw();
+    
+    if (isGlitterGala) {
+        glitterGalaTimer--;
+        if (glitterGalaTimer <= 0) {
+            isGlitterGala = false;
+            document.getElementById('glitter-gala-alert').style.display = 'none';
+        }
+        // During Glitter Gala, spawn tiny diamond sparkles everywhere!
+        if (Math.random() < 0.3) {
+            const sparkle = new Particle(Math.random() * canvasWidth, Math.random() * canvasHeight, 'white');
+            sparkle.vx *= 0.2;
+            sparkle.vy *= 0.2;
+            particles.push(sparkle);
+        }
+    }
 
     clouds.forEach(c => {
         c.update();
