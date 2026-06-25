@@ -8,6 +8,7 @@ const canvas = document.getElementById('gameCanvas');
     const statusText = document.getElementById('status-text');
     const finalScoreEl = document.getElementById('final-score');
     const perfectText = document.getElementById('perfect-text');
+    const feverText = document.getElementById('fever-text');
     const windIndicator = document.getElementById('wind-indicator');
 
         let score = 0;
@@ -284,6 +285,23 @@ const canvas = document.getElementById('gameCanvas');
                         if (combo > 1) {
                             comboEl.classList.add('show');
                             comboValEl.innerText = combo;
+                        }
+                        if (combo >= 10) {
+                            document.body.classList.add('fever-mode');
+                            feverText.classList.add('show');
+                            
+                            // Fever bonuses: more points, automatic stabilization
+                            score += 1; 
+                            currentTotalLean *= 0.99;
+                            
+                            if (combo > 20) {
+                                feverText.innerText = "ULTRA FEVER!!! 🌈🥞";
+                            } else {
+                                feverText.innerText = "FEVER TIME! 🔥🥞";
+                            }
+                        } else {
+                            document.body.classList.remove('fever-mode');
+                            feverText.classList.remove('show');
                         }
                     } else {
                         combo = 0;
