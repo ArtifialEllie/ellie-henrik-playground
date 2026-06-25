@@ -1520,6 +1520,21 @@ function handlePop(e) {
                             pet.gainFriendship(10);
                             floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
                             playSound(600, 'sine', 0.1);
+                            
+                            // Feature: Love Burst! ❤️✨
+                            if (pet.friendshipLevel >= 3 && Math.random() < 0.3) {
+                                floatingTexts.push(new FloatingText(pet.x, pet.y, 'LOVE BURST! ❤️✨', '#ff4081'));
+                                for (let i = 0; i < 10; i++) {
+                                    const hb = new Bubble(false);
+                                    hb.type = 'heart';
+                                    hb.x = pet.x + (Math.random() - 0.5) * 100;
+                                    hb.y = pet.y + (Math.random() - 0.5) * 100;
+                                    hb.vx = (Math.random() - 0.5) * 10;
+                                    hb.vy = (Math.random() - 0.5) * 10 - 5;
+                                    bubbles.push(hb);
+                                }
+                                playSound(880, 'sine', 0.2);
+                            }
                         }
                }
 
