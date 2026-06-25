@@ -857,6 +857,11 @@ class MagicalPet {
         this.floatOffset += 0.05 * this.floatDir;
         if (this.floatOffset > 10 || this.floatOffset < -10) this.floatDir *= -1;
 
+        // Add sparkle trail ✨
+        if (Math.random() < 0.3) {
+            trail.push(new TrailParticle(this.x, this.y));
+        }
+
         if (this.shieldTimer > 0) {
             this.shieldTimer--;
         }
