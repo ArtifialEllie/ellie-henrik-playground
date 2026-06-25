@@ -872,16 +872,16 @@ class MagicalPet {
             energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
         }
 
-        // Friendship Level 5: Occasionally spawn a gold bubble!
-        if (this.friendshipLevel >= 5 && Math.random() < 0.002) {
-            const goldBubble = new Bubble(false);
-            goldBubble.type = 'gold';
-            goldBubble.x = this.x + (Math.random() - 0.5) * 100;
-            goldBubble.y = this.y + (Math.random() - 0.5) * 100;
-            goldBubble.speed = 2;
-            bubbles.push(goldBubble);
-            floatingTexts.push(new FloatingText(this.x, this.y, 'PET GIFT! ✨', 'gold'));
-        }
+    // Friendship Level 5: Occasionally spawn a gold bubble!
+    if ((this.friendshipLevel >= 5 || currentAccessory === '🌟') && Math.random() < (currentAccessory === '🌟' ? 0.005 : 0.002)) {
+        const goldBubble = new Bubble(false);
+        goldBubble.type = 'gold';
+        goldBubble.x = this.x + (Math.random() - 0.5) * 100;
+        goldBubble.y = this.y + (Math.random() - 0.5) * 100;
+        goldBubble.speed = 2;
+        bubbles.push(goldBubble);
+        floatingTexts.push(new FloatingText(this.x, this.y, 'PET GIFT! ✨', 'gold'));
+    }
 
         // Mood Logic
         if (this.moodTimer > 0) {

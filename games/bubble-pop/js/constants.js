@@ -76,4 +76,5 @@ const ACCESSORIES = [
     { name: 'Rainbow Tutu', emoji: '👗', cost: 7000, effect: 'rainbow_bonus' },
     { name: 'Magic Bubble Wand', emoji: '🪄', cost: 9000, effect: 'score_boost' },
     { name: 'Heart Glasses', emoji: '❤️🕶️', cost: 12000, effect: 'heart_bonus' },
+    { name: 'Starry Halo', emoji: '🌟', cost: 25000, effect: 'gold_spawn_boost' },
 ];
