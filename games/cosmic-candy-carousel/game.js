@@ -12,6 +12,8 @@ const powerUpText = document.getElementById('power-up-text');
 let score = 0;
 let highScore = localStorage.getItem('cosmicCandyHighScore') || 0;
 highScoreElement.innerText = highScore;
+let combo = 0;
+let comboTimer = 0;
 
 let gameActive = false;
 let candies = [];
@@ -165,6 +167,7 @@ function handleCollisions() {
 
         if (distance < PLAYER_SIZE/2 + c.radius) {
             // Collect candy
+            updateCombo();
             score += c.type.points;
             powerUpEnergy = Math.min(100, powerUpEnergy + c.type.points / 2);
             
@@ -183,6 +186,12 @@ function handleCollisions() {
             }
         } else if (c.y > canvas.height + c.radius) {
             // Candy missed
+            combo = 0;
+            comboTimer = 0;
+            const comboDisplay = document.getElementById('combo-display');
+            if (comboDisplay) {
+                comboDisplay.classList.add('hidden');
+            }
             candies.splice(i, 1);
         }
     }
@@ -192,6 +201,11 @@ function triggerMagicBurst() {
     if (powerUpEnergy >= 100) {
         powerUpEnergy = 0;
         // Clear all candies on screen
+        combo = 0;
+        const comboDisplay = document.getElementById('combo-display');
+        if (comboDisplay) {
+            comboDisplay.classList.add('hidden');
+        }
         candies.forEach(c => {
             score += c.type.points;
             for (let i = 0; i < 15; i++) {
@@ -253,6 +267,15 @@ function gameLoop() {
     playerX += (targetX - playerX) * 0.15;
     drawPlayer();
 
+    // Combo Logic
+    if (comboTimer > 0) {
+        comboTimer--;
+        if (comboTimer <= 0) {
+            combo = 0;
+            document.getElementById('combo-display').classList.add('hidden');
+        }
+    }
+
     handleCollisions();
     updatePowerUpBar();
 
@@ -262,6 +285,17 @@ function gameLoop() {
     }
 
     requestAnimationFrame(gameLoop);
+}
+
+function updateCombo() {
+    combo++;
+    comboTimer = 60; // 1 second at 60fps
+    const comboDisplay = document.getElementById('combo-display');
+    const comboValue = document.getElementById('combo-value');
+    if (comboDisplay && comboValue) {
+        comboDisplay.classList.remove('hidden');
+        comboValue.innerText = combo;
+    }
 }
 
 function startGame() {
