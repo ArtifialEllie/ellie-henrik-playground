@@ -30,6 +30,9 @@ let matches = 0;
 let isLockBoard = false;
 let peeksLeft = 1;
 
+let timerInterval;
+let secondsElapsed = 0;
+
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioCtx();
 
@@ -55,6 +58,8 @@ function initGame() {
     document.getElementById('game-title').innerText = config.name;
     document.getElementById('level').textContent = currentLevelIdx + 1;
     
+    resetTimer();
+
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
     grid.style.gridTemplateColumns = `repeat(${config.grid}, 1fr)`;
@@ -87,6 +92,16 @@ function initGame() {
         card.addEventListener('click', flipCard);
         grid.appendChild(card);
     });
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    secondsElapsed = 0;
+    document.getElementById('timer').textContent = '0';
+    timerInterval = setInterval(() => {
+        secondsElapsed++;
+        document.getElementById('timer').textContent = secondsElapsed;
+    }, 1000);
 }
 
 function shuffle(array) {
@@ -137,6 +152,7 @@ function disableCards() {
     matches++;
     updateStats();
     resetBoard();
+    clearInterval(timerInterval);
     
     if (matches === levelConfigs[currentLevelIdx].emojis.length) {
         showWinMessage();
@@ -178,12 +194,27 @@ function showWinMessage() {
     const config = levelConfigs[currentLevelIdx];
     const maxMoves = config.emojis.length * 2.5;
     let stars = "⭐";
-    if (moves <= config.emojis.length) stars = "⭐⭐⭐";
-    else if (moves <= maxMoves) stars = "⭐⭐";
+    if (moves <= config.emojis.length) {
+        stars = "⭐⭐⭐";
+    } else if (moves <= maxMoves) {
+        stars = "⭐⭐";
+    }
+
+    const bestScoreKey = `memoryMatchBest_${currentLevelIdx}`;
+    const bestScore = localStorage.getItem(bestScoreKey);
+    let bestScoreText = "";
+    if (bestScore) {
+        bestScoreText = `Tidligere beste: ${bestScore} trekk 🏆`;
+    }
+    if (moves < parseInt(bestScore) || !bestScore) {
+        localStorage.setItem(bestScoreKey, moves);
+        bestScoreText = `Ny rekord! 🌈`;
+    }
+    document.getElementById('best-score').innerText = bestScoreText;
 
     setTimeout(() => {
         document.getElementById('star-rating').innerText = stars;
-        document.getElementById('final-stats').innerText = `Du fant alle parene på ${moves} trekk! 🌟`;
+        document.getElementById('final-stats').innerText = `Du fant alle parene på ${moves} trekk og ${secondsElapsed} sekunder! 🌟`;
         document.getElementById('win-message').classList.add('show');
         startConfetti();
         
