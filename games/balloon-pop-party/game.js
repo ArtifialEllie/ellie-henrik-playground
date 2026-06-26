@@ -14,6 +14,7 @@ const restartButton = document.getElementById('restart-button');
 let score = 0;
 let combo = 0;
 let timeLeft = 60;
+let highscore = localStorage.getItem('balloonPopHighscore') || 0;
 let gameActive = false;
 let balloons = [];
 let clouds = [];
@@ -175,6 +176,13 @@ class Balloon {
     pop() {
         this.popped = true;
         playPopSound(this.type);
+        
+        if (this.type === 'HEART') {
+            timeLeft += 2;
+            timerElement.style.color = '#FF69B4';
+            setTimeout(() => timerElement.style.color = '', 500);
+        }
+
         for (let i = 0; i < 12; i++) {
             globalParticles.push(new Particle(this.x, this.y, this.color));
         }
@@ -396,6 +404,11 @@ function stopGame() {
     
     finalScoreElement.textContent = score;
     gameOverScreen.classList.remove('hidden');
+
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem('balloonPopHighscore', highscore);
+    }
 }
 
 function startTimer() {
@@ -418,4 +431,5 @@ restartButton.addEventListener('click', startGame);
 // Initialize
 resize();
 clouds = Array.from({ length: 5 }, () => new Cloud());
+document.getElementById('high-score').textContent = highscore;
 gameLoop(); // Start loop for clouds even before game starts

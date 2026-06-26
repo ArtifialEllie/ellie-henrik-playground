@@ -186,9 +186,15 @@ function showWinMessage() {
         document.getElementById('final-stats').innerText = `Du fant alle parene på ${moves} trekk! 🌟`;
         document.getElementById('win-message').classList.add('show');
         startConfetti();
-        playSound(523.25, 'sine', 0.5);
-        setTimeout(() => playSound(659.25, 'sine', 0.5), 150);
-        setTimeout(() => playSound(783.99, 'sine', 0.5), 300);
+        
+        // Victory fanfare
+        const melody = [
+            { f: 523.25, d: 0.2 }, { f: 659.25, d: 0.2 }, 
+            { f: 783.99, d: 0.2 }, { f: 1046.50, d: 0.4 }
+        ];
+        melody.forEach((note, i) => {
+            setTimeout(() => playSound(note.f, 'sine', note.d), i * 200);
+        });
         
         if (currentLevelIdx === levelConfigs.length - 1) {
             document.getElementById('win-title').innerText = "Mester av Palasset! 🏰";

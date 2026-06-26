@@ -42,6 +42,7 @@ let boss = null;
 let bossHealth = 100;
 let bossMaxHealth = 100;
 let gameSpeed = 1;
+let magicDustPopsRemaining = 0;
 let shieldActive = false;
 let freezeMultiplier = 1;
 let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
@@ -535,11 +536,7 @@ class Bubble {
             ctx.textAlign = 'center';
             ctx.fillText('✨', drawX, drawY + currentRadius/3);
         }
-        if (this.type === 'golden-ticket') {
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('🌟', drawX, drawY + currentRadius/3);
-        } else if (this.type === 'magic-mirror') {
+        if (this.type === 'magic-mirror') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🪞', drawX, drawY + currentRadius/3);
@@ -595,7 +592,6 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🧲', drawX, drawY + currentRadius/3);
-       } else if (this.type === 'rainbow-spiral') {
        } else if (this.type === 'rainbow-vortex') {
            ctx.font = `${currentRadius}px Arial`;
            ctx.textAlign = 'center';
@@ -606,9 +602,9 @@ class Bubble {
            ctx.font = `${currentRadius}px Arial`;
            ctx.textAlign = 'center';
            ctx.fillText('🌀', drawX, drawY + currentRadius/3);
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = 'magenta';
-        } else if (this.type === 'magic-burst') {
+           ctx.shadowBlur = 10;
+           ctx.shadowColor = 'magenta';
+       } else if (this.type === 'magic-burst') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🎆', drawX, drawY + currentRadius/3);
@@ -1487,6 +1483,19 @@ function updateCombo() {
         comboText.style.opacity = '1';
         const progress = Math.min(100, (combo % 10) * 10);
         comboBar.style.width = `${progress}%`;
+
+        // Combo Milestones! ✨
+        if (combo === 10) {
+            floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, 'UNSTOPPABLE! 🔥', 'orange'));
+            playSound(600, 'sine', 0.2);
+        } else if (combo === 25) {
+            floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, 'BUBBLE MASTER! 🌟', 'gold'));
+            playSound(800, 'sine', 0.2);
+        } else if (combo === 50) {
+            floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, 'LEGENDARY! 👑', 'magenta'));
+            playSound(1000, 'sine', 0.3);
+            triggerFrenzy();
+        }
     } else {
         comboText.style.opacity = '0';
         comboBar.style.width = '0%';
@@ -1511,41 +1520,48 @@ function handlePop(e) {
     const mouseX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
     const mouseY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
 
+    // Check if the pet was clicked first!
+    const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
+    if (petDist < pet.size) {
+        if (pet.energy >= pet.maxEnergy) {
+            pet.triggerSuperPop();
+        } else {
+            pet.mood = 'Love';
+            pet.moodTimer = 300;
+            pet.gainFriendship(10);
+            floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
+            playSound(600, 'sine', 0.1);
+            
+            // Reward for petting! ✨
+            score += 10;
+            updateScore();
+            for (let j = 0; j < 5; j++) {
+                particles.push(new Particle(pet.x, pet.y, '#ff4081'));
+            }
+            
+            // Feature: Love Burst! ❤️✨
+            if (pet.friendshipLevel >= 3 && Math.random() < 0.3) {
+                floatingTexts.push(new FloatingText(pet.x, pet.y, 'LOVE BURST! ❤️✨', '#ff4081'));
+                for (let i = 0; i < 10; i++) {
+                    const hb = new Bubble(false);
+                    hb.type = 'heart';
+                    hb.x = pet.x + (Math.random() - 0.5) * 100;
+                    hb.y = pet.y + (Math.random() - 0.5) * 100;
+                    hb.vx = (Math.random() - 0.5) * 10;
+                    hb.vy = (Math.random() - 0.5) * 10 - 5;
+                    bubbles.push(hb);
+                }
+                playSound(880, 'sine', 0.2);
+            }
+        }
+    }
+
     for (let i = bubbles.length - 1; i >= 0; i--) {
         const b = bubbles[i];
         const dist = Math.hypot(mouseX - b.x, mouseY - b.y);
         
             if (dist < b.radius + 10) {
-                // Also check if the pet was clicked!
-               const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
-               if (petDist < pet.size) {
-                        if (pet.energy >= pet.maxEnergy) {
-                            pet.triggerSuperPop();
-                        } else {
-                            pet.mood = 'Love';
-                            pet.moodTimer = 300;
-                            pet.gainFriendship(10);
-                            floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
-                            playSound(600, 'sine', 0.1);
-                            
-                            // Feature: Love Burst! ❤️✨
-                            if (pet.friendshipLevel >= 3 && Math.random() < 0.3) {
-                                floatingTexts.push(new FloatingText(pet.x, pet.y, 'LOVE BURST! ❤️✨', '#ff4081'));
-                                for (let i = 0; i < 10; i++) {
-                                    const hb = new Bubble(false);
-                                    hb.type = 'heart';
-                                    hb.x = pet.x + (Math.random() - 0.5) * 100;
-                                    hb.y = pet.y + (Math.random() - 0.5) * 100;
-                                    hb.vx = (Math.random() - 0.5) * 10;
-                                    hb.vy = (Math.random() - 0.5) * 10 - 5;
-                                    bubbles.push(hb);
-                                }
-                                playSound(880, 'sine', 0.2);
-                            }
-                        }
-               }
-
-               if (bossActive && b.type === 'stinky') {
+                if (bossActive && b.type === 'stinky') {
                     damageBoss(10);
                     floatingTexts.push(new FloatingText(b.x, b.y, 'BOSS DAMAGE! -10', 'white'));
                 }
@@ -1557,8 +1573,11 @@ function handlePop(e) {
                     continue; 
                 } else {
                     createPopEffect(b.x, b.y, b.color);
-                    totalPops++;
-                    updateQuest();
+                    if (magicDustPopsRemaining > 0) {
+                        score += 5;
+                        magicDustPopsRemaining--;
+                        floatingTexts.push(new FloatingText(b.x, b.y, `+5 ✨`, 'white'));
+                    }
                     if (b.type === 'sparkle-blast') {
                         triggerShockwave(b.x, b.y, b.color);
                         floatingTexts.push(new FloatingText(b.x, b.y, 'SPARKLE BLAST! ✨', b.color));
@@ -1567,7 +1586,6 @@ function handlePop(e) {
         // Pass the bubble's color to the sound function for a more musical experience! 🎵
         pet.gainEnergy(1);
             const popColor = b.color;
-            bubbles.splice(i, 1); // Remove bubble first so it's not found in playPopSound's find()
             playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
             if (b.type === 'mystery-box') {
                 playPopSound(true, false);
@@ -1595,7 +1613,6 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(b.x, b.y, `GOLDEN TICKET! 🎫 +${ticketBonus}`, 'gold'));
            createPopEffect(b.x, b.y, 'gold');
            triggerFrenzy();
-       } else if (b.type === 'ellie-wish') {
        } else if (b.type === 'rainbow-vortex') {
            playPopSound(true, false);
            triggerRainbowCascade();
@@ -1723,22 +1740,6 @@ function handlePop(e) {
                     pearl.speed = Math.random() * 2 + 1;
                     bubbles.push(pearl);
                 }
-            } else if (b.type === 'prism') {
-                playPopSound(true, false);
-                score += 200;
-                floatingTexts.push(new FloatingText(b.x, b.y, 'PRISM POP! 💎', '#e0f7fa'));
-                createPopEffect(b.x, b.y, '#e0f7fa');
-                for (let j = 0; j < 3; j++) {
-                    const shard = new Bubble(false);
-                    shard.type = 'normal';
-                    shard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-                    shard.radius = 15;
-                    shard.x = b.x;
-                    shard.y = b.y;
-                    shard.vx = (Math.random() - 0.5) * 10;
-                    shard.vy = (Math.random() - 0.5) * 10 - 5;
-                    bubbles.push(shard);
-                }
             } else if (b.type === 'heart') {
                 bubbles.forEach(bub => {
                     if (bub !== b) {
@@ -1791,28 +1792,6 @@ function handlePop(e) {
                 
                 triggerFrenzy();
                 createPopEffect(b.x, b.y, 'rainbow');
-            } else if (b.type === 'prism') {
-                playPopSound(true, false);
-                score += 200;
-                floatingTexts.push(new FloatingText(b.x, b.y, 'PRISM POP! 💎', '#e0f7fa'));
-                createPopEffect(b.x, b.y, '#e0f7fa');
-                for (let j = 0; j < 3; j++) {
-                    const shard = new Bubble(false);
-                    shard.type = 'normal';
-                    shard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-                    shard.radius = 15;
-                    shard.x = b.x;
-                    shard.y = b.y;
-                    shard.vx = (Math.random() - 0.5) * 10;
-                    shard.vy = (Math.random() - 0.5) * 10 - 5;
-                    bubbles.push(shard);
-                }
-            } else if (b.type === 'heart') {
-                playPopSound(true, false);
-                const starBonus = 40;
-                score += starBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY STAR! 🌟 +${starBonus}`, '#ffeb3b'));
-                createPopEffect(b.x, b.y, '#ffeb3b');
             } else if (b.type === 'time-warp') {
                 playPopSound(true, false);
                 const timeBonus = 3;
@@ -1835,18 +1814,8 @@ function handlePop(e) {
                 
                 // Magic Dust effect: slightly increases the score of the next 5 pops
                 let popsCount = 0;
-                const originalHandlePop = handlePop;
-                handlePop = function(e) {
-                    const result = originalHandlePop(e);
-                    popsCount++;
-                    if (popsCount <= 5) {
-                        score += 5;
-                        scoreEl.innerText = score;
-                    }
-                    if (popsCount > 5) handlePop = originalHandlePop;
-                    return result;
-                };
-            } else if (b.type === 'lucky-clover') {
+                magicDustPopsRemaining = 5;
+                playSound(true, false);
                 playPopSound(true, false);
                 const goldBonus = Math.floor(Math.random() * 20) + 10;
                 totalGold += goldBonus;
@@ -1891,30 +1860,6 @@ function handlePop(e) {
                 setTimeout(() => {
                     shieldActive = false;
                 }, 7000);
-            } else if (b.type === 'prism') {
-                playPopSound(true, false);
-                score += 200;
-                floatingTexts.push(new FloatingText(b.x, b.y, 'PRISM POP! 💎', '#e0f7fa'));
-                createPopEffect(b.x, b.y, '#e0f7fa');
-                for (let j = 0; j < 3; j++) {
-                    const shard = new Bubble(false);
-                    shard.type = 'normal';
-                    shard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-                    shard.radius = 15;
-                    shard.x = b.x;
-                    shard.y = b.y;
-                    shard.vx = (Math.random() - 0.5) * 10;
-                    shard.vy = (Math.random() - 0.5) * 10 - 5;
-                    bubbles.push(shard);
-                }
-            } else if (b.type === 'heart') {
-                    mini.x = b.x + (Math.random() - 0.5) * 50;
-                    mini.y = b.y + (Math.random() - 0.5) * 50;
-                    mini.speed = Math.random() * 3 + 2;
-                    mini.type = 'normal';
-                    mini.color = b.color;
-                    bubbles.push(mini);
-                }
             } else if (b.type === 'magic-star') {
                 playPopSound(true, false);
                 const magicBonus = 60;
@@ -2065,23 +2010,6 @@ function handlePop(e) {
                 floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
                 target.hits = 0; // Mark for removal
             });
-        } else if (b.type === 'prism') {
-            playPopSound(true, false);
-            const prismBonus = 100;
-            score += prismBonus;
-            floatingTexts.push(new FloatingText(b.x, b.y, `PRISM POP! 💎 +${prismBonus}`, '#e0f7fa'));
-            createPopEffect(b.x, b.y, '#e0f7fa');
-            for (let j = 0; j < 6; j++) {
-                const shard = new Bubble(false);
-                shard.radius = 15;
-                shard.x = b.x;
-                shard.y = b.y;
-                shard.vx = (Math.random() - 0.5) * 10;
-                shard.vy = (Math.random() - 0.5) * 10 - b.speed;
-                shard.color = COLORS[j % COLORS.length];
-                shard.type = 'normal';
-                bubbles.push(shard);
-            }
             } else if (b.type === 'rainbow-spiral') {
                 playPopSound(true, false);
                 const spiralBonus = 200;
@@ -2124,22 +2052,6 @@ function handlePop(e) {
                     mini.type = 'normal';
                     mini.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
                     bubbles.push(mini);
-                }
-            } else if (b.type === 'prism') {
-                playPopSound(true, false);
-                score += 200;
-                floatingTexts.push(new FloatingText(b.x, b.y, 'PRISM POP! 💎', '#e0f7fa'));
-                createPopEffect(b.x, b.y, '#e0f7fa');
-                for (let j = 0; j < 3; j++) {
-                    const shard = new Bubble(false);
-                    shard.type = 'normal';
-                    shard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-                    shard.radius = 15;
-                    shard.x = b.x;
-                    shard.y = b.y;
-                    shard.vx = (Math.random() - 0.5) * 10;
-                    shard.vy = (Math.random() - 0.5) * 10 - 5;
-                    bubbles.push(shard);
                 }
             } else if (b.type === 'heart') {
                 combo++;

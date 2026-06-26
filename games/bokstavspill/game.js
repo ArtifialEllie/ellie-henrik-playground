@@ -6,6 +6,7 @@ const levelData = {
             'B': { name: 'Bjørn', emoji: '🐻' },
             'D': { name: 'Delfin', emoji: '🐬' },
             'E': { name: 'Elefant', emoji: '🐘' },
+            'C': { name: 'Cola', emoji: '🥤' },
             'F': { name: 'Fisk', emoji: '🐟' },
             'G': { name: 'Giraff', emoji: '🦒' },
             'H': { name: 'Hund', emoji: '🐶' },
@@ -24,9 +25,18 @@ const levelData = {
             'V': { name: 'Vannlilje', emoji: '🪷' },
             'Y': { name: 'Yak', emoji: '🐂' },
             'Z': { name: 'Zebra', emoji: '🦓' },
+            'W': { name: 'Waffle', emoji: '🧇' },
+            'X': { name: 'Xylofon', emoji: '🎹' },
+            'Q': { name: 'Quiz', emoji: '❓' },
             'Æ': { name: 'Ærfugl', emoji: '🦆' },
             'Ø': { name: 'Ørn', emoji: '🦅' },
             'Å': { name: 'Ål', emoji: '🐍' },
+            'B': { name: 'Banan', emoji: '🍌' },
+            'M': { name: 'Melon', emoji: '🍈' },
+            'P': { name: 'Pære', emoji: '🍐' },
+            'S': { name: 'Sol', emoji: '☀️' },
+            'K': { name: 'Kake', emoji: '🍰' },
+            'T': { name: 'Tog', emoji: '🚂' },
         }
     },
     2: {
@@ -40,7 +50,13 @@ const levelData = {
             'Hj': { name: 'Hjerte', emoji: '❤️', audioHint: 'lyden i starten av hjerte' },
             'Kv': { name: 'Kveld', emoji: '🌙', audioHint: 'lyden i starten av kveld' },
             'Tj': { name: 'Tjære', emoji: '🪵', audioHint: 'lyden i starten av tjære' },
+            'Hv': { name: 'Hva', emoji: '❓', audioHint: 'lyden i starten av hva' },
             'Gj': { name: 'Gjøk', emoji: '🐦', audioHint: 'lyden i starten av gjøk' },
+            'Sk': { name: 'Skole', emoji: '🏫', audioHint: 'lyden i starten av skole' },
+            'St': { name: 'Stjerne', emoji: '⭐', audioHint: 'lyden i starten av stjerne' },
+            'Fl': { name: 'Flue', emoji: '🪰', audioHint: 'lyden i starten av flue' },
+            'Pr': { name: 'Prat', emoji: '🗣️', audioHint: 'lyden i starten av prat' },
+            'Tr': { name: 'Tre', emoji: '🌳', audioHint: 'lyden i starten av tre' },
         }
     },
     3: {
@@ -57,6 +73,15 @@ const levelData = {
             'Hjerte': { name: 'Hjerte', emoji: '❤️' },
             'Regnbue': { name: 'Regnbue', emoji: '🌈' },
             'Sky': { name: 'Sky', emoji: '☁️' },
+            'Eple': { name: 'Eple', emoji: '🍎' },
+            'Katt': { name: 'Katt', emoji: '🐱' },
+            'Hund': { name: 'Hund', emoji: '🐶' },
+            'Sykkel': { name: 'Sykkel', emoji: '🚲' },
+            'Bok': { name: 'Bok', emoji: '📖' },
+            'Hus': { name: 'Hus', emoji: '🏠' },
+            'Katt': { name: 'Katt', emoji: '🐱' },
+            'Hund': { name: 'Hund', emoji: '🐶' },
+            'Sykkel': { name: 'Sykkel', emoji: '🚲' },
         }
     }
 };
@@ -67,32 +92,78 @@ const levelData = {
     let totalStars = 0;
     let lastItem = '';
     let isProcessing = false;
+    let unlockedItems = JSON.parse(localStorage.getItem('bokstavspillUnlocked')) || [];
+    let levelProgress = 0;
     
 const startScreen = document.getElementById('start-screen');
 const startBtn = document.getElementById('start-btn');
 const letterGrid = document.getElementById('letter-grid');
-const resultDiv = document.getElementById('result');
+    const resultDiv = document.getElementById('result');
     const nameDiv = document.getElementById('animal-name');
     const levelText = document.getElementById('level-text');
     const streakText = document.getElementById('streak-text');
     const starsText = document.getElementById('stars-text');
     const levelUpBanner = document.getElementById('level-up-banner');
+    const progressBar = document.getElementById('progress-bar');
+    const collectionDiv = document.getElementById('collection');
+    const hintBtn = document.getElementById('hint-btn');
     
     function speak(text) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'no-NO';
-    utterance.rate = 0.8;
-    window.speechSynthesis.speak(utterance);
-}
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'no-NO';
+        utterance.rate = 0.8;
+        window.speechSynthesis.speak(utterance);
+       window.speechSynthesis.speak(utterance);
+   }
+
+    function playSfx(type) {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'correct') {
+            osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1); // A5
+        } else {
+            osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+            osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.2); // A2
+        }
+
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+    }
+
+   function playItemSound(itemKey, level) {
+       const item = levelData[level].items[itemKey];
+       if (!item) return;
+        
+        let text = item.name;
+        if (level === 2) {
+            text = `Lyd: ${itemKey}. ${item.name}`;
+        } else if (level === 1) {
+            text = `${itemKey} er for ${item.name}`;
+        } else {
+            text = item.name;
+        }
+        speak(text);
+    }
 
 function speakPrompt() {
     const data = levelData[currentLevel].items[currentItem];
     let audioText = currentItem;
     
-    if (data.audioHint) {
-        audioText = `Hvilken lyd er dette? ${data.audioHint}`;
+    if (currentLevel === 1) {
+        audioText = `Hvilken bokstav er dette? ${currentItem}`;
+    } else if (currentLevel === 2) {
+        audioText = data.audioHint ? `Hvilken lyd er dette? ${data.audioHint}` : `Hvilken lyd er dette? ${currentItem}`;
     } else {
-        audioText = `Hvilken lyd eller bokstav er dette? ${currentItem}`;
+        audioText = `Hvilket ord er dette? ${currentItem}`;
     }
     
     speak(audioText);
@@ -124,13 +195,18 @@ function nextRound() {
     
     options.sort(() => Math.random() - 0.5);
 
-    options.forEach(k => {
-        const btn = document.createElement('button');
-        btn.className = 'letter-btn';
-        btn.innerText = k;
-        btn.onclick = () => checkAnswer(k, btn);
-        letterGrid.appendChild(btn);
-    });
+   options.forEach(k => {
+       const btn = document.createElement('button');
+       btn.className = 'letter-btn';
+       btn.innerText = k;
+        
+        const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#FF9FF3', '#A29BFE', '#55E6C1'];
+        btn.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        btn.style.boxShadow = `0 8px 0 ${colors[Math.floor(Math.random() * colors.length)]}`;
+
+       btn.onclick = () => checkAnswer(k, btn);
+       letterGrid.appendChild(btn);
+   });
 
     setTimeout(speakPrompt, 500);
 }
@@ -138,15 +214,21 @@ function nextRound() {
 function checkAnswer(letter, btn) {
     if (isProcessing) return;
 
-    if(letter === currentItem) {
-            btn.classList.add('correct');
-            streak++;
-            
-            totalStars++;
-            const item = levelData[currentLevel].items[currentItem];
+   if(letter === currentItem) {
+           btn.classList.add('correct');
+           streak++;
+            playSfx('correct');
+           
+           totalStars++;
+           const item = levelData[currentLevel].items[currentItem];
             resultDiv.innerText = item.emoji;
+
+            if (!unlockedItems.includes(currentItem)) {
+                unlockedItems.push(currentItem);
+                localStorage.setItem('bokstavspillUnlocked', JSON.stringify(unlockedItems));
+            }
             resultDiv.classList.add('pop-in');
-        nameDiv.innerText = `${currentItem} er for ${item.name}!`;
+            nameDiv.innerText = `${currentItem} er for ${item.name}!`;
         
         speak(`Riktig! ${currentItem} er for ${item.name}`);
         
@@ -162,8 +244,13 @@ function checkAnswer(letter, btn) {
             isProcessing = false;
             nextRound();
         }, 3000);
-    } else {
-        btn.classList.add('wrong');
+   } else {
+       btn.classList.add('wrong');
+        playSfx('wrong');
+       const container = document.getElementById('game-container');
+       container.classList.add('shake');
+       setTimeout(() => container.classList.remove('shake'), 500);
+        
         streak = 0;
         updateStatus();
         speak(`Nei, prøv igjen!`);
@@ -175,6 +262,7 @@ function checkAnswer(letter, btn) {
         levelText.innerText = `Nivå: ${currentLevel} (${levelData[currentLevel].name})`;
         streakText.innerText = `Streak: ${streak} 🔥`;
         starsText.innerText = `Stjerner: ${totalStars} ⭐`;
+        updateProgressBar();
     }
     
     function createBackgroundBubbles() {
@@ -219,9 +307,63 @@ function levelUp() {
     }, 3000);
 }
 
+function updateProgressBar() {
+    const pool = levelData[currentLevel].items;
+    const total = Object.keys(pool).length;
+    const unlockedInLevel = Object.keys(pool).filter(k => unlockedItems.includes(k)).length;
+    const progress = (unlockedInLevel / total) * 100;
+    progressBar.style.width = `${progress}%`;
+}
+
+function renderCollection() {
+    collectionDiv.innerHTML = '<div style="width:100%; text-align:center; font-weight:bold; margin-bottom:10px; color:#ff69b4;">Min Samling 🦄</div>';
+    const allItems = {};
+    Object.values(levelData).forEach(lvl => {
+        Object.assign(allItems, lvl.items);
+    });
+    
+    // We need to know which level each item belongs to for playItemSound
+    const itemToLevelMap = {};
+    Object.entries(levelData).forEach(([level, data]) => {
+        Object.keys(data.items).forEach(k => {
+            itemToLevelMap[k] = parseInt(level);
+        });
+    });
+
+    Object.keys(allItems).forEach(k => {
+        const item = allItems[k];
+        const div = document.createElement('div');
+        div.className = `collection-item ${unlockedItems.includes(k) ? 'unlocked' : ''}`;
+        div.innerText = item.emoji;
+        div.title = item.name;
+        
+        if (unlockedItems.includes(k)) {
+            div.style.cursor = 'pointer';
+            div.onclick = () => playItemSound(k, itemToLevelMap[k]);
+        }
+        
+        collectionDiv.appendChild(div);
+    });
+}
+
 startBtn.onclick = () => {
     startScreen.style.display = 'none';
     createBackgroundBubbles();
     updateStatus();
+    renderCollection();
     nextRound();
 };
+
+hintBtn.onclick = () => {
+    const data = levelData[currentLevel].items[currentItem];
+    if (currentLevel === 1) {
+        speak(`Det begynner på ${currentItem}`);
+    } else if (currentLevel === 2) {
+        speak(`Hør etter: ${data.audioHint || currentItem}`);
+    } else {
+        speak(`Ordet har ${currentItem.length} bokstaver`);
+    }
+};
+
+
+

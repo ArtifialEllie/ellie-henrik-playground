@@ -25,13 +25,22 @@
             <span id="streak-text">Streak: 0 🔥</span>
         </div>
 
-        <button class="repeat-btn" onclick="speakPrompt()">🔊</button>
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div class="button-row">
+            <button class="repeat-btn" onclick="speakPrompt()">🔊</button>
+            <button id="hint-btn" class="hint-btn">💡 Hint</button>
+        </div>
         <div id="prompt">Hvilken lyd hører du?</div>
         
         <div id="letter-grid"></div>
 
         <div id="result"></div>
         <div id="animal-name"></div>
+
+        <div id="collection" class="collection-container"></div>
     </div>
 
     <script src="game.js"></script>

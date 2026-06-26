@@ -81,6 +81,7 @@ const canvas = document.getElementById('gameCanvas');
                 this.rotation = 0;
                 this.vr = 0;
                 this.isFlipping = false;
+                this.bounceCount = 0;
                 this.scaleY = 1; 
                 this.targetScaleY = 1;
                 this.tiltOffset = 0;
@@ -92,6 +93,11 @@ const canvas = document.getElementById('gameCanvas');
                     this.y += this.vy;
                     this.x += this.vx;
                     this.vy += 0.4;
+                    if (this.bounceCount > 0 && this.vy > 0 && this.y >= canvasHeight - 100) {
+                        this.vy *= -0.6;
+                        this.bounceCount--;
+                        playSound(300, 'sine', 0.1);
+                    }
                     this.rotation += this.vr;
                     this.x += currentWind;
                 } else if (this.y > canvasHeight - 100 && !stack.includes(this)) {
@@ -199,6 +205,9 @@ const canvas = document.getElementById('gameCanvas');
             const rand = Math.random();
             let colorSet;
             let isSpecial = false;
+            let isBouncy = false;
+            let isSticky = false;
+            let isGiant = false;
             let specialType = '';
 
             if (rand > 0.97) {
@@ -217,6 +226,21 @@ const canvas = document.getElementById('gameCanvas');
                 colorSet = pancakeColors.rainbow;
                 specialType = 'rainbow';
                 isSpecial = true;
+            } else if (rand > 0.85) {
+                colorSet = ['#e1f5fe', '#b3e5fc'];
+                specialType = 'bouncy';
+                isSpecial = true;
+                isBouncy = true;
+            } else if (rand > 0.80) {
+                colorSet = ['#fff9c4', '#fff176'];
+                specialType = 'sticky';
+                isSpecial = true;
+                isSticky = true;
+            } else if (rand > 0.75) {
+                colorSet = pancakeColors.normal;
+                specialType = 'giant';
+                isSpecial = true;
+                isGiant = true;
             } else {
                 colorSet = pancakeColors.normal;
             }
@@ -224,7 +248,7 @@ const canvas = document.getElementById('gameCanvas');
             const color = colorSet[Math.floor(Math.random() * colorSet.length)];
             const topping = toppings[Math.floor(Math.random() * toppings.length)];
             const sizeReduction = Math.min(40, stack.length * 2);
-            const currentWidth = 120 - sizeReduction;
+            const currentWidth = isGiant ? (180 - sizeReduction) : (120 - sizeReduction);
             
             const last = stack[stack.length - 1];
             activePancake = new Pancake(last.x, last.y - 20, color, topping, currentWidth);
@@ -232,6 +256,7 @@ const canvas = document.getElementById('gameCanvas');
             activePancake.isSpecial = isSpecial;
             activePancake.specialType = specialType;
             activePancake.isSyrupy = Math.random() < 0.15;
+            if (isBouncy) activePancake.bounceCount = 1;
         }
 
         function flipPancake() {
@@ -346,6 +371,19 @@ const canvas = document.getElementById('gameCanvas');
                                 showFloatingText("SLOW-MO! ⏳ Stability!", activePancake.x + activePancake.width/2, activePancake.y - 30);
                             }
                             playSound(1200, 'sine', 0.2);
+                        } else if (activePancake.specialType === 'bouncy') {
+                            score += 2;
+                            showFloatingText("BOUNCY! 🏀", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(400, 'sine', 0.1);
+                        } else if (activePancake.specialType === 'sticky') {
+                            currentTotalLean *= 0.3;
+                            showFloatingText("STICKY! 🍯 Super Stable!", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(300, 'sine', 0.2);
+                        } else if (activePancake.specialType === 'giant') {
+                            score += 4;
+                            currentTotalLean += (Math.random() - 0.5) * 2;
+                            showFloatingText("GIANT! 🥞 +4", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(200, 'square', 0.2);
                         }
                     }
                     activePancake.targetScaleY = 0.7;
