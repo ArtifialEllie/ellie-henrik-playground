@@ -10,6 +10,24 @@ canvas.height = 600;
 
 let gameActive = false;
 let score = 0;
+let difficultyMultiplier = 1;
+
+// Audio setup
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioCtx();
+function playSound(freq, type, duration, volume = 0.1) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
 let rescuedCount = 0;
 let player = {
     x: 400,
@@ -228,7 +246,7 @@ function spawnEntities() {
     seaweeds = [];
     
     for (let i = 0; i < 6; i++) friends.push(new Fish(false));
-    for (let i = 0; i < 3; i++) enemies.push(new Fish(true));
+    for (let i = 0; i < 3 + Math.floor((score / 50) * 2); i++) enemies.push(new Fish(true));
     for (let i = 0; i < 15; i++) bubbles.push(new Bubble());
     for (let i = 0; i < 10; i++) seaweeds.push(new Seaweed());
 }
@@ -263,6 +281,7 @@ function checkCollisions() {
                 particles.push(new Particle(friend.x, friend.y, friend.color));
             }
             
+            playSound(523.25, 'sine', 0.2);
             friend.reset();
             // Add a pearl as a reward
             pearls.push(new Pearl());
@@ -288,6 +307,7 @@ function checkCollisions() {
             score += 10;
             scoreElement.innerText = `Pearls: ${score}`;
             createParticles(pearl.x, pearl.y, 'white', 10);
+            playSound(880, 'sine', 0.1);
             pearls.splice(index, 1);
         }
     });
@@ -298,6 +318,7 @@ function gameOver() {
     overlay.style.opacity = '1';
     overlay.style.pointerEvents = 'auto';
     document.getElementById('title').innerText = 'Oops! A Grumpy Urchin Got You!';
+    playSound(150, 'sawtooth', 0.5, 0.2);
     document.getElementById('message').innerText = `You rescued ${rescuedCount} friends and collected ${score} pearls!`;
     startBtn.innerText = 'Try Again! 🐠';
 }
@@ -305,6 +326,7 @@ function gameOver() {
 function start() {
     gameActive = true;
     score = 0;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     rescuedCount = 0;
     scoreElement.innerText = `Pearls: 0`;
     rescuedElement.innerText = `Friends Rescued: 0`;
