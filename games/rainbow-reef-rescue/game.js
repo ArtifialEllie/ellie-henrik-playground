@@ -26,10 +26,7 @@ let enemies = [];
 let pearls = [];
 let bubbles = [];
 let particles = [];
-<<<<<<< HEAD
-=======
 let seaweeds = [];
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
 
 const COLORS = ['#FF69B4', '#00FF7F', '#00BFFF', '#FFD700', '#FF4500', '#DA70D6'];
 
@@ -171,17 +168,10 @@ class Particle {
         this.y = y;
         this.color = color;
         this.radius = Math.random() * 3 + 1;
-<<<<<<< HEAD
-        this.vx = (Math.random() - 0.5) * 4;
-        this.vy = (Math.random() - 0.5) * 4;
-        this.life = 1.0;
-        this.decay = Math.random() * 0.02 + 0.01;
-=======
         this.vx = (Math.random() - 0.5) * 6;
         this.vy = (Math.random() - 0.5) * 6;
         this.life = 1.0;
         this.decay = Math.random() * 0.02 + 0.015;
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
     }
 
     update() {
@@ -191,24 +181,12 @@ class Particle {
     }
 
     draw() {
-<<<<<<< HEAD
-=======
         ctx.save();
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
         ctx.globalAlpha = this.life;
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
-<<<<<<< HEAD
-        ctx.globalAlpha = 1.0;
-    }
-}
-
-function createParticles(x, y, color, count = 10) {
-    for (let i = 0; i < count; i++) {
-        particles.push(new Particle(x, y, color));
-=======
         ctx.restore();
     }
 }
@@ -238,7 +216,6 @@ class Seaweed {
         );
         ctx.stroke();
         ctx.restore();
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
     }
 }
 
@@ -277,16 +254,6 @@ function checkCollisions() {
         const dx = player.x - friend.x;
         const dy = player.y - friend.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-<<<<<<< HEAD
-    if (dist < player.radius + friend.radius) {
-        rescuedCount++;
-        rescuedElement.innerText = `Friends Rescued: ${rescuedCount}`;
-        createParticles(friend.x, friend.y, friend.color, 15);
-        friend.reset();
-        // Add a pearl as a reward
-        pearls.push(new Pearl());
-    }
-=======
         if (dist < player.radius + friend.radius) {
             rescuedCount++;
             rescuedElement.innerText = `Friends Rescued: ${rescuedCount}`;
@@ -300,7 +267,6 @@ function checkCollisions() {
             // Add a pearl as a reward
             pearls.push(new Pearl());
         }
->>>>>>> b2e22adc852b1307d5dec4283424bee81533ca13
     });
 
     // Check enemy collision
