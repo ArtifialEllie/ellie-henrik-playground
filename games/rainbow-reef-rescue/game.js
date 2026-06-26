@@ -209,6 +209,12 @@ class Particle {
     }
 }
 
+function createParticles(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+}
+
 class Seaweed {
     constructor() {
         this.x = Math.random() * canvas.width;
@@ -299,7 +305,8 @@ function checkCollisions() {
     });
 
     // Check pearl collection
-    pearls.forEach((pearl, index) => {
+    for (let i = pearls.length - 1; i >= 0; i--) {
+        const pearl = pearls[i];
         const dx = player.x - pearl.x;
         const dy = player.y - pearl.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -308,9 +315,9 @@ function checkCollisions() {
             scoreElement.innerText = `Pearls: ${score}`;
             createParticles(pearl.x, pearl.y, 'white', 10);
             playSound(880, 'sine', 0.1);
-            pearls.splice(index, 1);
+            pearls.splice(i, 1);
         }
-    });
+    }
 }
 
 function gameOver() {
