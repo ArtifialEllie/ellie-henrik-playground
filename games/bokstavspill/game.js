@@ -2,94 +2,85 @@ const levelData = {
     1: {
         name: "Enkel",
         items: {
-            'A': { name: 'Ape', emoji: '🐒' },
-            'B': { name: 'Bjørn', emoji: '🐻' },
-            'D': { name: 'Delfin', emoji: '🐬' },
-            'E': { name: 'Elefant', emoji: '🐘' },
-            'C': { name: 'Cola', emoji: '🥤' },
-            'F': { name: 'Fisk', emoji: '🐟' },
-            'G': { name: 'Giraff', emoji: '🦒' },
-            'H': { name: 'Hund', emoji: '🐶' },
-            'I': { name: 'Igle', emoji: '🐛' },
-            'J': { name: 'Jaguar', emoji: '🐆' },
-            'K': { name: 'Katt', emoji: '🐱' },
-            'L': { name: 'Løve', emoji: '🦁' },
-            'M': { name: 'Mus', emoji: '🐭' },
-            'N': { name: 'Neshorn', emoji: '🦏' },
-            'O': { name: 'Oter', emoji: '🦦' },
-            'P': { name: 'Panda', emoji: '🐼' },
-            'R': { name: 'Rødrev', emoji: '🦊' },
-            'S': { name: 'Sel', emoji: '🦭' },
-            'T': { name: 'Tiger', emoji: '🐯' },
-            'U': { name: 'Ugle', emoji: '🦉' },
-            'V': { name: 'Vannlilje', emoji: '🪷' },
-            'Y': { name: 'Yak', emoji: '🐂' },
-            'Z': { name: 'Zebra', emoji: '🦓' },
-            'W': { name: 'Waffle', emoji: '🧇' },
-            'X': { name: 'Xylofon', emoji: '🎹' },
-            'Q': { name: 'Quiz', emoji: '❓' },
-            'Æ': { name: 'Ærfugl', emoji: '🦆' },
-            'Ø': { name: 'Ørn', emoji: '🦅' },
-            'Å': { name: 'Ål', emoji: '🐍' },
-            'B': { name: 'Banan', emoji: '🍌' },
-            'M': { name: 'Melon', emoji: '🍈' },
-            'P': { name: 'Pære', emoji: '🍐' },
-            'S': { name: 'Sol', emoji: '☀️' },
-            'K': { name: 'Kake', emoji: '🍰' },
-            'T': { name: 'Tog', emoji: '🚂' },
+            'A': [{ name: 'Ape', emoji: '🐒' }, { name: 'Ananas', emoji: '🍍' }, { name: 'Appelsin', emoji: '🍊' }],
+            'B': [{ name: 'Bjørn', emoji: '🐻' }, { name: 'Banan', emoji: '🍌' }, { name: 'Bil', emoji: '🚗' }, { name: 'Ball', emoji: '⚽' }],
+            'C': [{ name: 'Cirkus', emoji: '🎪' }, { name: 'Cola', emoji: '🥤' }],
+            'D': [{ name: 'Delfin', emoji: '🐬' }, { name: 'Drage', emoji: '🐉' }, { name: 'Dukke', emoji: '🪆' }],
+            'E': [{ name: 'Elefant', emoji: '🐘' }, { name: 'Eple', emoji: '🍎' }, { name: 'Egg', emoji: '🥚' }],
+            'F': [{ name: 'Fisk', emoji: '🐟' }, { name: 'Fugl', emoji: '🐦' }, { name: 'Frosk', emoji: '🐸' }],
+            'G': [{ name: 'Giraff', emoji: '🦒' }, { name: 'Gresskar', emoji: '🎃' }, { name: 'Gule', emoji: '💛' }],
+            'H': [{ name: 'Hund', emoji: '🐶' }, { name: 'Hest', emoji: '🐴' }, { name: 'Hatt', emoji: '🎩' }],
+            'I': [{ name: 'Igle', emoji: '🐛' }, { name: 'Is', emoji: '🍦' }],
+            'J': [{ name: 'Jaguar', emoji: '🐆' }, { name: 'Juletre', emoji: '🎄' }, { name: 'Jordbær', emoji: '🍓' }],
+            'K': [{ name: 'Katt', emoji: '🐱' }, { name: 'Kake', emoji: '🍰' }, { name: 'Kanin', emoji: '🐰' }, { name: 'Ko', emoji: '🐮' }],
+            'L': [{ name: 'Løve', emoji: '🦁' }, { name: 'Lam', emoji: '🐑' }, { name: 'Lilla', emoji: '💜' }],
+            'M': [{ name: 'Mus', emoji: '🐭' }, { name: 'Melon', emoji: '🍈' }, { name: 'Måne', emoji: '🌙' }],
+            'N': [{ name: 'Neshorn', emoji: '🦏' }, { name: 'Nisse', emoji: '🎅' }, { name: 'Nøtt', emoji: '🥜' }],
+            'O': [{ name: 'Oter', emoji: '🦦' }, { name: 'Ost', emoji: '🧀' }, { name: 'Oransje', emoji: '🟠' }],
+            'P': [{ name: 'Panda', emoji: '🐼' }, { name: 'Pære', emoji: '🍐' }, { name: 'Papegøye', emoji: '🦜' }],
+            'R': [{ name: 'Rødrev', emoji: '🦊' }, { name: 'Robot', emoji: '🤖' }, { name: 'Regnbue', emoji: '🌈' }],
+            'S': [{ name: 'Sel', emoji: '🦭' }, { name: 'Sol', emoji: '☀️' }, { name: 'Slange', emoji: '🐍' }, { name: 'Snegle', emoji: '🐌' }],
+            'T': [{ name: 'Tiger', emoji: '🐯' }, { name: 'Tog', emoji: '🚂' }, { name: 'Traktor', emoji: '🚜' }],
+            'U': [{ name: 'Ugle', emoji: '🦉' }, { name: 'Ur', emoji: '⌚' }, { name: 'Underbukse', emoji: '🩲' }],
+            'V': [{ name: 'Vannlilje', emoji: '🪷' }, { name: 'Vaffel', emoji: '🧇' }, { name: 'Vinter', emoji: '❄️' }],
+            'Y': [{ name: 'Yak', emoji: '🐂' }, { name: 'Ytterdør', emoji: '🚪' }],
+            'Z': [{ name: 'Zebra', emoji: '🦓' }],
+            'W': [{ name: 'Waffle', emoji: '🧇' }],
+            'X': [{ name: 'Xylofon', emoji: '🎹' }],
+            'Q': [{ name: 'Quiz', emoji: '❓' }],
+            'Æ': [{ name: 'Ærfugl', emoji: '🦆' }],
+            'Ø': [{ name: 'Ørn', emoji: '🦅' }, { name: 'Øks', emoji: '🪓' }],
+            'Å': [{ name: 'Ål', emoji: '🐍' }, { name: 'Åker', emoji: '🌾' }],
         }
     },
     2: {
         name: "Lure Lyder",
         items: {
-            'Kj': { name: 'Kjeks', emoji: '🍪', audioHint: 'lyden i starten av kjeks' },
-            'Skj': { name: 'Skjorte', emoji: '👕', audioHint: 'lyden i starten av skjorte' },
-            'Sj': { name: 'Sjø', emoji: '🌊', audioHint: 'lyden i starten av sjokolade' },
-            'Ng': { name: 'Ring', emoji: '💍', audioHint: 'lyden i slutten av ring' },
-            'Øy': { name: 'Øy', emoji: '🏝️', audioHint: 'lyden i starten av øy' },
-            'Hj': { name: 'Hjerte', emoji: '❤️', audioHint: 'lyden i starten av hjerte' },
-            'Kv': { name: 'Kveld', emoji: '🌙', audioHint: 'lyden i starten av kveld' },
-            'Tj': { name: 'Tjære', emoji: '🪵', audioHint: 'lyden i starten av tjære' },
-            'Hv': { name: 'Hva', emoji: '❓', audioHint: 'lyden i starten av hva' },
-            'Gj': { name: 'Gjøk', emoji: '🐦', audioHint: 'lyden i starten av gjøk' },
-            'Sk': { name: 'Skole', emoji: '🏫', audioHint: 'lyden i starten av skole' },
-            'St': { name: 'Stjerne', emoji: '⭐', audioHint: 'lyden i starten av stjerne' },
-            'Fl': { name: 'Flue', emoji: '🪰', audioHint: 'lyden i starten av flue' },
-            'Pr': { name: 'Prat', emoji: '🗣️', audioHint: 'lyden i starten av prat' },
-            'Tr': { name: 'Tre', emoji: '🌳', audioHint: 'lyden i starten av tre' },
+            'Kj': [{ name: 'Kjeks', emoji: '🍪', audioHint: 'lyden i starten av kjeks' }],
+            'Skj': [{ name: 'Skjorte', emoji: '👕', audioHint: 'lyden i starten av skjorte' }],
+            'Sj': [{ name: 'Sjø', emoji: '🌊', audioHint: 'lyden i starten av sjokolade' }],
+            'Ng': [{ name: 'Ring', emoji: '💍', audioHint: 'lyden i slutten av ring' }],
+            'Øy': [{ name: 'Øy', emoji: '🏝️', audioHint: 'lyden i starten av øy' }],
+            'Hj': [{ name: 'Hjerte', emoji: '❤️', audioHint: 'lyden i starten av hjerte' }],
+            'Kv': [{ name: 'Kveld', emoji: '🌙', audioHint: 'lyden i starten av kveld' }],
+            'Tj': [{ name: 'Tjære', emoji: '🪵', audioHint: 'lyden i starten av tjære' }],
+            'Hv': [{ name: 'Hva', emoji: '❓', audioHint: 'lyden i starten av hva' }],
+            'Gj': [{ name: 'Gjøk', emoji: '🐦', audioHint: 'lyden i starten av gjøk' }],
+            'Sk': [{ name: 'Skole', emoji: '🏫', audioHint: 'lyden i starten av skole' }],
+            'St': [{ name: 'Stjerne', emoji: '⭐', audioHint: 'lyden i starten av stjerne' }],
+            'Fl': [{ name: 'Flue', emoji: '🪰', audioHint: 'lyden i starten av flue' }],
+            'Pr': [{ name: 'Prat', emoji: '🗣️', audioHint: 'lyden i starten av prat' }],
+            'Tr': [{ name: 'Tre', emoji: '🌳', audioHint: 'lyden i starten av tre' }],
         }
     },
     3: {
         name: "Ord-utfordring",
         items: {
-            'Sol': { name: 'Sol', emoji: '☀️' },
-            'Hus': { name: 'Hus', emoji: '🏠' },
-            'Bil': { name: 'Bil', emoji: '🚗' },
-            'Is': { name: 'Is', emoji: '🍦' },
-            'Ball': { name: 'Ball', emoji: '⚽' },
-            'Kake': { name: 'Kake', emoji: '🍰' },
-            'Måne': { name: 'Måne', emoji: '🌙' },
-            'Stjerne': { name: 'Stjerne', emoji: '⭐' },
-            'Hjerte': { name: 'Hjerte', emoji: '❤️' },
-            'Regnbue': { name: 'Regnbue', emoji: '🌈' },
-            'Sky': { name: 'Sky', emoji: '☁️' },
-            'Eple': { name: 'Eple', emoji: '🍎' },
-            'Katt': { name: 'Katt', emoji: '🐱' },
-            'Hund': { name: 'Hund', emoji: '🐶' },
-            'Sykkel': { name: 'Sykkel', emoji: '🚲' },
-            'Bok': { name: 'Bok', emoji: '📖' },
-            'Hus': { name: 'Hus', emoji: '🏠' },
-            'Katt': { name: 'Katt', emoji: '🐱' },
-            'Hund': { name: 'Hund', emoji: '🐶' },
-            'Sykkel': { name: 'Sykkel', emoji: '🚲' },
+            'Sol': [{ name: 'Sol', emoji: '☀️' }],
+            'Hus': [{ name: 'Hus', emoji: '🏠' }],
+            'Bil': [{ name: 'Bil', emoji: '🚗' }],
+            'Is': [{ name: 'Is', emoji: '🍦' }],
+            'Ball': [{ name: 'Ball', emoji: '⚽' }],
+            'Kake': [{ name: 'Kake', emoji: '🍰' }],
+            'Måne': [{ name: 'Måne', emoji: '🌙' }],
+            'Stjerne': [{ name: 'Stjerne', emoji: '⭐' }],
+            'Hjerte': [{ name: 'Hjerte', emoji: '❤️' }],
+            'Regnbue': [{ name: 'Regnbue', emoji: '🌈' }],
+            'Sky': [{ name: 'Sky', emoji: '☁️' }],
+            'Eple': [{ name: 'Eple', emoji: '🍎' }],
+            'Katt': [{ name: 'Katt', emoji: '🐱' }],
+            'Hund': [{ name: 'Hund', emoji: '🐶' }],
+            'Sykkel': [{ name: 'Sykkel', emoji: '🚲' }],
+            'Bok': [{ name: 'Bok', emoji: '📖' }],
         }
     }
 };
 
-    let currentLevel = 1;
+    let currentLevel = parseInt(localStorage.getItem('bokstavspillLevel')) || 1;
     let streak = 0;
     let currentItem = '';
-    let totalStars = 0;
+    let currentRoundItem = null;
+    let totalStars = parseInt(localStorage.getItem('bokstavspillStars')) || 0;
     let lastItem = '';
     let isProcessing = false;
     let unlockedItems = JSON.parse(localStorage.getItem('bokstavspillUnlocked')) || [];
@@ -113,8 +104,7 @@ const letterGrid = document.getElementById('letter-grid');
         utterance.lang = 'no-NO';
         utterance.rate = 0.8;
         window.speechSynthesis.speak(utterance);
-       window.speechSynthesis.speak(utterance);
-   }
+    }
 
     function playSfx(type) {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -139,23 +129,22 @@ const letterGrid = document.getElementById('letter-grid');
         osc.stop(ctx.currentTime + 0.3);
     }
 
-   function playItemSound(itemKey, level) {
-       const item = levelData[level].items[itemKey];
+   function playItemSound(key, item, level) {
        if (!item) return;
         
         let text = item.name;
         if (level === 2) {
-            text = `Lyd: ${itemKey}. ${item.name}`;
+            text = `Lyd: ${key}. ${item.name}`;
         } else if (level === 1) {
-            text = `${itemKey} er for ${item.name}`;
+            text = `${key} er for ${item.name}`;
         } else {
             text = item.name;
         }
         speak(text);
-    }
+   }
 
 function speakPrompt() {
-    const data = levelData[currentLevel].items[currentItem];
+    const data = currentRoundItem;
     let audioText = currentItem;
     
     if (currentLevel === 1) {
@@ -186,6 +175,10 @@ function nextRound() {
 
     currentItem = newItem;
     lastItem = currentItem;
+
+    // Pick a random item for this key
+    const itemOptions = pool[currentItem];
+    currentRoundItem = itemOptions[Math.floor(Math.random() * itemOptions.length)];
     
     let options = [currentItem];
     while(options.length < 3) {
@@ -220,11 +213,13 @@ function checkAnswer(letter, btn) {
             playSfx('correct');
            
            totalStars++;
-           const item = levelData[currentLevel].items[currentItem];
-            resultDiv.innerText = item.emoji;
+        localStorage.setItem('bokstavspillStars', totalStars);
+        const item = currentRoundItem;
+        resultDiv.innerText = item.emoji;
 
-            if (!unlockedItems.includes(currentItem)) {
-                unlockedItems.push(currentItem);
+            const unlockId = `${currentItem}_${item.name}`;
+            if (!unlockedItems.includes(unlockId)) {
+                unlockedItems.push(unlockId);
                 localStorage.setItem('bokstavspillUnlocked', JSON.stringify(unlockedItems));
             }
             resultDiv.classList.add('pop-in');
@@ -297,6 +292,7 @@ function spawnConfetti() {
 
 function levelUp() {
     currentLevel++;
+    localStorage.setItem('bokstavspillLevel', currentLevel);
     streak = 0;
     levelUpBanner.style.display = 'block';
     spawnConfetti();
@@ -310,39 +306,34 @@ function levelUp() {
 function updateProgressBar() {
     const pool = levelData[currentLevel].items;
     const total = Object.keys(pool).length;
-    const unlockedInLevel = Object.keys(pool).filter(k => unlockedItems.includes(k)).length;
+    const unlockedInLevel = Object.keys(pool).filter(k => {
+        return pool[k].some(item => unlockedItems.includes(`${k}_${item.name}`));
+    }).length;
     const progress = (unlockedInLevel / total) * 100;
     progressBar.style.width = `${progress}%`;
 }
 
 function renderCollection() {
     collectionDiv.innerHTML = '<div style="width:100%; text-align:center; font-weight:bold; margin-bottom:10px; color:#ff69b4;">Min Samling 🦄</div>';
-    const allItems = {};
-    Object.values(levelData).forEach(lvl => {
-        Object.assign(allItems, lvl.items);
-    });
     
-    // We need to know which level each item belongs to for playItemSound
-    const itemToLevelMap = {};
-    Object.entries(levelData).forEach(([level, data]) => {
-        Object.keys(data.items).forEach(k => {
-            itemToLevelMap[k] = parseInt(level);
+    Object.entries(levelData).forEach(([levelStr, levelObj]) => {
+        const level = parseInt(levelStr);
+        Object.entries(levelObj.items).forEach(([key, items]) => {
+            items.forEach(item => {
+                const unlockId = `${key}_${item.name}`;
+                const div = document.createElement('div');
+                div.className = `collection-item ${unlockedItems.includes(unlockId) ? 'unlocked' : ''}`;
+                div.innerText = item.emoji;
+                div.title = item.name;
+                
+                if (unlockedItems.includes(unlockId)) {
+                    div.style.cursor = 'pointer';
+                    div.onclick = () => playItemSound(key, item, level);
+                }
+                
+                collectionDiv.appendChild(div);
+            });
         });
-    });
-
-    Object.keys(allItems).forEach(k => {
-        const item = allItems[k];
-        const div = document.createElement('div');
-        div.className = `collection-item ${unlockedItems.includes(k) ? 'unlocked' : ''}`;
-        div.innerText = item.emoji;
-        div.title = item.name;
-        
-        if (unlockedItems.includes(k)) {
-            div.style.cursor = 'pointer';
-            div.onclick = () => playItemSound(k, itemToLevelMap[k]);
-        }
-        
-        collectionDiv.appendChild(div);
     });
 }
 
@@ -355,7 +346,7 @@ startBtn.onclick = () => {
 };
 
 hintBtn.onclick = () => {
-    const data = levelData[currentLevel].items[currentItem];
+    const data = currentRoundItem;
     if (currentLevel === 1) {
         speak(`Det begynner på ${currentItem}`);
     } else if (currentLevel === 2) {
@@ -364,6 +355,3 @@ hintBtn.onclick = () => {
         speak(`Ordet har ${currentItem.length} bokstaver`);
     }
 };
-
-
-
