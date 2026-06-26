@@ -17,6 +17,7 @@ const questFill = document.getElementById('quest-progress-fill');
 
 let score = 0;
 let totalPops = 0;
+let emotionPops = 0;
 let timeLeft = 30;
 let highscore = localStorage.getItem('bubblePopHighscore') || 0;
 let totalGold = parseInt(localStorage.getItem('bubblePopTotalGold')) || 0;
@@ -74,10 +75,9 @@ function updateQuest() {
         progress = (level / quest.goal) * 100;
     } else if (quest.type === 'gold') {
         progress = (totalGold / quest.goal) * 100;
+    } else if (quest.type === 'emotion') {
+        progress = (emotionPops / quest.goal) * 100;
     } else {
-        // Default: total pops (approximated by score/avg points, or we track pops specifically)
-        // For simplicity, let's use score for "Pop X bubbles" or track it.
-        // Since we don't have a popCount, let's add one.
         progress = (totalPops / quest.goal) * 100;
     }
 
@@ -598,28 +598,6 @@ class Bubble {
            ctx.fillText('🌀', drawX, drawY + currentRadius/3);
            ctx.shadowBlur = 20;
            ctx.shadowColor = `hsl(${Date.now() / 5 % 360}, 100%, 50%)`;
-       } else if (this.type === 'rainbow-spiral') {
-           ctx.font = `${currentRadius}px Arial`;
-           ctx.textAlign = 'center';
-           ctx.fillText('🌀', drawX, drawY + currentRadius/3);
-           ctx.shadowBlur = 10;
-           ctx.shadowColor = 'magenta';
-       } else if (this.type === 'magic-burst') {
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('🎆', drawX, drawY + currentRadius/3);
-        } else if (this.type === 'mystery-box') {
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('🎁', drawX, drawY + currentRadius/3);
-        } else if (this.type === 'golden-ticket') {
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('🎫', drawX, drawY + currentRadius/3);
-        } else if (this.type === 'cupcake') {
-            ctx.font = `${currentRadius}px Arial`;
-           ctx.textAlign = 'center';
-           ctx.fillText('🧁', drawX, drawY + currentRadius/3);
         } else if (this.type === 'prism') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -630,12 +608,6 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🍭', drawX, drawY + currentRadius/3);
-        } else if (this.type === 'prism') {
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('💎', drawX, drawY + currentRadius/3);
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = 'white';
         } else if (this.type === 'confetti') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -644,14 +616,6 @@ class Bubble {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
             ctx.fillText('🤧', drawX, drawY + currentRadius/3);
-        } else if (this.type === 'pet-treat') {
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('🦴', drawX, drawY + currentRadius/3);
-        } else if (this.type === 'lucky-clover') {
-            ctx.font = `${currentRadius}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText('🍀', drawX, drawY + currentRadius/3);
         } else if (this.type === 'magic-dust') {
             ctx.font = `${currentRadius}px Arial`;
             ctx.textAlign = 'center';
@@ -659,8 +623,8 @@ class Bubble {
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'white';
         }
+        ctx.shadowBlur = 0;
     }
-    ctx.shadowBlur = 0;
 }
 
 class Particle {
@@ -1013,13 +977,13 @@ class MagicalPet {
         
         const superPopRadius = 300;
         bubbles.forEach(b => {
-            const dist = Math.hypot(this.x - b.x, this.y - b.y);
-            if (dist < superPopRadius) {
-                createPopEffect(b.x, b.y, b.color);
-                score += 10;
-                b.hits = 0; 
-            }
-        });
+               const dist = Math.hypot(this.x - b.x, this.y - b.y);
+               if (dist < superPopRadius) {
+                   createPopEffect(b.x, b.y, b.color);
+                   score += 10;
+                    b.popped = true;
+               }
+           });
     }
 
     draw() {
@@ -1583,10 +1547,10 @@ function handlePop(e) {
                         floatingTexts.push(new FloatingText(b.x, b.y, 'SPARKLE BLAST! ✨', b.color));
                     }
 
-        // Pass the bubble's color to the sound function for a more musical experience! 🎵
-        pet.gainEnergy(1);
-            const popColor = b.color;
-            playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
+                    // Pass the bubble's color to the sound function for a more musical experience! 🎵
+                    pet.gainEnergy(1);
+                    const popColor = b.color;
+                    playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
             if (b.type === 'mystery-box') {
                 playPopSound(true, false);
                 const mysteryOutcomes = [
@@ -1703,11 +1667,9 @@ function handlePop(e) {
             singularities.push(new Singularity(b.x, b.y));
             createPopEffect(b.x, b.y, 'indigo');
             score += 300;
-        } else if (b.type === 'shimmer-shell') {
-               playPopSound(true, false);
-            } else if (b.type === 'cosmic-candy') {
-                playPopSound(true, false);
-                const candyBonus = 100;
+                } else if (b.type === 'cosmic-candy') {
+                    playPopSound(true, false);
+                    const candyBonus = 100;
                 score += candyBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `COSMIC CANDY! 🍭 +${candyBonus}`, '#ff69b4'));
                 createPopEffect(b.x, b.y, '#ff69b4');
@@ -1811,18 +1773,17 @@ function handlePop(e) {
                 score += dustBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC DUST! ✨ +${dustBonus}`, 'white'));
                 createPopEffect(b.x, b.y, 'white');
-                
-                // Magic Dust effect: slightly increases the score of the next 5 pops
-                let popsCount = 0;
-                magicDustPopsRemaining = 5;
-                playSound(true, false);
-                playPopSound(true, false);
-                const goldBonus = Math.floor(Math.random() * 20) + 10;
-                totalGold += goldBonus;
-                localStorage.setItem('bubblePopTotalGold', totalGold);
-                totalGoldEl.innerText = totalGold;
-                floatingTexts.push(new FloatingText(b.x, b.y, `LUCKY CLOVER! 🍀 +${goldBonus} ✨`, '#81c784'));
-                createPopEffect(b.x, b.y, '#81c784');
+               
+               // Magic Dust effect: slightly increases the score of the next 5 pops
+               let popsCount = 0;
+               magicDustPopsRemaining = 5;
+               // playSound(true, false); // Removed redundant call
+               const goldBonus = Math.floor(Math.random() * 20) + 10;
+               totalGold += goldBonus;
+               localStorage.setItem('bubblePopTotalGold', totalGold);
+               totalGoldEl.innerText = totalGold;
+               floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC DUST! ✨ +${goldBonus} GOLD`, 'white'));
+               createPopEffect(b.x, b.y, 'white');
             } else if (b.type === 'candy-cloud') {
                 playPopSound(true, false);
                 score += 150;
@@ -1912,6 +1873,12 @@ function handlePop(e) {
                 score += snackBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `YUM! 🍪 +${snackBonus}`, '#ffcc80'));
                 createPopEffect(b.x, b.y, '#ffcc80');
+            } else if (b.type === 'emotion') {
+                combo++;
+                score += 50;
+                emotionPops++;
+                floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
+                createPopEffect(b.x, b.y, b.color);
             } else if (b.type === 'bomb') {
                 playSound(100, 'square', 0.5);
                 bubbles = [];
@@ -2053,20 +2020,6 @@ function handlePop(e) {
                     mini.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
                     bubbles.push(mini);
                 }
-            } else if (b.type === 'heart') {
-                combo++;
-                const points = (Math.ceil(60 / b.radius * 2) + (combo > 5 ? 5 : 0)) * multiplier;
-                if (currentAccessory === '🪄') {
-                    score += 5; // Bonus from Magic Bubble Wand
-                }
-                if (currentAccessory === '💎') {
-                    score += points * 0.2; // Diamond Bow: 20% bonus points
-                }
-                if (currentAccessory === '👗' && (b.type === 'rainbow-burst' || b.color === 'rainbow')) {
-                    score += 20; // Rainbow Tutu: Bonus for rainbow bubbles
-                }
-                score += points;
-                floatingTexts.push(new FloatingText(b.x, b.y, `+${points}`, b.color));
             }
             
             totalPops++;
