@@ -11,6 +11,7 @@ canvas.height = 600;
 let gameActive = false;
 let score = 0;
 let difficultyMultiplier = 1;
+let playerStatus = { shield: 0, turbo: 0, invisibility: 0 };
 
 // Audio setup
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -34,6 +35,7 @@ let player = {
     y: 300,
     radius: 20,
     speed: 5,
+    baseSpeed: 5,
     color: '#ffeb3b',
     targetX: 400,
     targetY: 300
@@ -43,6 +45,7 @@ let friends = [];
 let enemies = [];
 let pearls = [];
 let bubbles = [];
+let powerups = [];
 let particles = [];
 let seaweeds = [];
 
@@ -51,6 +54,7 @@ const COLORS = ['#FF69B4', '#00FF7F', '#00BFFF', '#FFD700', '#FF4500', '#DA70D6'
 class Fish {
     constructor(isEnemy = false) {
         this.isEnemy = isEnemy;
+        this.behavior = isEnemy ? (Math.random() > 0.7 ? 'patrol' : 'track') : 'wander';
         this.radius = isEnemy ? 15 : 12;
         this.reset();
     }
@@ -69,12 +73,19 @@ class Fish {
 
     update() {
         if (this.isEnemy) {
-            // Enemies track player
-            const dx = player.x - this.x;
-            const dy = player.y - this.y;
-            const angle = Math.atan2(dy, dx);
-            this.x += Math.cos(angle) * this.speed;
-            this.y += Math.sin(angle) * this.speed;
+            if (this.behavior === 'track') {
+                // Enemies track player
+                const dx = player.x - this.x;
+                const dy = player.y - this.y;
+                const angle = Math.atan2(dy, dx);
+                this.x += Math.cos(angle) * this.speed;
+                this.y += Math.sin(angle) * this.speed;
+            } else {
+                // Patrol behavior: move in a wavy pattern
+                this.angle += 0.02;
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle * 0.5) * this.speed;
+            }
         } else {
             // Friends wander
             this.x += Math.cos(this.angle) * this.speed;
@@ -83,6 +94,7 @@ class Fish {
                 this.angle += (Math.random() - 0.5) * 0.5;
             }
         }
+
 
         // Wrap around or reset
         if (this.x < -50 || this.x > canvas.width + 50 || this.y < -50 || this.y > canvas.height + 50) {
@@ -161,7 +173,7 @@ class Bubble {
         this.speed = 1 + Math.random() * 2;
         this.drift = (Math.random() - 0.5) * 1;
     }
-
+ 
     update() {
         this.y -= this.speed;
         this.x += this.drift;
@@ -170,13 +182,44 @@ class Bubble {
             this.x = Math.random() * canvas.width;
         }
     }
-
+ 
     draw() {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.stroke();
+    }
+}
+ 
+class PowerUp {
+    constructor() {
+        const types = ['SHIELD', 'TURBO', 'INVISIBILITY'];
+        this.type = types[Math.floor(Math.random() * types.length)];
+        const emojis = { 'SHIELD': '🛡️', 'TURBO': '⚡', 'INVISIBILITY': '👻' };
+        this.emoji = emojis[this.type];
+        this.radius = 15;
+        this.x = Math.random() * (canvas.width - 40) + 20;
+        this.y = Math.random() * (canvas.height - 40) + 20;
+        this.life = 600; // disappear after some time
+        this.pulse = 0;
+    }
+ 
+    update() {
+        this.life--;
+        this.pulse += 0.1;
+    }
+ 
+    draw() {
+        ctx.save();
+        const scale = 1 + Math.sin(this.pulse) * 0.2;
+        ctx.translate(this.x, this.y);
+        ctx.scale(scale, scale);
+        ctx.font = '24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.emoji, 0, 0);
+        ctx.restore();
     }
 }
 
@@ -300,7 +343,16 @@ function checkCollisions() {
         const dy = player.y - enemy.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < player.radius + enemy.radius) {
-            gameOver();
+            if (playerStatus.invisibility > 0) {
+                // Do nothing, player is invisible
+            } else if (playerStatus.shield > 0) {
+                playerStatus.shield = 0; // Use up shield
+                createParticles(enemy.x, enemy.y, 'white', 15);
+                playSound(300, 'sine', 0.2);
+                enemy.reset();
+            } else {
+                gameOver();
+            }
         }
     });
 
@@ -316,6 +368,28 @@ function checkCollisions() {
             createParticles(pearl.x, pearl.y, 'white', 10);
             playSound(880, 'sine', 0.1);
             pearls.splice(i, 1);
+        }
+    }
+ 
+    // Check powerup collection
+    for (let i = powerups.length - 1; i >= 0; i--) {
+        const pu = powerups[i];
+        const dx = player.x - pu.x;
+        const dy = player.y - pu.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < player.radius + pu.radius) {
+            if (pu.type === 'SHIELD') {
+                playerStatus.shield = 300; // 5 seconds approx
+                playSound(600, 'sine', 0.2);
+            } else if (pu.type === 'TURBO') {
+                playerStatus.turbo = 300;
+                playSound(800, 'sine', 0.2);
+            } else if (pu.type === 'INVISIBILITY') {
+                playerStatus.invisibility = 300;
+                playSound(700, 'sine', 0.2);
+            }
+            createParticles(pu.x, pu.y, 'yellow', 10);
+            powerups.splice(i, 1);
         }
     }
 }
@@ -337,6 +411,9 @@ function start() {
     rescuedCount = 0;
     scoreElement.innerText = `Pearls: 0`;
     rescuedElement.innerText = `Friends Rescued: 0`;
+    playerStatus.shield = 0;
+    playerStatus.turbo = 0;
+    playerStatus.invisibility = 0;
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
     spawnEntities();
@@ -365,7 +442,19 @@ function gameLoop() {
         pearl.update();
         pearl.draw();
     });
-
+ 
+    // Draw power-ups
+    for (let i = powerups.length - 1; i >= 0; i--) {
+        powerups[i].update();
+        powerups[i].draw();
+        if (powerups[i].life <= 0) powerups.splice(i, 1);
+    }
+ 
+    // Spawn power-ups occasionally
+    if (Math.random() < 0.002) {
+        powerups.push(new PowerUp());
+    }
+ 
     // Draw particles
     particles.forEach((particle, index) => {
         particle.update();
@@ -385,6 +474,8 @@ function gameLoop() {
         enemy.draw();
         // Add spikes to urchins
         ctx.save();
+        ctx.strokeStyle = 'purple';
+        ctx.lineWidth = 2;
         ctx.strokeStyle = 'purple';
         ctx.lineWidth = 2;
         for(let i=0; i<8; i++) {
@@ -409,6 +500,12 @@ function gameLoop() {
     ctx.translate(player.x, player.y);
     const angle = Math.atan2(player.targetY - player.y, player.targetX - player.x);
     ctx.rotate(angle);
+    
+    // Visual feedback for invisibility
+    if (playerStatus.invisibility > 0) {
+        ctx.globalAlpha = 0.5;
+    }
+    
     ctx.fillStyle = player.color;
     ctx.beginPath();
     ctx.ellipse(0, 0, player.radius * 1.5, player.radius, 0, 0, Math.PI * 2);
@@ -425,6 +522,15 @@ function gameLoop() {
 
     updatePlayer();
     checkCollisions();
+    
+    // Update player status timers
+    if (playerStatus.shield > 0) playerStatus.shield--;
+    if (playerStatus.turbo > 0) playerStatus.turbo--;
+    if (playerStatus.invisibility > 0) playerStatus.invisibility--;
+    
+    // Apply turbo speed
+    player.speed = playerStatus.turbo > 0 ? player.baseSpeed * 1.8 : player.baseSpeed;
+ 
     requestAnimationFrame(gameLoop);
 }
 
