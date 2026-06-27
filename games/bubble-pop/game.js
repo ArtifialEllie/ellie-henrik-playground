@@ -434,6 +434,7 @@ class Bubble {
            });
        }
        this.y -= this.speed * gameSpeed;
+       this.y += this.vy * gameSpeed;
        this.x += this.vx * gameSpeed;
        
         if (this.isSneezing) {
@@ -1468,8 +1469,11 @@ function updateCombo() {
         comboBar.style.width = '0%';
     }
     
-    // Oppdater multiplikator basert på combo
-    multiplier = 1 + Math.floor(combo / 5);
+    // Oppdater multiplikator basert på combo og tilbehør
+    let accessoryMultiplier = 1;
+    if (currentAccessory === '💎') accessoryMultiplier = 1.2;
+
+    multiplier = (1 + Math.floor(combo / 5)) * accessoryMultiplier;
     multiplierEl.innerText = `x${multiplier}`;
     
     clearTimeout(comboTimer);
@@ -1486,30 +1490,25 @@ function handlePop(e) {
     const rect = canvas.getBoundingClientRect();
     const mouseX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
     const mouseY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-
-    // Check if the pet was clicked first!
     const petDist = Math.hypot(mouseX - pet.x, mouseY - pet.y);
+
+    // First check if we hit the boss (Direct Hit)
+    if (bossActive && boss) {
+        const bossDist = Math.hypot(mouseX - boss.x, mouseY - boss.y);
+        if (bossDist < boss.radius + 20) {
+            damageBoss(20);
+            floatingTexts.push(new FloatingText(boss.x, boss.y, 'DIRECT HIT! -20', 'white'));
+            playSound(200, 'sine', 0.3);
+            return; // Don't pop bubbles or pet the pet if we hit the boss
+        }
+    }
+
     if (petDist < pet.size) {
         if (pet.energy >= pet.maxEnergy) {
             pet.triggerSuperPop();
         } else {
-            // First check if we hit the boss
-            if (bossActive && boss) {
-                const bossDist = Math.hypot(mouseX - boss.x, mouseY - boss.y);
-                if (bossDist < boss.radius + 20) {
-                    damageBoss(20);
-                    floatingTexts.push(new FloatingText(boss.x, boss.y, 'DIRECT HIT! -20', 'white'));
-                    playSound(200, 'sine', 0.3);
-                    return; // Don't pop bubbles if we hit the boss
-                }
-            }
-
-                    // Petting rewards (if not hitting boss)
-                    pet.mood = 'Love';
-                    pet.moodTimer = 300;
-                    pet.gainFriendship(10);
-                    floatingTexts.push(new FloatingText(pet.x, pet.y, '❤️ Pat!', '#ff4081'));
-                    playSound(600, 'sine', 0.1);
+            // Petting rewards
+            pet.mood = 'Love';
                     
                     // Reward for petting! ✨
                     score += 10;
@@ -1535,12 +1534,12 @@ function handlePop(e) {
                     
                     // NEW: Pet-specific Accessory Bonus for petting!
                     if (currentAccessory === '❤️🕶️') {
-                        score += 20;
+                        const heartBonus = 20 * (1 + (pet.friendshipLevel * 0.1));
+                        score += heartBonus;
                         updateScore();
-                        floatingTexts.push(new FloatingText(pet.x, pet.y, 'HEART BONUS! +20 ❤️', '#ff4081'));
+                        floatingTexts.push(new FloatingText(pet.x, pet.y, `HEART BONUS! +${Math.floor(heartBonus)} ❤️`, '#ff4081'));
                     }
-}
-    }
+                }
 
    for (let i = bubbles.length - 1; i >= 0; i--) {
        const b = bubbles[i];
@@ -1710,9 +1709,7 @@ function handlePop(e) {
                     floatingTexts.push(new FloatingText(b.x, b.y, `+${totalPoints}`, b.color));
                 }
 
-                b.popped = true;
-                totalPops++;
-                updateQuest();
+                combo++;
             }
             if (b.type === 'cosmic-candy') {
                 playPopSound(true, false);
@@ -1779,8 +1776,14 @@ function handlePop(e) {
                 // Friendship bonus: +10% gold per level above 1 (up to level 5)
                 const friendshipMult = 1 + (Math.min(pet.friendshipLevel - 1, 4) * 0.1);
                 goldGain = Math.floor(goldGain * friendshipMult);
-                score += bonus;
-                totalGold += goldGain;
+                let finalBonus = bonus;
+                if (currentAccessory === '🪄') finalBonus *= 1.2; // Magic Bubble Wand score boost
+
+                score += finalBonus;
+                let finalGold = goldGain;
+                if (currentAccessory === '👑') finalGold = Math.floor(finalGold * 1.2); // Golden Collar gold bonus
+
+                totalGold += finalGold;
                 localStorage.setItem('bubblePopTotalGold', totalGold);
                totalGoldEl.innerText = totalGold;
                timeLeft += 2;
@@ -1917,9 +1920,8 @@ function handlePop(e) {
                 const snackBonus = 50;
                score += snackBonus;
                floatingTexts.push(new FloatingText(b.x, b.y, `YUM! 🍪 +${snackBonus}`, '#ffcc80'));
-               createPopEffect(b.x, b.y, '#ffcc80');
+                createPopEffect(b.x, b.y, '#ffcc80');
             } else if (b.type === 'emotion') {
-               combo++;
                score += 50;
                emotionPops++;
                floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
@@ -2067,6 +2069,7 @@ function handlePop(e) {
                 }
             }
             
+            b.popped = true;
             totalPops++;
             updateQuest();
         }
