@@ -139,18 +139,23 @@ const levelData = {
     
 const startScreen = document.getElementById('start-screen');
 const startBtn = document.getElementById('start-btn');
+const galleryBtn = document.getElementById('gallery-btn');
 const letterGrid = document.getElementById('letter-grid');
     const resultDiv = document.getElementById('result');
     const nameDiv = document.getElementById('animal-name');
     const levelText = document.getElementById('level-text');
     const streakText = document.getElementById('streak-text');
     const starsText = document.getElementById('stars-text');
+    const homeBtn = document.getElementById('home-btn');
     const levelUpBanner = document.getElementById('level-up-banner');
     const progressBar = document.getElementById('progress-bar');
     const collectionDiv = document.getElementById('collection');
     const hintBtn = document.getElementById('hint-btn');
     const badgesContainer = document.getElementById('badges-container');
     
+    const collectionOverlay = document.getElementById('collection-overlay');
+    const closeGalleryBtn = document.getElementById('close-gallery-btn');
+
     function speak(text) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -492,6 +497,23 @@ startBtn.onclick = () => {
     updateStatus();
     renderCollection();
     nextRound();
+};
+
+galleryBtn.onclick = () => {
+    startScreen.style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
+    collectionOverlay.style.display = 'flex';
+    renderCollection();
+};
+
+closeGalleryBtn.onclick = () => {
+    collectionOverlay.style.display = 'none';
+};
+
+homeBtn.onclick = () => {
+    collectionOverlay.style.display = 'none';
+    startScreen.style.display = 'flex';
+    document.getElementById('game-container').style.display = 'none';
 };
 
 hintBtn.onclick = () => {

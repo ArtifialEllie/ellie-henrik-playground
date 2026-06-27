@@ -290,18 +290,40 @@ h1 {
     box-shadow: 0 0 0 #ffeb3b;
 }
 
-#level-up-banner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.9);
-    border: 10px solid #ffeb3b;
-    padding: 40px;
-    border-radius: 50px;
-    font-size: 3rem;
-    color: #ff69b4;
+.home-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.home-btn:active {
+    transform: scale(1.2);
+}
+
+.collection-overlay {
     display: none;
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.95);
     z-index: 10;
-    pointer-events: none;
+    border-radius: 42px;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: #ff69b4;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 11;
 }
