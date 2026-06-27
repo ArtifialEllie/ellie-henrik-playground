@@ -353,7 +353,7 @@ const canvas = document.getElementById('gameCanvas');
                             createParticles(player.x + player.width/2, player.y + player.height, '#d1b3ff');
                             showFloatingText("VORTEX! 🌪️✨", player.x + player.width/2, player.y);
                             player.vy = JUMP_FORCE * 0.8;
-                        } else if (cloud.type === 'storm') {
+                        if (cloud.type === 'storm') {
                            if (player.hasShield) {
                                player.hasShield = false;
                                playSound(300, 'square', 0.3);
@@ -366,6 +366,11 @@ const canvas = document.getElementById('gameCanvas');
                                 showFloatingText("OUCH! ⚡", player.x + player.width/2, player.y);
                                 combo = 0;
                                 comboElement.classList.remove('show');
+                                if (Math.random() < 0.3) {
+                                    showFloatingText("SNEEZED! 🤧", player.x + player.width/2, player.y);
+                                    player.vx += (Math.random() - 0.5) * 10;
+                                }
+                            }
                             }
                         } else if (cloud.type === 'fragile') {
                             player.vy = isPerfect ? JUMP_FORCE * 1.2 : JUMP_FORCE;

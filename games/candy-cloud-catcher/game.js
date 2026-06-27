@@ -244,6 +244,14 @@ class FallingItem {
             this.type = 'ticket';
             this.color = '#fbbf24';
             this.emoji = '🎟️';
+        } else if (rand > 0.97) {
+            this.type = 'surprise';
+            this.color = '#ff69b4';
+            this.emoji = '🎁';
+        } else if (rand > 0.96) {
+            this.type = 'clock';
+            this.color = '#4ade80';
+            this.emoji = '⏰';
         } else if (rand > 0.95) {
             this.type = 'rainbow';
             this.color = '#ff00ff';
@@ -256,6 +264,10 @@ class FallingItem {
             this.type = 'magnet';
             this.color = '#3b82f6';
             this.emoji = '🧲';
+        } else if (rand > 0.80) {
+            this.type = 'crystal';
+            this.color = '#a855f7';
+            this.emoji = '💎';
         } else if (rand > 0.2) {
             this.type = 'candy';
             this.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
@@ -392,6 +404,31 @@ function update() {
                 updateCombo();
                 createParticles(item.x, item.y, '#fde047', 40);
                 createFloatingText(item.x, item.y, `⭐ SUPER STAR! +${points}`, '#fde047');
+            } else if (item.type === 'surprise') {
+                const effects = ['points', 'time', 'magnet'];
+                const effect = effects[Math.floor(Math.random() * effects.length)];
+                if (effect === 'points') {
+                    const points = 50 * combo;
+                    score += points;
+                    createFloatingText(item.x, item.y, `🎁 SURPRISE! +${points}`, '#ff69b4');
+                } else if (effect === 'time') {
+                    timeLeft += 10;
+                    createFloatingText(item.x, item.y, `🎁 SURPRISE! +10s`, '#ff69b4');
+                } else {
+                    activateMagnet();
+                    createFloatingText(item.x, item.y, `🎁 SURPRISE! MAGNET!`, '#ff69b4');
+                }
+                createParticles(item.x, item.y, '#ff69b4', 30);
+            } else if (item.type === 'clock') {
+                timeLeft += 5;
+                createParticles(item.x, item.y, '#4ade80', 20);
+                createFloatingText(item.x, item.y, `⏰ +5s`, '#4ade80');
+            } else if (item.type === 'crystal') {
+                const points = 15 * combo;
+                score += points;
+                updateCombo();
+                createParticles(item.x, item.y, '#a855f7', 25);
+                createFloatingText(item.x, item.y, `💎 CRYSTAL! +${points}`, '#a855f7');
             } else if (item.type === 'ticket') {
                 combo++;
                 score += 50;

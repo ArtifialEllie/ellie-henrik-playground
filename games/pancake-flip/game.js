@@ -356,6 +356,15 @@ const canvas = document.getElementById('gameCanvas');
                         playSound(440, 'sine', 0.1);
                     }
 
+                    // Ellie's Sneeze! 🤧
+                    if (Math.random() < 0.05) {
+                        const sneezeForce = (Math.random() - 0.5) * 10;
+                        currentTotalLean += sneezeForce;
+                        showFloatingText("ACHOO! 🤧", activePancake.x + activePancake.width/2, activePancake.y - 50);
+                        playSound(200, 'sawtooth', 0.2);
+                        shakeAmount = 10;
+                    }
+
                     // Special Pancake Bonuses
                     if (activePancake.isSpecial) {
                         if (activePancake.specialType === 'gold') {

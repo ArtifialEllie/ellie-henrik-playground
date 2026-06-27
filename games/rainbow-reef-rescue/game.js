@@ -14,6 +14,7 @@ let score = 0;
 let highscore = parseInt(localStorage.getItem('rainbowReefHighscore')) || 0;
 let difficultyMultiplier = 1;
 let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0 };
+let frenzyTimer = 0;
 
 // Audio setup
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -58,6 +59,7 @@ class Fish {
     constructor(isEnemy = false) {
         this.isEnemy = isEnemy;
         this.behavior = isEnemy ? (Math.random() > 0.7 ? 'patrol' : 'track') : 'wander';
+        if (isEnemy && Math.random() > 0.8) this.behavior = 'fast';
         this.radius = isEnemy ? 15 : 12;
         this.reset();
     }
@@ -75,21 +77,27 @@ class Fish {
     }
 
     update() {
-        if (this.isEnemy) {
-            if (this.behavior === 'track') {
-                // Enemies track player
-                const dx = player.x - this.x;
-                const dy = player.y - this.y;
-                const angle = Math.atan2(dy, dx);
-                this.x += Math.cos(angle) * this.speed;
-                this.y += Math.sin(angle) * this.speed;
-            } else {
-                // Patrol behavior: move in a wavy pattern
-                this.angle += 0.02;
-                this.x += Math.cos(this.angle) * this.speed;
-                this.y += Math.sin(this.angle * 0.5) * this.speed;
-            }
+    if (this.isEnemy) {
+        if (this.behavior === 'fast') {
+            const dx = player.x - this.x;
+            const dy = player.y - this.y;
+            const angle = Math.atan2(dy, dx);
+            this.x += Math.cos(angle) * (this.speed * 1.8);
+            this.y += Math.sin(angle) * (this.speed * 1.8);
+        } else if (this.behavior === 'track') {
+            // Enemies track player
+            const dx = player.x - this.x;
+            const dy = player.y - this.y;
+            const angle = Math.atan2(dy, dx);
+            this.x += Math.cos(angle) * this.speed;
+            this.y += Math.sin(angle) * this.speed;
         } else {
+            // Patrol behavior: move in a wavy pattern
+            this.angle += 0.02;
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle * 0.5) * this.speed;
+        }
+    } else {
             // Friends wander
             this.x += Math.cos(this.angle) * this.speed;
             this.y += Math.sin(this.angle) * this.speed;
@@ -117,6 +125,7 @@ class Fish {
 
         // Body
         ctx.fillStyle = this.color;
+        if (this.behavior === 'fast') ctx.fillStyle = '#ff0000';
         ctx.beginPath();
         ctx.ellipse(0, 0, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
         ctx.fill();
@@ -195,6 +204,16 @@ class Bubble {
     }
 }
  
+function showFloatingText(text, x, y) {
+    const el = document.createElement('div');
+    el.className = 'floating-text';
+    el.innerText = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.getElementById('game-container').appendChild(el);
+    setTimeout(() => el.remove(), 800);
+}
+
 class PowerUp {
     constructor() {
         const types = ['SHIELD', 'TURBO', 'INVISIBILITY', 'MAGNET'];
@@ -357,6 +376,15 @@ function checkCollisions() {
             }
             
             playSound(523.25, 'sine', 0.2);
+            
+            // Trigger Frenzy Mode every 10 rescues
+            if (rescuedCount > 0 && rescuedCount % 10 === 0) {
+                frenzyTimer = 300; // 5 seconds approx
+                playSound(880, 'sine', 0.5);
+                createParticles(player.x, player.y, 'gold', 30);
+                showFloatingText("FRENZY MODE! 🌟⚡", player.x, player.y);
+            }
+
             friend.reset();
             // Add a pearl as a reward
             if (Math.random() < 0.3) {
@@ -368,10 +396,14 @@ function checkCollisions() {
     // Check enemy collision
     enemies.forEach(enemy => {
         const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
-        if (dist < player.radius + enemy.radius) {
-            if (playerStatus.invisibility > 0) {
-                // Do nothing, player is invisible
-            } else if (playerStatus.shield > 0) {
+            if (dist < player.radius + enemy.radius) {
+                if (frenzyTimer > 0) {
+                    enemy.reset();
+                    createParticles(enemy.x, enemy.y, 'white', 10);
+                    playSound(600, 'sine', 0.1);
+                } else if (playerStatus.invisibility > 0) {
+                    // Do nothing, player is invisible
+                } else if (playerStatus.shield > 0) {
                 playerStatus.shield = 0; // Use up shield
                 createParticles(enemy.x, enemy.y, 'white', 15);
                 playSound(300, 'sine', 0.2);
@@ -452,6 +484,7 @@ function start() {
 
 function gameLoop() {
     if (!gameActive) return;
+    if (frenzyTimer > 0) frenzyTimer--;
 
     // Update Powerup HUD
     const hud = document.getElementById('powerup-hud');
@@ -558,6 +591,11 @@ function gameLoop() {
     if (playerStatus.invisibility > 0) {
         ctx.globalAlpha = 0.5;
     }
+    if (frenzyTimer > 0) {
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'gold';
+        ctx.globalAlpha = 0.8;
+    }
     
     ctx.fillStyle = player.color;
     ctx.beginPath();
@@ -572,6 +610,7 @@ function gameLoop() {
     ctx.arc(player.radius * 0.8, -player.radius * 0.3, player.radius * 0.15, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+    ctx.shadowBlur = 0;
 
     updatePlayer();
     checkCollisions();
@@ -579,10 +618,13 @@ function gameLoop() {
     // Update player status timers
     if (playerStatus.shield > 0) playerStatus.shield--;
     if (playerStatus.turbo > 0) playerStatus.turbo--;
+    if (frenzyTimer > 0) playerStatus.magnet = frenzyTimer;
     if (playerStatus.invisibility > 0) playerStatus.invisibility--;
     
     // Apply turbo speed
-    player.speed = playerStatus.turbo > 0 ? player.baseSpeed * 1.8 : player.baseSpeed;
+    let speedMult = playerStatus.turbo > 0 ? 1.8 : 1;
+    if (frenzyTimer > 0) speedMult *= 1.5;
+    player.speed = player.baseSpeed * speedMult;
  
     requestAnimationFrame(gameLoop);
 }

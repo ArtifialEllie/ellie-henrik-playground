@@ -198,7 +198,7 @@ function renderShop() {
         const canAfford = totalGold >= acc.cost;
         
         const item = document.createElement('div');
-        item.className = `shop-item ${currentAccessory === acc.emoji ? 'selected' : ''}`;
+        item.className = `shop-item ${currentAccessory === acc.name ? 'selected' : ''}`;
         item.innerHTML = `
             <div class="item-preview" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; background: none; border: 2px dashed #ccc; border-radius: 50%;">
                 ${acc.emoji}
@@ -209,7 +209,7 @@ function renderShop() {
         
         item.onclick = () => {
             if (isOwned) {
-                currentAccessory = acc.emoji;
+                currentAccessory = acc.name;
                 localStorage.setItem('bubblePopAccessory', currentAccessory);
                 renderShop();
                 playSound(600, 'sine', 0.1);
@@ -219,7 +219,7 @@ function renderShop() {
                 totalGoldEl.innerText = totalGold;
                 ownedAccessories.push(acc.name);
                 localStorage.setItem('bubblePopAccessories', JSON.stringify(ownedAccessories));
-                currentAccessory = acc.emoji;
+                currentAccessory = acc.name;
                 localStorage.setItem('bubblePopAccessory', currentAccessory);
                 renderShop();
                 playSound(880, 'sine', 0.2);
@@ -263,6 +263,7 @@ class Bubble {
         this.speed = (Math.random() * 2 + 1) * (frenzy ? 1.5 : 1) * (window.isGravityFlipped ? -1 : 1);
         this.color = currentSkin === 'rainbow' ? `hsl(${Math.random() * 360}, 70%, 70%)` : currentSkin;
         this.vx = (Math.random() - 0.5) * 2;
+        this.vy = 0;
         this.pulse = 0;
         this.pulseDir = 1;
         this.isSneezing = false;
@@ -452,13 +453,14 @@ class Bubble {
         if (this.pulse > 1 || this.pulse < 0) this.pulseDir *= -1;
     }
 
-    draw() {
-        const currentRadius = this.radius + this.pulse * 2;
-        let drawX = this.x;
-        let drawY = this.y;
-        if (this.isSneezing) {
-            drawX += this.sneezeOffset.x * (this.sneezeTimer / 30);
-            drawY += this.sneezeOffset.y * (this.sneezeTimer / 30);
+   draw() {
+       const currentRadius = this.radius + this.pulse * 2;
+       let drawX = this.x;
+       let drawY = this.y;
+       ctx.shadowBlur = 0;
+       if (this.isSneezing) {
+           drawX += this.sneezeOffset.x * (this.sneezeTimer / 30);
+           drawY += this.sneezeOffset.y * (this.sneezeTimer / 30);
         }
         
         ctx.beginPath();
@@ -624,6 +626,11 @@ class Bubble {
             ctx.fillText('✨', drawX, drawY + currentRadius/3);
             ctx.shadowBlur = 10;
             ctx.shadowColor = 'white';
+        }
+        if (this.type === 'cupcake') {
+            ctx.font = `${currentRadius}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('🧁', drawX, drawY + currentRadius/3);
         }
         ctx.shadowBlur = 0;
     }
@@ -994,9 +1001,10 @@ class MagicalPet {
         ctx.font = `${this.size}px Arial`;
         ctx.textAlign = 'center';
         ctx.fillText(this.emoji, this.x, this.y + this.floatOffset);
-        if (currentAccessory) {
+        const accessoryObj = accessories.find(a => a.name === currentAccessory);
+        if (accessoryObj) {
             ctx.font = `${this.size * 0.7}px Arial`;
-            ctx.fillText(currentAccessory, this.x + this.size * 0.3, this.y + this.floatOffset - this.size * 0.2);
+            ctx.fillText(accessoryObj.emoji, this.x + this.size * 0.3, this.y + this.floatOffset - this.size * 0.2);
         }
 
         if (this.energy >= this.maxEnergy) {
@@ -1471,7 +1479,7 @@ function updateCombo() {
     
     // Oppdater multiplikator basert på combo og tilbehør
     let accessoryMultiplier = 1;
-    if (currentAccessory === '💎') accessoryMultiplier = 1.2;
+    if (currentAccessory === 'Diamond Bow') accessoryMultiplier = 1.2;
 
     multiplier = (1 + Math.floor(combo / 5)) * accessoryMultiplier;
     multiplierEl.innerText = `x${multiplier}`;
@@ -1506,6 +1514,7 @@ function handlePop(e) {
     if (petDist < pet.size) {
         if (pet.energy >= pet.maxEnergy) {
             pet.triggerSuperPop();
+            return;
         } else {
             // Petting rewards
             pet.mood = 'Love';
@@ -1533,13 +1542,16 @@ function handlePop(e) {
                     }
                     
                     // NEW: Pet-specific Accessory Bonus for petting!
-                    if (currentAccessory === '❤️🕶️') {
+                    if (currentAccessory === 'Heart Glasses') {
                         const heartBonus = 20 * (1 + (pet.friendshipLevel * 0.1));
                         score += heartBonus;
                         updateScore();
                         floatingTexts.push(new FloatingText(pet.x, pet.y, `HEART BONUS! +${Math.floor(heartBonus)} ❤️`, '#ff4081'));
                     }
                 }
+                return;
+    }
+
 
    for (let i = bubbles.length - 1; i >= 0; i--) {
        const b = bubbles[i];
@@ -1698,20 +1710,14 @@ function handlePop(e) {
                         bubbles.push(special);
                     }
                     triggerFrenzy();
-                    poppedSpecial = true;
                 }
                 
-                // If it wasn't a special bubble, give a base score multiplied by the combo multiplier!
-                if (!poppedSpecial) {
-                    const basePoints = b.type === 'giant' ? 50 : 10;
-                    const totalPoints = basePoints * multiplier;
-                    score += totalPoints;
-                    floatingTexts.push(new FloatingText(b.x, b.y, `+${totalPoints}`, b.color));
+                if (b.type !== 'stinky' && b.type !== 'bomb') {
+                    combo++;
                 }
-
-                combo++;
             }
             if (b.type === 'cosmic-candy') {
+                poppedSpecial = true;
                 playPopSound(true, false);
                 const candyBonus = 100;
                 floatingTexts.push(new FloatingText(b.x, b.y, `COSMIC CANDY! 🍭 +${candyBonus}`, '#ff69b4'));
@@ -1728,8 +1734,8 @@ function handlePop(e) {
                     mini.speed = Math.random() * 2 + 1;
                     bubbles.push(mini);
                 }
-            }
-            if (b.type === 'shimmer-shell') {
+            } else if (b.type === 'shimmer-shell') {
+                poppedSpecial = true;
                const shellBonus = 150;
                score += shellBonus;
                floatingTexts.push(new FloatingText(b.x, b.y, `SHIMMER SHELL! 🐚 +${shellBonus}`, '#e0f7fa'));
@@ -1746,8 +1752,8 @@ function handlePop(e) {
                     pearl.speed = Math.random() * 2 + 1;
                     bubbles.push(pearl);
                 }
-            }
-            if (b.type === 'heart') {
+            } else if (b.type === 'heart') {
+                poppedSpecial = true;
                bubbles.forEach(bub => {
                    if (bub !== b) {
                        const dx = bub.x - b.x;
@@ -1763,37 +1769,36 @@ function handlePop(e) {
                 createBigExplosion(b.x, b.y);
                 document.getElementById('mega-pop-alert').style.display = 'block';
                 setTimeout(() => {
-                    document.getElementById('mega-pop-alert').style.display = 'none';
-                }, 3000);
-            }
-            if (b.type === 'gold') {
-               playPopSound(true, false);
-               const bonus = 5 + (combo * 2);
-               let goldGain = bonus;
-                if (ownedAccessories.includes('Golden Collar')) {
-                    goldGain = Math.floor(goldGain * 1.5);
-                }
+               document.getElementById('mega-pop-alert').style.display = 'none';
+               }, 3000);
+            } else if (b.type === 'gold') {
+                playPopSound(true, false);
+                const bonus = 5 + (combo * 2);
+                poppedSpecial = true;
+                let goldGain = bonus;
+               if (ownedAccessories.includes('Golden Collar')) {
+                   if (currentAccessory === 'Golden Collar') goldGain = Math.floor(goldGain * 1.5);
+               }
                 // Friendship bonus: +10% gold per level above 1 (up to level 5)
                 const friendshipMult = 1 + (Math.min(pet.friendshipLevel - 1, 4) * 0.1);
                 goldGain = Math.floor(goldGain * friendshipMult);
                 let finalBonus = bonus;
-                if (currentAccessory === '🪄') finalBonus *= 1.2; // Magic Bubble Wand score boost
-
+                if (currentAccessory === 'Magic Bubble Wand') finalBonus *= 1.2;
                 score += finalBonus;
                 let finalGold = goldGain;
-                if (currentAccessory === '👑') finalGold = Math.floor(finalGold * 1.2); // Golden Collar gold bonus
-
+                if (currentAccessory === 'Golden Collar') finalGold = Math.floor(finalGold * 1.2);
                 totalGold += finalGold;
                 localStorage.setItem('bubblePopTotalGold', totalGold);
                totalGoldEl.innerText = totalGold;
                timeLeft += 2;
                floatingTexts.push(new FloatingText(b.x, b.y, `+${goldGain} GOLD! ✨`, 'gold'));
-            } else if (b.type === 'rainbow-burst') {
-               playPopSound(true, false);
-               const rainbowBonus = 100;
-               score += rainbowBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW BURST! 🌈 +${rainbowBonus}`, 'magenta'));
-                
+           } else if (b.type === 'rainbow-burst') {
+              playPopSound(true, false);
+              const rainbowBonus = 100;
+              poppedSpecial = true;
+              score += rainbowBonus;
+              floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW BURST! 🌈 +${rainbowBonus}`, 'magenta'));
+              
                 // Rainbow Burst effect: pops ALL bubbles on screen! 🌈✨
                 bubbles.forEach(bub => {
                     if (bub !== b) {
@@ -1806,26 +1811,29 @@ function handlePop(e) {
                
                triggerFrenzy();
                createPopEffect(b.x, b.y, 'rainbow');
-            } else if (b.type === 'time-warp') {
-               playPopSound(true, false);
-               const timeBonus = 3;
-               timeLeft += timeBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `TIME WARP! ⏳ +${timeBonus}s`, '#e1bee7'));
-               createPopEffect(b.x, b.y, '#e1bee7');
-                } else if (b.type === 'sneeze') {
-                    playPopSound(true, false);
-                    const sneezeBonus = 200;
-                    score += sneezeBonus;
-                    floatingTexts.push(new FloatingText(b.x, b.y, `SNEEZE! 🤧 +${sneezeBonus}`, '#ffeb3b'));
-                    createPopEffect(b.x, b.y, '#ffeb3b');
+           } else if (b.type === 'time-warp') {
+              playPopSound(true, false);
+              const timeBonus = 3;
+              poppedSpecial = true;
+              timeLeft += timeBonus;
+              floatingTexts.push(new FloatingText(b.x, b.y, `TIME WARP! ⏳ +${timeBonus}s`, '#e1bee7'));
+              createPopEffect(b.x, b.y, '#e1bee7');
+               } else if (b.type === 'sneeze') {
+                   playPopSound(true, false);
+                   const sneezeBonus = 200;
+                   poppedSpecial = true;
+                   score += sneezeBonus;
+                   floatingTexts.push(new FloatingText(b.x, b.y, `SNEEZE! 🤧 +${sneezeBonus}`, '#ffeb3b'));
+                   createPopEffect(b.x, b.y, '#ffeb3b');
                     triggerSneezeEffect();
                 } else if (b.type === 'magic-dust') {
-               playPopSound(true, false);
-               const dustBonus = 30;
-               score += dustBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC DUST! ✨ +${dustBonus}`, 'white'));
-                createPopEffect(b.x, b.y, 'white');
-               
+              playPopSound(true, false);
+              const dustBonus = 30;
+              score += dustBonus;
+              poppedSpecial = true;
+              floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC DUST! ✨ +${dustBonus}`, 'white'));
+              createPopEffect(b.x, b.y, 'white');
+              
                // Magic Dust effect: slightly increases the score of the next 5 pops
                let popsCount = 0;
                magicDustPopsRemaining = 5;
@@ -1836,12 +1844,13 @@ function handlePop(e) {
                totalGoldEl.innerText = totalGold;
                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC DUST! ✨ +${goldBonus} GOLD`, 'white'));
                createPopEffect(b.x, b.y, 'white');
-            } else if (b.type === 'candy-cloud') {
-                playPopSound(true, false);
-                score += 150;
-                floatingTexts.push(new FloatingText(b.x, b.y, `CANDY CLOUD! ☁️🍭 +150`, '#f8bbd0'));
-                createPopEffect(b.x, b.y, '#f8bbd0');
-                for (let j = 0; j < 5; j++) {
+           } else if (b.type === 'candy-cloud') {
+               playPopSound(true, false);
+               score += 150;
+               poppedSpecial = true;
+               floatingTexts.push(new FloatingText(b.x, b.y, `CANDY CLOUD! ☁️🍭 +150`, '#f8bbd0'));
+               createPopEffect(b.x, b.y, '#f8bbd0');
+               for (let j = 0; j < 5; j++) {
                     const candy = new Bubble(false);
                     candy.radius = 10;
                     candy.x = b.x + (Math.random() - 0.5) * 40;
@@ -1850,22 +1859,24 @@ function handlePop(e) {
                     candy.type = 'normal';
                     bubbles.push(candy);
                 }
-            } else if (b.type === 'freeze') {
-                playPopSound();
-                floatingTexts.push(new FloatingText(b.x, b.y, 'FREEZE! ❄️', '#b2ebf2'));
-                createPopEffect(b.x, b.y, '#b2ebf2');
-                bubbles.forEach(bub => bub.speed = 0);
-                setTimeout(() => {
+           } else if (b.type === 'freeze') {
+               playPopSound();
+               floatingTexts.push(new FloatingText(b.x, b.y, 'FREEZE! ❄️', '#b2ebf2'));
+               poppedSpecial = true;
+               createPopEffect(b.x, b.y, '#b2ebf2');
+               bubbles.forEach(bub => bub.speed = 0);
+               setTimeout(() => {
                     bubbles.forEach(bub => {
                         bub.speed = (Math.random() * 2 + 1) * (isFrenzy ? 1.5 : 1);
                     });
                 }, 3000);
-            } else if (b.type === 'shield') {
-                playPopSound();
-                shieldActive = true;
-                floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELD ACTIVE! 🛡️', '#b2dfdb'));
-                createPopEffect(b.x, b.y, '#b2dfdb');
-                
+           } else if (b.type === 'shield') {
+               playPopSound();
+               shieldActive = true;
+               poppedSpecial = true;
+               floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELD ACTIVE! 🛡️', '#b2dfdb'));
+               createPopEffect(b.x, b.y, '#b2dfdb');
+               
                 // Give the pet a shield too!
                 pet.shieldTimer = 300; 
                 floatingTexts.push(new FloatingText(pet.x, pet.y, 'PET SHIELD! 🛡️✨', '#b2dfdb'));
@@ -1874,18 +1885,20 @@ function handlePop(e) {
                    shieldActive = false;
                }, 7000);
             } else if (b.type === 'magic-star') {
-               playPopSound(true, false);
-               const magicBonus = 60;
-               score += magicBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ✨ +${magicBonus}`, '#ffff00'));
-               createPopEffect(b.x, b.y, '#ffff00');
-            } else if (b.type === 'hammer') {
-               playPopSound(true, false);
-               const hammerBonus = 80;
-               score += hammerBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `HAMMER TIME! 🔨 +${hammerBonus}`, '#a1887f'));
-                createPopEffect(b.x, b.y, '#a1887f');
-                
+              playPopSound(true, false);
+              const magicBonus = 60;
+              score += magicBonus;
+              poppedSpecial = true;
+              floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ✨ +${magicBonus}`, '#ffff00'));
+              createPopEffect(b.x, b.y, '#ffff00');
+           } else if (b.type === 'hammer') {
+              playPopSound(true, false);
+              const hammerBonus = 80;
+              score += hammerBonus;
+              poppedSpecial = true;
+              floatingTexts.push(new FloatingText(b.x, b.y, `HAMMER TIME! 🔨 +${hammerBonus}`, '#a1887f'));
+              createPopEffect(b.x, b.y, '#a1887f');
+              
                 // Hammer effect: pop several random bubbles
                 const popCount = 5;
                 let popped = 0;
@@ -1904,41 +1917,45 @@ function handlePop(e) {
                    potentialTargets.splice(targetIndex, 1);
                    popped++;
                 }
-            } else if (b.type === 'pet-treat') {
-               playPopSound(true, false);
-               pet.triggerSugarRush();
-               pet.gainFriendship(20);
-                const treatBonus = 30;
-                score += treatBonus;
-               floatingTexts.push(new FloatingText(b.x, b.y, `YUMMY! 🦴 +${treatBonus}`, '#ffca28'));
-               createPopEffect(b.x, b.y, '#ffca28');
-            } if (b.type === 'pet-snack') {
-               playPopSound(true, false);
+           } else if (b.type === 'pet-treat') {
+              playPopSound(true, false);
+              pet.triggerSugarRush();
+              poppedSpecial = true;
+              pet.gainFriendship(20);
+               const treatBonus = 30;
+               score += treatBonus;
+              floatingTexts.push(new FloatingText(b.x, b.y, `YUMMY! 🦴 +${treatBonus}`, '#ffca28'));
+              createPopEffect(b.x, b.y, '#ffca28');
+           } else if (b.type === 'pet-snack') {
+               playPopSound(true, false); poppedSpecial = true;
                pet.gainEnergy(20);
                pet.mood = 'Happy';
-                pet.moodTimer = 600;
+              pet.moodTimer = 600;
                 const snackBonus = 50;
                score += snackBonus;
-               floatingTexts.push(new FloatingText(b.x, b.y, `YUM! 🍪 +${snackBonus}`, '#ffcc80'));
-                createPopEffect(b.x, b.y, '#ffcc80');
-            } else if (b.type === 'emotion') {
-               score += 50;
-               emotionPops++;
-               floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
+              floatingTexts.push(new FloatingText(b.x, b.y, `YUM! 🍪 +${snackBonus}`, '#ffcc80'));
+              createPopEffect(b.x, b.y, '#ffcc80');
+           } else if (b.type === 'emotion') {
+               poppedSpecial = true;
+              score += 50;
+              emotionPops++;
+              floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
                createPopEffect(b.x, b.y, b.color);
-            } else if (b.type === 'bomb') {
-               playSound(100, 'square', 0.5);
-               bubbles = [];
-               combo = 0;
-               floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
-            } else if (b.type === 'bomb-burst') {
+           } else if (b.type === 'bomb') {
+              playSound(100, 'square', 0.5);
+              bubbles = [];
+              poppedSpecial = true;
+              combo = 0;
+              floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
+           } else if (b.type === 'bomb-burst') {
                playPopSound(true, false);
-               floatingTexts.push(new FloatingText(b.x, b.y, 'BURST BOOM! 💥', '#ff5722'));
-               const burstRadius = 200;
-                let burstPops = 0;
-                bubbles.forEach(bub => {
-                    if (bub !== b && Math.hypot(bub.x - b.x, bub.y - b.y) < burstRadius) {
-                        createPopEffect(bub.x, bub.y, bub.color);
+              floatingTexts.push(new FloatingText(b.x, b.y, 'BURST BOOM! 💥', '#ff5722'));
+              const burstRadius = 200;
+               let burstPops = 0;
+               poppedSpecial = true;
+              bubbles.forEach(bub => {
+                  if (bub !== b && Math.hypot(bub.x - b.x, bub.y - b.y) < burstRadius) {
+                      createPopEffect(bub.x, bub.y, bub.color);
                         score += 5;
                         burstPops++;
                         bub.hits = 0;
@@ -1949,9 +1966,10 @@ function handlePop(e) {
             } else if (b.type === 'stinky') {
                if (shieldActive) {
                    playPopSound(true, false);
+                   poppedSpecial = true;
                    floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELDED! 🛡️', '#b2dfdb'));
-                    createPopEffect(b.x, b.y, '#b2dfdb');
-                    shieldActive = false;
+                   createPopEffect(b.x, b.y, '#b2dfdb');
+                   shieldActive = false;
                 } else {
                     playPopSound(false, true);
                     score = Math.max(0, score - 5);
@@ -1962,12 +1980,13 @@ function handlePop(e) {
                     document.body.classList.add('shake');
                     setTimeout(() =>                   document.body.classList.remove('shake'), 400);
                 }
-            } else if (b.type === 'super-pop') {
-               playSuperPopSound();
-               floatingTexts.push(new FloatingText(b.x, b.y, 'SUPER POP! 💥', 'orange'));
-               
-                const allBubbles = [...bubbles];
-                bubbles = [];
+           } else if (b.type === 'super-pop') {
+              playSuperPopSound();
+              floatingTexts.push(new FloatingText(b.x, b.y, 'SUPER POP! 💥', 'orange'));
+              poppedSpecial = true;
+              
+               const allBubbles = [...bubbles];
+               bubbles = [];
                 allBubbles.forEach(otherBubble => {
                     if (otherBubble !== b) {
                         if (otherBubble.type !== 'bomb' && otherBubble.type !== 'stinky') {
@@ -1980,19 +1999,21 @@ function handlePop(e) {
                 });
                score += 100;
                createBigExplosion(b.x, b.y);
-            } else if (b.type === 'magnetic-bubble') {
-               playPopSound(true, false);
-               const magBonus = 150;
-               score += magBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `MAGNETIC! 🧲 +${magBonus}`, '#9c27b0'));
-               createPopEffect(b.x, b.y, '#9c27b0');
+           } else if (b.type === 'magnetic-bubble') {
+              playPopSound(true, false);
+              const magBonus = 150;
+              poppedSpecial = true;
+              score += magBonus;
+              floatingTexts.push(new FloatingText(b.x, b.y, `MAGNETIC! 🧲 +${magBonus}`, '#9c27b0'));
+              createPopEffect(b.x, b.y, '#9c27b0');
                triggerMagnetism();
-            } else if (b.type === 'magic-mushroom') {
-               playPopSound(true, false);
-               const mushBonus = 80;
-               score += mushBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `MUSHROOM POP! 🍄 +${mushBonus}`, '#ff69b4'));
-               createPopEffect(b.x, b.y, '#ffb6c1');
+           } else if (b.type === 'magic-mushroom') {
+              playPopSound(true, false);
+              const mushBonus = 80;
+              poppedSpecial = true;
+              score += mushBonus;
+              floatingTexts.push(new FloatingText(b.x, b.y, `MUSHROOM POP! 🍄 +${mushBonus}`, '#ff69b4'));
+              createPopEffect(b.x, b.y, '#ffb6c1');
                
                 // Spawn a cluster of "spore" bubbles
                 for (let j = 0; j < 8; j++) {
@@ -2005,12 +2026,13 @@ function handlePop(e) {
                     spore.color = '#ffb6c1';
                bubbles.push(spore);
                 }
-            } else if (b.type === 'burst-bubble') {
-               playPopSound(true, false);
-               const burstBonus = 150;
-               score += burstBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `BURST BUBBLE! 💥 +${burstBonus}`, '#ffeb3b'));
-                createPopEffect(b.x, b.y, '#ffeb3b');
+           } else if (b.type === 'burst-bubble') {
+              playPopSound(true, false);
+              const burstBonus = 150;
+              poppedSpecial = true;
+              score += burstBonus;
+              floatingTexts.push(new FloatingText(b.x, b.y, `BURST BUBBLE! 💥 +${burstBonus}`, '#ffeb3b'));
+              createPopEffect(b.x, b.y, '#ffeb3b');
                 
                 // Burst effect: pops 3 random nearby bubbles
                 const nearby = bubbles.filter(bub => bub !== b && Math.hypot(bub.x - b.x, bub.y - b.y) < 200);
@@ -2020,14 +2042,15 @@ function handlePop(e) {
                 createPopEffect(target.x, target.y, target.color);
                 score += 10;
                 floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
-               target.hits = 0; // Mark for removal
-           });
-            } if (b.type === 'rainbow-spiral') {
-               playPopSound(true, false);
-               const spiralBonus = 200;
-               score += spiralBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW SPIRAL! 🌀 +${spiralBonus}`, 'magenta'));
-                createPopEffect(b.x, b.y, 'magenta');
+                target.popped = true; // Mark for removal
+            });
+        } else if (b.type === 'rainbow-spiral') {
+            playPopSound(true, false);
+              const spiralBonus = 200;
+              poppedSpecial = true;
+              score += spiralBonus;
+              floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW SPIRAL! 🌀 +${spiralBonus}`, 'magenta'));
+              createPopEffect(b.x, b.y, 'magenta');
                 
                 for (let i = 0; i < 20; i++) {
                     const angle = 0.5 * i;
@@ -2041,12 +2064,13 @@ function handlePop(e) {
                     bubbles.push(spiralBubble);
                 }
                 triggerFrenzy();
-            } else if (b.type === 'confetti') {
-                playPopSound(true, false);
-                const confettiBonus = 120;
-                score += confettiBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `CONFETTI POP! 🎊 +${confettiBonus}`, '#ff69b4'));
-                createPopEffect(b.x, b.y, '#ff69b4');
+           } else if (b.type === 'confetti') {
+              playPopSound(true, false);
+              const confettiBonus = 120;
+              poppedSpecial = true;
+              score += confettiBonus;
+              floatingTexts.push(new FloatingText(b.x, b.y, `CONFETTI POP! 🎊 +${confettiBonus}`, '#ff69b4'));
+              createPopEffect(b.x, b.y, '#ff69b4');
                 
                 // Confetti effect: spawn many tiny colorful particles and some small bubbles
                 for (let i = 0; i < 30; i++) {
@@ -2067,13 +2091,21 @@ function handlePop(e) {
                 }
             }
             
+            // If it wasn't a special bubble, give a base score multiplied by the combo multiplier!
+            if (!poppedSpecial) {
+                const basePoints = b.type === 'giant' ? 50 : 10;
+                const totalPoints = basePoints * multiplier;
+                score += totalPoints;
+                floatingTexts.push(new FloatingText(b.x, b.y, `+${totalPoints}`, b.color));
+            }
+            
             b.popped = true;
             totalPops++;
             updateQuest();
         }
     }
 
-    if (Math.random() < (currentAccessory === '🌌' ? 0.06 : 0.03)) triggerFrenzy();
+    if (Math.random() < (currentAccessory === 'Cosmic Cape' ? 0.06 : 0.03)) triggerFrenzy();
     if (Math.random() < 0.01) triggerParty();
     if (Math.random() < 0.005) triggerGoldenRain();
     if (Math.random() < 0.008) triggerVortex();

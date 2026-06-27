@@ -111,6 +111,7 @@ h1 {
 .letter-btn.wrong {
     background-color: #ff5252 !important;
     box-shadow: 0 8px 0 #c62828 !important;
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 
 .shake {

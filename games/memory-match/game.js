@@ -160,12 +160,21 @@ function checkMatch() {
     } else {
         combo = 0;
         unflipCards();
+        
+        // Small penalty for wrong match: shake the cards
+        flippedCards.forEach(card => {
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 400);
+        });
     }
 }
 
 function handleMatch() {
     combo++;
     if (combo >= 2) {
+        if (combo >= 5) {
+            activateFeverMode();
+        }
         createComboText();
         if (combo % 3 === 0) {
             peeksLeft++;
@@ -207,6 +216,29 @@ function unflipCards() {
 function resetBoard() {
     flippedCards = [];
     isLockBoard = false;
+}
+
+function activateFeverMode() {
+    const container = document.querySelector('.palace-container');
+    if (container) {
+        container.classList.add('fever-mode');
+        setTimeout(() => {
+            container.classList.remove('fever-mode');
+        }, 5000);
+    }
+    
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            const p = document.createElement('div');
+            p.className = 'bg-particle';
+            p.innerText = ['✨', '⭐', '💖', '🌈'][Math.floor(Math.random() * 4)];
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.fontSize = Math.random() * 20 + 10 + 'px';
+            p.style.animationDuration = Math.random() * 3 + 2 + 's';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 5000);
+        }, i * 100);
+    }
 }
 
 function updateStats() {
