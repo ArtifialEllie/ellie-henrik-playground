@@ -1930,7 +1930,7 @@ function handlePop(e) {
                playSound(100, 'square', 0.5);
                bubbles = [];
                combo = 0;
-                floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
+               floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
             } else if (b.type === 'bomb-burst') {
                playPopSound(true, false);
                floatingTexts.push(new FloatingText(b.x, b.y, 'BURST BOOM! 💥', '#ff5722'));
@@ -1946,7 +1946,7 @@ function handlePop(e) {
                 });
                score += burstPops * 2;
                createBigExplosion(b.x, b.y);
-            } if (b.type === 'stinky') {
+            } else if (b.type === 'stinky') {
                if (shieldActive) {
                    playPopSound(true, false);
                    floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELDED! 🛡️', '#b2dfdb'));
@@ -1961,8 +1961,8 @@ function handlePop(e) {
                     floatingTexts.push(new FloatingText(b.x, b.y, `-5 💨`, '#666'));
                     document.body.classList.add('shake');
                     setTimeout(() =>                   document.body.classList.remove('shake'), 400);
-               }
-            } if (b.type === 'super-pop') {
+                }
+            } else if (b.type === 'super-pop') {
                playSuperPopSound();
                floatingTexts.push(new FloatingText(b.x, b.y, 'SUPER POP! 💥', 'orange'));
                
@@ -1980,20 +1980,20 @@ function handlePop(e) {
                 });
                score += 100;
                createBigExplosion(b.x, b.y);
-            } if (b.type === 'magnetic-bubble') {
+            } else if (b.type === 'magnetic-bubble') {
                playPopSound(true, false);
                const magBonus = 150;
                score += magBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGNETIC! 🧲 +${magBonus}`, '#9c27b0'));
                createPopEffect(b.x, b.y, '#9c27b0');
                triggerMagnetism();
-            } if (b.type === 'magic-mushroom') {
+            } else if (b.type === 'magic-mushroom') {
                playPopSound(true, false);
                const mushBonus = 80;
                score += mushBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MUSHROOM POP! 🍄 +${mushBonus}`, '#ff69b4'));
-                createPopEffect(b.x, b.y, '#ff69b4');
-                
+               createPopEffect(b.x, b.y, '#ffb6c1');
+               
                 // Spawn a cluster of "spore" bubbles
                 for (let j = 0; j < 8; j++) {
                     const spore = new Bubble(false);
@@ -2003,11 +2003,9 @@ function handlePop(e) {
                     spore.speed = Math.random() * 2 + 1;
                     spore.type = 'normal';
                     spore.color = '#ffb6c1';
-                    // We can't easily change the point value for just these, 
-                    // but they provide more targets for the player.
                bubbles.push(spore);
-               }
-            } if (b.type === 'burst-bubble') {
+                }
+            } else if (b.type === 'burst-bubble') {
                playPopSound(true, false);
                const burstBonus = 150;
                score += burstBonus;
