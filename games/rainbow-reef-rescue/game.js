@@ -311,16 +311,18 @@ function handleInput() {
 function updatePlayer() {
     const dx = player.targetX - player.x;
     const dy = player.targetY - player.y;
-    player.x += dx * 0.1;
-    player.y += dy * 0.1;
+    const dist = Math.hypot(dx, dy);
+    if (dist > 1) {
+        const moveDist = Math.min(dist, player.speed);
+        player.x += (dx / dist) * moveDist;
+        player.y += (dy / dist) * moveDist;
+    }
 }
 
 function checkCollisions() {
     // Check friend rescue
     friends.forEach((friend, index) => {
-        const dx = player.x - friend.x;
-        const dy = player.y - friend.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.hypot(player.x - friend.x, player.y - friend.y);
         if (dist < player.radius + friend.radius) {
             rescuedCount++;
             rescuedElement.innerText = `Friends Rescued: ${rescuedCount}`;
@@ -339,9 +341,7 @@ function checkCollisions() {
 
     // Check enemy collision
     enemies.forEach(enemy => {
-        const dx = player.x - enemy.x;
-        const dy = player.y - enemy.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
         if (dist < player.radius + enemy.radius) {
             if (playerStatus.invisibility > 0) {
                 // Do nothing, player is invisible
@@ -359,9 +359,7 @@ function checkCollisions() {
     // Check pearl collection
     for (let i = pearls.length - 1; i >= 0; i--) {
         const pearl = pearls[i];
-        const dx = player.x - pearl.x;
-        const dy = player.y - pearl.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.hypot(player.x - pearl.x, player.y - pearl.y);
         if (dist < player.radius + pearl.radius) {
             score += 10;
             scoreElement.innerText = `Pearls: ${score}`;
@@ -374,9 +372,7 @@ function checkCollisions() {
     // Check powerup collection
     for (let i = powerups.length - 1; i >= 0; i--) {
         const pu = powerups[i];
-        const dx = player.x - pu.x;
-        const dy = player.y - pu.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.hypot(player.x - pu.x, player.y - pu.y);
         if (dist < player.radius + pu.radius) {
             if (pu.type === 'SHIELD') {
                 playerStatus.shield = 300; // 5 seconds approx
@@ -456,11 +452,7 @@ function gameLoop() {
     }
  
     // Draw particles
-    particles.forEach((particle, index) => {
-        particle.update();
-        particle.draw();
-        if (particle.life <= 0) particles.splice(index, 1);
-    });
+    // Particles handled below
 
     // Draw friends
     friends.forEach(friend => {
@@ -474,8 +466,6 @@ function gameLoop() {
         enemy.draw();
         // Add spikes to urchins
         ctx.save();
-        ctx.strokeStyle = 'purple';
-        ctx.lineWidth = 2;
         ctx.strokeStyle = 'purple';
         ctx.lineWidth = 2;
         for(let i=0; i<8; i++) {

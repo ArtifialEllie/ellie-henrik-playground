@@ -212,11 +212,23 @@ h1 {
     100% { transform: scale(1); }
 }
 
-.button-row {
+.badges-container {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-bottom: 10px;
+    gap: 10px;
+    margin-bottom: 15px;
+    min-height: 40px;
+}
+
+.badge {
+    background: #fff;
+    border: 2px solid #ff69b4;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #ff69b4;
+    animation: popIn 0.3s ease-out;
 }
 
 .hint-btn {

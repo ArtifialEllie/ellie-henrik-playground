@@ -19,6 +19,20 @@ const levelConfigs = [
         emojis: ['🚀', '🪐', '🌌', '☀️', '☄️', '🛸', '🔭', '🛰️', '🌍', '🌓', '🌟', '🌑', '🌠', '🌀', '💎', '🔮', '🌈', '🎆'],
         bg: '#f0faff',
         accent: '#add8e6'
+    },
+    {
+        name: "Undervanns Verden 🐠",
+        grid: 4,
+        emojis: ['🐠', '🐡', '🐙', '🐚', '🦀', '🦐', '🐋', '🐬', '🦈', '🦑', '🌊', '🪸'],
+        bg: '#e0ffff',
+        accent: '#40e0d0'
+    },
+    {
+        name: "Drømme Slott 🏰",
+        grid: 6,
+        emojis: ['🏰', '👑', '💎', '🗝️', '🛡️', '⚔️', '🐉', '🦄', '🪄', '📜', '🕯️', '🌙', '☀️', '☁️', '🌟', '🎇', '🎐', '🎐', '🔮', '🧿', '💠', '🔱', '🚩', '🏮'],
+        bg: '#fff0f5',
+        accent: '#da70d6'
     }
 ];
 
@@ -30,6 +44,7 @@ let matches = 0;
 let isLockBoard = false;
 let peeksLeft = 1;
 
+let combo = 0;
 let timerInterval;
 let secondsElapsed = 0;
 
@@ -62,13 +77,15 @@ function initGame() {
 
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
-    grid.style.gridTemplateColumns = `repeat(${config.grid}, 1fr)`;
+    const cols = config.grid;
+    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     
     cards = [...config.emojis, ...config.emojis];
     shuffle(cards);
     
     moves = 0;
     matches = 0;
+    combo = 0;
     flippedCards = [];
     isLockBoard = false;
     peeksLeft = 1;
@@ -135,9 +152,22 @@ function checkMatch() {
     const isMatch = card1.dataset.emoji === card2.dataset.emoji;
 
     if (isMatch) {
+        handleMatch();
         disableCards();
     } else {
+        combo = 0;
         unflipCards();
+    }
+}
+
+function handleMatch() {
+    combo++;
+    if (combo >= 2) {
+        createComboText();
+        if (combo % 3 === 0) {
+            peeksLeft++;
+            updatePeekButton();
+        }
     }
 }
 
@@ -152,9 +182,9 @@ function disableCards() {
     matches++;
     updateStats();
     resetBoard();
-    clearInterval(timerInterval);
     
     if (matches === levelConfigs[currentLevelIdx].emojis.length) {
+        clearInterval(timerInterval);
         showWinMessage();
     }
 }
@@ -190,6 +220,22 @@ function createSparkles(card) {
     }
 }
 
+function createComboText() {
+    const text = document.createElement('div');
+    text.className = 'combo-text';
+    text.innerText = `COMBO x${combo}! ✨`;
+    
+    const rect = flippedCards[0].getBoundingClientRect();
+    text.style.left = (rect.left + rect.width/2) + 'px';
+    text.style.top = (rect.top) + 'px';
+    
+    document.body.appendChild(text);
+    
+    setTimeout(() => {
+        text.remove();
+    }, 1000);
+}
+
 function showWinMessage() {
     const config = levelConfigs[currentLevelIdx];
     const maxMoves = config.emojis.length * 2.5;
@@ -214,7 +260,7 @@ function showWinMessage() {
 
     setTimeout(() => {
         document.getElementById('star-rating').innerText = stars;
-        document.getElementById('final-stats').innerText = `Du fant alle parene på ${moves} trekk og ${secondsElapsed} sekunder! 🌟`;
+        document.getElementById('final-stats').innerText = `Du fant alle parene på ${moves} trekk og ${secondsElapsed} sekunder! Din høyeste combo var ${combo}! 🌟`;
         document.getElementById('win-message').classList.add('show');
         startConfetti();
         

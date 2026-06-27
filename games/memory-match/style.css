@@ -218,3 +218,20 @@ h1 {
     color: var(--gold);
     margin: 10px 0;
 }
+
+.combo-text {
+    position: absolute;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+    pointer-events: none;
+    z-index: 200;
+    animation: combo-float 1s ease-out forwards;
+    text-shadow: 2px 2px white;
+}
+
+@keyframes combo-float {
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1); }
+}
