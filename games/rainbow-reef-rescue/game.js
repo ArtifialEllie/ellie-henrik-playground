@@ -2,6 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const rescuedElement = document.getElementById('rescued');
+const highscoreElement = document.getElementById('highscore');
 const overlay = document.getElementById('overlay');
 const startBtn = document.getElementById('start-btn');
 
@@ -10,12 +11,14 @@ canvas.height = 600;
 
 let gameActive = false;
 let score = 0;
+let highscore = parseInt(localStorage.getItem('rainbowReefHighscore')) || 0;
 let difficultyMultiplier = 1;
 let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0 };
 
 // Audio setup
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioCtx();
+highscoreElement.innerText = `Best: ${highscore}`;
 function playSound(freq, type, duration, volume = 0.1) {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -196,6 +199,14 @@ class PowerUp {
     constructor() {
         const types = ['SHIELD', 'TURBO', 'INVISIBILITY', 'MAGNET'];
         this.type = types[Math.floor(Math.random() * types.length)];
+        
+        const emojiMap = { 
+            'SHIELD': '🛡️', 
+            'TURBO': '⚡', 
+            'INVISIBILITY': '👻', 
+            'MAGNET': '🧲' 
+        };
+        this.emoji = emojiMap[this.type];
         const emojis = { 'SHIELD': '🛡️', 'TURBO': '⚡', 'INVISIBILITY': '👻', 'MAGNET': '🧲' };
         this.emoji = emojis[this.type];
         this.radius = 15;
@@ -348,7 +359,9 @@ function checkCollisions() {
             playSound(523.25, 'sine', 0.2);
             friend.reset();
             // Add a pearl as a reward
+            if (Math.random() < 0.3) {
             pearls.push(new Pearl());
+            }
         }
     });
 
@@ -408,6 +421,11 @@ function checkCollisions() {
 
 function gameOver() {
     gameActive = false;
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem('rainbowReefHighscore', highscore);
+        highscoreElement.innerText = `Best: ${highscore}`;
+    }
     overlay.style.opacity = '1';
     overlay.style.pointerEvents = 'auto';
     document.getElementById('title').innerText = 'Oops! A Grumpy Urchin Got You!';
@@ -434,6 +452,22 @@ function start() {
 
 function gameLoop() {
     if (!gameActive) return;
+
+    // Update Powerup HUD
+    const hud = document.getElementById('powerup-hud');
+    hud.innerHTML = '';
+    const activePowerups = [
+        { id: 'SHIELD', emoji: '🛡️', active: playerStatus.shield > 0 },
+        { id: 'TURBO', emoji: '⚡', active: playerStatus.turbo > 0 },
+        { id: 'INVISIBILITY', emoji: '👻', active: playerStatus.invisibility > 0 },
+        { id: 'MAGNET', emoji: '🧲', active: playerStatus.magnet > 0 },
+    ];
+    activePowerups.forEach(pu => {
+        const div = document.createElement('div');
+        div.className = `powerup-icon ${pu.active ? 'active' : ''}`;
+        div.innerText = pu.emoji;
+        hud.appendChild(div);
+    });
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const time = Date.now();

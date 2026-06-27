@@ -41,11 +41,12 @@ let cards = [];
 let flippedCards = [];
 let moves = 0;
 let matches = 0;
-let isLockBoard = false;
-let peeksLeft = 1;
+    let isLockBoard = false;
+    let peeksLeft = 1;
+    let hintsLeft = 1;
 
-let combo = 0;
-let timerInterval;
+    let combo = 0;
+    let timerInterval;
 let secondsElapsed = 0;
 
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -89,8 +90,10 @@ function initGame() {
     flippedCards = [];
     isLockBoard = false;
     peeksLeft = 1;
-    
+    hintsLeft = 1;
+
     updatePeekButton();
+    updateHintButton();
     
     document.getElementById('total-pairs').textContent = config.emojis.length;
     updateStats();
@@ -341,6 +344,36 @@ function magicPeek() {
             }
         });
     }, 600);
+}
+
+function magicHint() {
+    if (hintsLeft <= 0 || isLockBoard) return;
+    
+    hintsLeft--;
+    moves += 5;
+    updateStats();
+    updateHintButton();
+    
+    playSound(880, 'triangle', 0.3);
+    
+    const unmatched = Array.from(document.querySelectorAll('.card:not(.matched)'));
+    if (unmatched.length === 0) return;
+    
+    const randomCard = unmatched[Math.floor(Math.random() * unmatched.length)];
+    randomCard.classList.add('flipped');
+    setTimeout(() => {
+        if (!flippedCards.includes(randomCard)) {
+            randomCard.classList.remove('flipped');
+        }
+    }, 800);
+}
+
+function updateHintButton() {
+    const btn = document.getElementById('hint-btn');
+    if (btn) {
+        btn.innerText = hintsLeft > 0 ? `Magic Hint 💡 (${hintsLeft})` : `Magic Hint 💡 (Tom!)`;
+        btn.disabled = hintsLeft <= 0;
+    }
 }
 
 function updatePeekButton() {

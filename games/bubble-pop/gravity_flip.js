@@ -5,6 +5,7 @@ function triggerGravityFlip() {
     // Flip the vertical speed of all existing bubbles
     bubbles.forEach(b => {
         b.speed *= -1;
+        if (b.vy) b.vy *= -1;
     });
 
     // Also invert the spawn logic for the duration of the flip
@@ -20,6 +21,7 @@ function triggerGravityFlip() {
         // Flip them back!
         bubbles.forEach(b => {
             b.speed *= -1;
+            if (b.vy) b.vy *= -1;
         });
     }, 6000);
 }

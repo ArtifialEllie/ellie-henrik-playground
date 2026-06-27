@@ -323,9 +323,11 @@ const canvas = document.getElementById('gameCanvas');
                     if (Math.abs(centerDiff) < 10) {
                         showPerfect();
                         combo++;
-                        score += Math.round(2 * scoreMult);
+                        const comboBonus = 1 + (combo * 0.1);
+                        score += Math.round(2 * scoreMult * comboBonus);
                         showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
                         playSound(660, 'sine', 0.1);
+                        shakeAmount = 5; 
                         if (combo > 1) {
                             comboEl.classList.add('show');
                             comboValEl.innerText = combo;
@@ -350,7 +352,7 @@ const canvas = document.getElementById('gameCanvas');
                     } else {
                         combo = 0;
                         comboEl.classList.remove('show');
-                        score++;
+                        score += 1;
                         playSound(440, 'sine', 0.1);
                     }
 
@@ -502,6 +504,21 @@ const canvas = document.getElementById('gameCanvas');
                 windIndicator.style.transform = `translateX(calc(-50% + ${windOffset}px))`;
             }
 
+            // Background Sparkles ✨
+            if (Math.random() < 0.1) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                const size = Math.random() * 5 + 2;
+                sparkle.style.width = `${size}px`;
+                sparkle.style.height = `${size}px`;
+                sparkle.style.left = `${Math.random() * 100}vw`;
+                sparkle.style.top = `${Math.random() * 100}vh`;
+                sparkle.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                sparkle.style.opacity = Math.random() * 0.5 + 0.3;
+                document.body.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 5000);
+            }
+
             if (shakeAmount > 0) {
                 ctx.save();
                 ctx.translate((Math.random()-0.5)*shakeAmount, (Math.random()-0.5)*shakeAmount);
@@ -544,8 +561,7 @@ const canvas = document.getElementById('gameCanvas');
 
         function startGame() {
             document.getElementById('how-to-play').style.display = 'none';
-            gameActive = true;
-            resumeAudio();
-        }
+        gameActive = true;
+        resumeAudio();
+    }
 
-        window.addEventListener('mousedown', flipPancake);

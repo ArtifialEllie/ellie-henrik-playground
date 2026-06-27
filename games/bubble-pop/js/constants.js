@@ -40,7 +40,13 @@ const QUESTS = [
     { text: 'Collect 50,000 Gold! ✨', goal: 50000, reward: 30000, rewardGold: 0, type: 'gold' },
     { text: 'Pop 1000 bubbles! 🫧', goal: 1000, reward: 50000, rewardGold: 25000 },
     { text: 'Pop 50 emotion bubbles! 🥳', goal: 50, reward: 20000, rewardGold: 10000, type: 'emotion' },
-];
+    { text: 'Collect 100,000 Gold! ✨', goal: 100000, reward: 50000, rewardGold: 0, type: 'gold' },
+    { text: 'Reach Level 100! 🌟', goal: 100, reward: 100000, rewardGold: 50000, type: 'level' },
+    { text: 'Get a Combo of 100! 🔥', goal: 100, reward: 150000, rewardGold: 100000, type: 'combo' },
+    { text: 'Pop 2000 bubbles! 🫧', goal: 2000, reward: 200000, rewardGold: 150000 },
+    { text: 'Reach a x20 Multiplier! 🚀', goal: 20, reward: 250000, rewardGold: 200000, type: 'multiplier' },
+    { text: 'Pop 200 emotion bubbles! 🥳', goal: 200, reward: 300000, rewardGold: 250000, type: 'emotion' },
+    { text: 'Collect 500,000 Gold! ✨', goal: 500000, reward: 500000, rewardGold: 0, type: 'gold' },
 
 const SKINS = [
     { color: '#ff80ab', name: 'Pastel Pink', cost: 0 },
