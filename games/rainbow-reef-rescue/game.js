@@ -42,7 +42,8 @@ let player = {
     baseSpeed: 6,
     color: '#ffeb3b',
     targetX: 400,
-    targetY: 300
+    targetY: 300,
+    angle: 0
 };
 
 let friends = [];
@@ -610,6 +611,7 @@ function gameLoop() {
     ctx.restore();
     ctx.shadowBlur = 0;
 
+    player.angle = Math.atan2(player.targetY - player.y, player.targetX - player.x);
     updatePlayer();
     checkCollisions();
     
