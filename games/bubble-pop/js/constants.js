@@ -34,6 +34,12 @@ const QUESTS = [
     { text: 'Get a Combo of 30! 🔥', goal: 30, reward: 4000, rewardGold: 2000, type: 'combo' },
     { text: 'Collect 5000 Gold! ✨', goal: 5000, reward: 5000, rewardGold: 0, type: 'gold' },
     { text: 'Pop 10 emotion bubbles! 🥺', goal: 10, reward: 1000, rewardGold: 500, type: 'emotion' },
+    { text: 'Pop 500 bubbles! 🫧', goal: 500, reward: 10000, rewardGold: 5000 },
+    { text: 'Reach Level 50! 🌟', goal: 50, reward: 15000, rewardGold: 10000, type: 'level' },
+    { text: 'Get a Combo of 50! 🔥', goal: 50, reward: 20000, rewardGold: 15000, type: 'combo' },
+    { text: 'Collect 50,000 Gold! ✨', goal: 50000, reward: 30000, rewardGold: 0, type: 'gold' },
+    { text: 'Pop 1000 bubbles! 🫧', goal: 1000, reward: 50000, rewardGold: 25000 },
+    { text: 'Pop 50 emotion bubbles! 🥳', goal: 50, reward: 20000, rewardGold: 10000, type: 'emotion' },
 ];
 
 const SKINS = [

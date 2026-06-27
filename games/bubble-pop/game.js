@@ -1395,8 +1395,8 @@ function triggerMagnetism() {
             const dy = lastMouseY - b.y;
             const dist = Math.hypot(dx, dy);
             if (dist < 300) {
-                b.vx += dx / dist * 0.8;
-                b.vy += dy / dist * 0.8;
+                b.vx += (dx / (dist || 1)) * 0.8;
+                b.vy += (dy / (dist || 1)) * 0.8;
             }
         });
     }, 20);
@@ -1431,8 +1431,8 @@ function triggerVortex() {
             const dx = centerX - b.x;
             const dy = centerY - b.y;
             const dist = Math.hypot(dx, dy);
-            b.vx += dx / dist * 0.5;
-            b.vy = (dy / dist * 0.5) - b.speed; // counteract vertical speed slightly
+                b.vx += (dx / (dist || 1)) * 0.5;
+                b.vy = ((dy / (dist || 1)) * 0.5) - b.speed; // counteract vertical speed slightly
         });
     }, 20);
 
@@ -1540,12 +1540,13 @@ function handlePop(e) {
 }
     }
 
-    for (let i = bubbles.length - 1; i >= 0; i--) {
-        const b = bubbles[i];
-        
-        // Fix: Account for Sneeze offset in hit detection
-        let hitX = b.x;
-        let hitY = b.y;
+   for (let i = bubbles.length - 1; i >= 0; i--) {
+       const b = bubbles[i];
+       
+       if (!b) continue;
+       // Fix: Account for Sneeze offset in hit detection
+       let hitX = b.x;
+       let hitY = b.y;
         if (b.isSneezing) {
             hitX += b.sneezeOffset.x * (b.sneezeTimer / 30);
             hitY += b.sneezeOffset.y * (b.sneezeTimer / 30);
@@ -1707,7 +1708,7 @@ function handlePop(e) {
                     floatingTexts.push(new FloatingText(b.x, b.y, `+${totalPoints}`, b.color));
                 }
 
-                bubbles.splice(i, 1);
+                b.popped = true;
                 totalPops++;
                 updateQuest();
             }
@@ -1894,11 +1895,7 @@ function handlePop(e) {
                     floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
                     
                     // Remove the target from the main bubbles array
-                    const mainIndex = bubbles.indexOf(target);
-                    if (mainIndex > -1) {
-                        bubbles.splice(mainIndex, 1);
-                    }
-                    
+                    target.popped = true;
                     potentialTargets.splice(targetIndex, 1);
                    popped++;
                }
@@ -2100,7 +2097,6 @@ function handlePop(e) {
     scoreEl.innerText = score;
     level = Math.floor(score / 200) + 1;
 }
-}
 
 function createHeartEffect(x, y) {
     for (let i = 0; i < 10; i++) {
@@ -2153,8 +2149,8 @@ function triggerShockwave(x, y, color = '#00ffff') {
         if (Math.hypot(x - b.x, y - b.y) < 150) {
             createPopEffect(b.x, b.y, b.color);
             playPopSound(b.type === 'gold', b.type === 'stinky', b.color);
-            bubbles.splice(i, 1);
-            score += 10; // Small bonus for shockwave pop
+                b.popped = true;
+                score += 10; // Small bonus for shockwave pop
         }
     }
 }
@@ -2342,7 +2338,7 @@ function update() {
     for (let i = bubbles.length - 1; i >= 0; i--) {
         bubbles[i].update();
         bubbles[i].draw();
-        if (bubbles[i].y < -bubbles[i].radius || bubbles[i].popped) {
+        if (bubbles[i].y < -bubbles[i].radius || bubbles[i].y > canvasHeight + bubbles[i].radius || bubbles[i].popped) {
             bubbles.splice(i, 1);
         }
     }

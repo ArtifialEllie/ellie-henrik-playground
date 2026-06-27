@@ -212,6 +212,34 @@ h1 {
     100% { transform: scale(1); }
 }
 
+.combo-popup {
+    position: absolute;
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ff69b4;
+    pointer-events: none;
+    animation: comboPop 0.8s ease-out forwards;
+    z-index: 100;
+    text-shadow: 2px 2px #fff;
+}
+
+@keyframes comboPop {
+    0% { transform: scale(0.5) translateY(0); opacity: 0; }
+    50% { transform: scale(1.2) translateY(-50px); opacity: 1; }
+    100% { transform: scale(1) translateY(-100px); opacity: 0; }
+}
+
+.star-particle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1000;
+    animation: starFall linear forwards;
+}
+
+@keyframes starFall {
+    to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
 .badges-container {
     display: flex;
     justify-content: center;

@@ -507,6 +507,19 @@ function gameLoop() {
     const angle = Math.atan2(player.targetY - player.y, player.targetX - player.x);
     ctx.rotate(angle);
     
+    // Visual feedback for shield
+    if (playerStatus.shield > 0) {
+        ctx.beginPath();
+        ctx.arc(0, 0, player.radius * 2.2, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(135, 206, 250, 0.6)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        // Pulse effect
+        const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.1;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+    }
+
     // Visual feedback for invisibility
     if (playerStatus.invisibility > 0) {
         ctx.globalAlpha = 0.5;
