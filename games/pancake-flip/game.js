@@ -222,21 +222,29 @@ const canvas = document.getElementById('gameCanvas');
                 colorSet = pancakeColors.gold;
                 specialType = 'gold';
                 isSpecial = true;
-            } else if (rand > 0.88) {
+            } else if (rand > 0.92) {
                 colorSet = pancakeColors.rainbow;
                 specialType = 'rainbow';
                 isSpecial = true;
-            } else if (rand > 0.85) {
+            } else if (rand > 0.88) {
                 colorSet = ['#e1f5fe', '#b3e5fc'];
                 specialType = 'bouncy';
                 isSpecial = true;
                 isBouncy = true;
-            } else if (rand > 0.80) {
+            } else if (rand > 0.84) {
                 colorSet = ['#fff9c4', '#fff176'];
                 specialType = 'sticky';
                 isSpecial = true;
                 isSticky = true;
-            } else if (rand > 0.75) {
+            } else if (rand > 0.80) {
+                colorSet = ['#ffeb3b', '#fdd835'];
+                specialType = 'tiny';
+                isSpecial = true;
+            } else if (rand > 0.76) {
+                colorSet = ['#ce93d8', '#ba68c8'];
+                specialType = 'wobbly';
+                isSpecial = true;
+            } else if (rand > 0.72) {
                 colorSet = pancakeColors.normal;
                 specialType = 'giant';
                 isSpecial = true;
@@ -248,7 +256,10 @@ const canvas = document.getElementById('gameCanvas');
             const color = colorSet[Math.floor(Math.random() * colorSet.length)];
             const topping = toppings[Math.floor(Math.random() * toppings.length)];
             const sizeReduction = Math.min(40, stack.length * 2);
-            const currentWidth = isGiant ? (180 - sizeReduction) : (120 - sizeReduction);
+            
+            let currentWidth = 120 - sizeReduction;
+            if (specialType === 'giant') currentWidth = 180 - sizeReduction;
+            if (specialType === 'tiny') currentWidth = (60 - sizeReduction) / 2; 
             
             const last = stack[stack.length - 1];
             activePancake = new Pancake(last.x, last.y - 20, color, topping, currentWidth);
@@ -384,6 +395,14 @@ const canvas = document.getElementById('gameCanvas');
                             currentTotalLean += (Math.random() - 0.5) * 2;
                             showFloatingText("GIANT! 🥞 +4", activePancake.x + activePancake.width/2, activePancake.y - 30);
                             playSound(200, 'square', 0.2);
+                        } else if (activePancake.specialType === 'tiny') {
+                            score += 10;
+                            showFloatingText("TINY! 🤏 +10", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(1200, 'sine', 0.1);
+                        } else if (activePancake.specialType === 'wobbly') {
+                            currentTotalLean += (Math.random() - 0.5) * 5;
+                            showFloatingText("WOBBLY! 😵", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(300, 'sawtooth', 0.2);
                         }
                     }
                     activePancake.targetScaleY = 0.7;
