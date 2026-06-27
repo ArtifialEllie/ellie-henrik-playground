@@ -149,6 +149,7 @@ class Balloon {
             ctx.fill();
         } else {
             ctx.fillStyle = this.color;
+            ctx.beginPath();
             ctx.ellipse(this.x, this.y, this.radius * 0.8, this.radius, 0, 0, Math.PI * 2);
             ctx.fill();
         }
