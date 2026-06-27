@@ -538,8 +538,7 @@ const canvas = document.getElementById('gameCanvas');
         window.addEventListener('touchstart', (e) => {
             flipPancake();
             e.preventDefault();
-        }, { passive: false });
-
+        });
         initStack();
         update();
 
