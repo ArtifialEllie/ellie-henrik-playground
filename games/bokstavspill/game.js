@@ -78,6 +78,17 @@ const levelData = {
             'Hund': [{ name: 'Hund', emoji: '🐶' }],
             'Sykkel': [{ name: 'Sykkel', emoji: '🚲' }],
             'Bok': [{ name: 'Bok', emoji: '📖' }],
+            'Fly': [{ name: 'Fly', emoji: '✈️' }],
+            'Tog': [{ name: 'Tog', emoji: '🚂' }],
+            'Båt': [{ name: 'Båt', emoji: '⛵' }],
+            'Hest': [{ name: 'Hest', emoji: '🐴' }],
+            'Løve': [{ name: 'Løve', emoji: '🦁' }],
+            'Mus': [{ name: 'Mus', emoji: '🐭' }],
+            'Fisk': [{ name: 'Fisk', emoji: '🐟' }],
+            'Sommerfugl': [{ name: 'Sommerfugl', emoji: '🦋' }],
+            'Blomst': [{ name: 'Blomst', emoji: '🌸' }],
+            'Tre': [{ name: 'Tre', emoji: '🌳' }],
+            'Seng': [{ name: 'Seng', emoji: '🛏️' }],
         }
     }
 };
