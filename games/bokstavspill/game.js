@@ -266,6 +266,9 @@ function checkAnswer(letter, btn) {
            streak++;
            
            if (streak > 1) {
+               if (streak >= 5) {
+                   activateFeverMode();
+               }
                createComboPopup(btn);
            }
            
@@ -316,14 +319,17 @@ function checkAnswer(letter, btn) {
         updateStatus();
         speak(`Nei, prøv igjen!`);
         
+        document.getElementById('game-container')?.classList.remove('fever-mode');
+        
         if (bestStreak > 0) {
             // Just for internal tracking, we don't reset bestStreak on wrong answer.
         }
         
         setTimeout(() => btn.classList.remove('wrong'), 500);
+        
+        setTimeout(() => btn.classList.remove('wrong'), 500);
     }
-}
-
+    
 function createComboPopup(element) {
     const popup = document.createElement('div');
     popup.className = 'combo-popup';
@@ -332,6 +338,26 @@ function createComboPopup(element) {
     popup.style.top = element.offsetTop + 'px';
     document.body.appendChild(popup);
     setTimeout(() => popup.remove(), 800);
+}
+
+function activateFeverMode() {
+    const container = document.getElementById('game-container');
+    if (container) {
+        container.classList.add('fever-mode');
+    }
+    for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+            const star = document.createElement('div');
+            star.className = 'star-particle';
+            star.innerText = '⭐';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = '-20px';
+            star.style.fontSize = Math.random() * 20 + 10 + 'px';
+            star.style.animationDuration = Math.random() * 2 + 1 + 's';
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 2000);
+        }, i * 150);
+    }
 }
 
 function spawnStarParticles() {
