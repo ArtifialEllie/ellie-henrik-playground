@@ -1728,6 +1728,7 @@ function handlePop(e) {
                     mini.speed = Math.random() * 2 + 1;
                     bubbles.push(mini);
                 }
+            }
             if (b.type === 'shimmer-shell') {
                const shellBonus = 150;
                score += shellBonus;
@@ -1745,6 +1746,7 @@ function handlePop(e) {
                     pearl.speed = Math.random() * 2 + 1;
                     bubbles.push(pearl);
                 }
+            }
             if (b.type === 'heart') {
                bubbles.forEach(bub => {
                    if (bub !== b) {
@@ -1763,6 +1765,7 @@ function handlePop(e) {
                 setTimeout(() => {
                     document.getElementById('mega-pop-alert').style.display = 'none';
                 }, 3000);
+            }
             if (b.type === 'gold') {
                playPopSound(true, false);
                const bonus = 5 + (combo * 2);
