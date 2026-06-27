@@ -1443,7 +1443,7 @@ function triggerVortex() {
             const dy = centerY - b.y;
             const dist = Math.hypot(dx, dy);
                 b.vx += (dx / (dist || 1)) * 0.5;
-                b.vy = ((dy / (dist || 1)) * 0.5) - b.speed; // counteract vertical speed slightly
+                b.vy = ((dy / (dist || 1)) * 0.5) + b.speed; // counteract vertical speed slightly
         });
     }, 20);
 
@@ -1697,6 +1697,7 @@ function handlePop(e) {
                     poppedSpecial = true;
                 } else if (b.type === 'rainbow-portal') {
                     playPopSound(true, false);
+                    poppedSpecial = true;
                     const portalBonus = 300;
                     score += portalBonus;
                     floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW PORTAL! 🌈🌀 +${portalBonus}`, '#ff00ff'));
@@ -1968,13 +1969,14 @@ function handlePop(e) {
                    playPopSound(true, false);
                    poppedSpecial = true;
                    floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELDED! 🛡️', '#b2dfdb'));
-                   createPopEffect(b.x, b.y, '#b2dfdb');
-                   shieldActive = false;
-                } else {
-                    playPopSound(false, true);
-                    score = Math.max(0, score - 5);
-                    combo = 0;
-                    comboBar.style.width = '0%';
+                                createPopEffect(b.x, b.y, '#b2dfdb');
+                                shieldActive = false;
+                            } else {
+                                playPopSound(false, true);
+                                poppedSpecial = true;
+                                score = Math.max(0, score - 5);
+                                combo = 0;
+                                comboBar.style.width = '0%';
                     comboText.innerText = '';
                     floatingTexts.push(new FloatingText(b.x, b.y, `-5 💨`, '#666'));
                     document.body.classList.add('shake');

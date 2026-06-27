@@ -226,8 +226,6 @@ class PowerUp {
             'MAGNET': '🧲' 
         };
         this.emoji = emojiMap[this.type];
-        const emojis = { 'SHIELD': '🛡️', 'TURBO': '⚡', 'INVISIBILITY': '👻', 'MAGNET': '🧲' };
-        this.emoji = emojis[this.type];
         this.radius = 15;
         this.x = Math.random() * (canvas.width - 40) + 20;
         this.y = Math.random() * (canvas.height - 40) + 20;
@@ -618,7 +616,7 @@ function gameLoop() {
     // Update player status timers
     if (playerStatus.shield > 0) playerStatus.shield--;
     if (playerStatus.turbo > 0) playerStatus.turbo--;
-    if (frenzyTimer > 0) playerStatus.magnet = frenzyTimer;
+    if (frenzyTimer > 0) playerStatus.magnet = Math.max(playerStatus.magnet, frenzyTimer);
     if (playerStatus.invisibility > 0) playerStatus.invisibility--;
     
     // Apply turbo speed
