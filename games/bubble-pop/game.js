@@ -828,12 +828,14 @@ class MagicalPet {
             this.shieldTimer--;
         }
 
-        // Update Energy Bar UI
-        const energyFill = document.getElementById('pet-energy-fill');
-        if (energyFill) {
-            energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
+        if (this.isClone) {
+            // Clones don't update the main energy bar
+        } else {
+            const energyFill = document.getElementById('pet-energy-fill');
+            if (energyFill) {
+                energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
+            }
         }
-
     // Friendship Level 5: Occasionally spawn a gold bubble!
     if ((this.friendshipLevel >= 5 || currentAccessory === '🌟') && Math.random() < (currentAccessory === '🌟' ? 0.005 : 0.002)) {
         const goldBubble = new Bubble(false);
@@ -918,7 +920,7 @@ class MagicalPet {
             this.isSugarRush = false;
         }
     }
- 
+
     triggerSugarRush() {
         this.sugarRushTimer = 600; // Approx 10 seconds at 60fps
         this.mood = 'Hyper';
@@ -1783,7 +1785,7 @@ function handlePop(e) {
                totalGoldEl.innerText = totalGold;
                timeLeft += 2;
                floatingTexts.push(new FloatingText(b.x, b.y, `+${goldGain} GOLD! ✨`, 'gold'));
-            } if (b.type === 'rainbow-burst') {
+            } else if (b.type === 'rainbow-burst') {
                playPopSound(true, false);
                const rainbowBonus = 100;
                score += rainbowBonus;
@@ -1801,20 +1803,20 @@ function handlePop(e) {
                
                triggerFrenzy();
                createPopEffect(b.x, b.y, 'rainbow');
-            } if (b.type === 'time-warp') {
+            } else if (b.type === 'time-warp') {
                playPopSound(true, false);
                const timeBonus = 3;
                timeLeft += timeBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `TIME WARP! ⏳ +${timeBonus}s`, '#e1bee7'));
                createPopEffect(b.x, b.y, '#e1bee7');
-            } if (b.type === 'sneeze') {
-               playPopSound(true, false);
-               const sneezeBonus = 200;
-               score += sneezeBonus;
-                floatingTexts.push(new FloatingText(b.x, b.y, `SNEEZE! 🤧 +${sneezeBonus}`, '#ffeb3b'));
-                createPopEffect(b.x, b.y, '#ffeb3b');
-               triggerSneezeEffect();
-            } if (b.type === 'magic-dust') {
+                } else if (b.type === 'sneeze') {
+                    playPopSound(true, false);
+                    const sneezeBonus = 200;
+                    score += sneezeBonus;
+                    floatingTexts.push(new FloatingText(b.x, b.y, `SNEEZE! 🤧 +${sneezeBonus}`, '#ffeb3b'));
+                    createPopEffect(b.x, b.y, '#ffeb3b');
+                    triggerSneezeEffect();
+                } else if (b.type === 'magic-dust') {
                playPopSound(true, false);
                const dustBonus = 30;
                score += dustBonus;
@@ -1868,13 +1870,13 @@ function handlePop(e) {
                setTimeout(() => {
                    shieldActive = false;
                }, 7000);
-            } if (b.type === 'magic-star') {
+            } else if (b.type === 'magic-star') {
                playPopSound(true, false);
                const magicBonus = 60;
                score += magicBonus;
                 floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC STAR! ✨ +${magicBonus}`, '#ffff00'));
                createPopEffect(b.x, b.y, '#ffff00');
-            } if (b.type === 'hammer') {
+            } else if (b.type === 'hammer') {
                playPopSound(true, false);
                const hammerBonus = 80;
                score += hammerBonus;
@@ -1895,11 +1897,11 @@ function handlePop(e) {
                     floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
                     
                     // Remove the target from the main bubbles array
-                    target.popped = true;
-                    potentialTargets.splice(targetIndex, 1);
+                   target.popped = true;
+                   potentialTargets.splice(targetIndex, 1);
                    popped++;
-               }
-            } if (b.type === 'pet-treat') {
+                }
+            } else if (b.type === 'pet-treat') {
                playPopSound(true, false);
                pet.triggerSugarRush();
                pet.gainFriendship(20);
@@ -1913,21 +1915,21 @@ function handlePop(e) {
                pet.mood = 'Happy';
                 pet.moodTimer = 600;
                 const snackBonus = 50;
-                score += snackBonus;
+               score += snackBonus;
                floatingTexts.push(new FloatingText(b.x, b.y, `YUM! 🍪 +${snackBonus}`, '#ffcc80'));
                createPopEffect(b.x, b.y, '#ffcc80');
-            } if (b.type === 'emotion') {
+            } else if (b.type === 'emotion') {
                combo++;
                score += 50;
                emotionPops++;
-                floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
+               floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
                createPopEffect(b.x, b.y, b.color);
-            } if (b.type === 'bomb') {
+            } else if (b.type === 'bomb') {
                playSound(100, 'square', 0.5);
                bubbles = [];
                combo = 0;
-               floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
-            } if (b.type === 'bomb-burst') {
+                floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
+            } else if (b.type === 'bomb-burst') {
                playPopSound(true, false);
                floatingTexts.push(new FloatingText(b.x, b.y, 'BURST BOOM! 💥', '#ff5722'));
                const burstRadius = 200;

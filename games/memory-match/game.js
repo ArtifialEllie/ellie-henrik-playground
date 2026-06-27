@@ -192,7 +192,11 @@ function disableCards() {
 function unflipCards() {
     setTimeout(() => {
         playSound(220, 'sine', 0.2);
-        flippedCards.forEach(card => card.classList.remove('flipped'));
+        flippedCards.forEach(card => {
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 400);
+            card.classList.remove('flipped');
+        });
         resetBoard();
     }, 1000);
 }
