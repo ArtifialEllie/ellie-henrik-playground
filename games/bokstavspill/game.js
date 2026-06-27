@@ -326,10 +326,9 @@ function checkAnswer(letter, btn) {
         }
         
         setTimeout(() => btn.classList.remove('wrong'), 500);
-        
-        setTimeout(() => btn.classList.remove('wrong'), 500);
     }
-    
+}
+
 function createComboPopup(element) {
     const popup = document.createElement('div');
     popup.className = 'combo-popup';
