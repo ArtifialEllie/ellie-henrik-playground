@@ -11,7 +11,7 @@ canvas.height = 600;
 let gameActive = false;
 let score = 0;
 let difficultyMultiplier = 1;
-let playerStatus = { shield: 0, turbo: 0, invisibility: 0 };
+let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0 };
 
 // Audio setup
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -34,8 +34,8 @@ let player = {
     x: 400,
     y: 300,
     radius: 20,
-    speed: 5,
-    baseSpeed: 5,
+    speed: 6,
+    baseSpeed: 6,
     color: '#ffeb3b',
     targetX: 400,
     targetY: 300
@@ -194,9 +194,9 @@ class Bubble {
  
 class PowerUp {
     constructor() {
-        const types = ['SHIELD', 'TURBO', 'INVISIBILITY'];
+        const types = ['SHIELD', 'TURBO', 'INVISIBILITY', 'MAGNET'];
         this.type = types[Math.floor(Math.random() * types.length)];
-        const emojis = { 'SHIELD': '🛡️', 'TURBO': '⚡', 'INVISIBILITY': '👻' };
+        const emojis = { 'SHIELD': '🛡️', 'TURBO': '⚡', 'INVISIBILITY': '👻', 'MAGNET': '🧲' };
         this.emoji = emojis[this.type];
         this.radius = 15;
         this.x = Math.random() * (canvas.width - 40) + 20;
@@ -320,6 +320,19 @@ function updatePlayer() {
 }
 
 function checkCollisions() {
+    // Check magnet effect
+    if (playerStatus.magnet > 0) {
+        pearls.forEach(pearl => {
+            const dx = player.x - pearl.x;
+            const dy = player.y - pearl.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 150) {
+                pearl.x += (dx / dist) * 3;
+                pearl.y += (dy / dist) * 3;
+            }
+        });
+    }
+
     // Check friend rescue
     friends.forEach((friend, index) => {
         const dist = Math.hypot(player.x - friend.x, player.y - friend.y);
@@ -383,6 +396,9 @@ function checkCollisions() {
             } else if (pu.type === 'INVISIBILITY') {
                 playerStatus.invisibility = 300;
                 playSound(700, 'sine', 0.2);
+            } else if (pu.type === 'MAGNET') {
+                playerStatus.magnet = 300;
+                playSound(650, 'sine', 0.2);
             }
             createParticles(pu.x, pu.y, 'yellow', 10);
             powerups.splice(i, 1);
