@@ -25,6 +25,37 @@ let feverTimer = null;
 let magnetActive = false;
 let magnetTimer = null;
 
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(freq, type, vol, duration = 0.1) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+function playPopSound(type = 'candy') {
+    if (type === 'candy') playSound(400 + Math.random() * 200, 'sine', 0.1);
+    else if (type === 'golden') {
+        playSound(600, 'sine', 0.2);
+        setTimeout(() => playSound(800, 'sine', 0.2), 100);
+    } else if (type === 'rainbow') {
+        playSound(500, 'triangle', 0.2);
+        playSound(700, 'triangle', 0.2);
+        playSound(900, 'triangle', 0.2);
+    } else if (type === 'lemon') {
+        playSound(150, 'sawtooth', 0.2);
+    } else {
+        playSound(300, 'sine', 0.1);
+    }
+}
+
 highscoreElement.textContent = highscore;
 
 function resize() {
@@ -385,12 +416,14 @@ function update() {
                 updateCombo();
                 createParticles(item.x, item.y, item.color);
                 createFloatingText(item.x, item.y, `+${points}`, item.color);
+                playPopSound('candy');
             } else if (item.type === 'golden') {
                 const points = 5 * combo;
                 score += points;
                 updateCombo();
                 createParticles(item.x, item.y, '#ffd700', 20);
                 createFloatingText(item.x, item.y, `+${points}`, '#ffd700');
+                playPopSound('golden');
             } else if (item.type === 'rainbow') {
                 const points = 10 * combo;
                 score += points;
@@ -398,12 +431,14 @@ function update() {
                 createParticles(item.x, item.y, '#ff00ff', 30);
                 createFloatingText(item.x, item.y, `🌈 ${points} RUSH!`, '#ff00ff');
                 activateFeverMode();
+                playPopSound('rainbow');
             } else if (item.type === 'star') {
                 const points = 25 * combo;
                 score += points;
                 updateCombo();
                 createParticles(item.x, item.y, '#fde047', 40);
                 createFloatingText(item.x, item.y, `⭐ SUPER STAR! +${points}`, '#fde047');
+                playPopSound('star');
             } else if (item.type === 'surprise') {
                 const effects = ['points', 'time', 'magnet'];
                 const effect = effects[Math.floor(Math.random() * effects.length)];
@@ -419,25 +454,30 @@ function update() {
                     createFloatingText(item.x, item.y, `🎁 SURPRISE! MAGNET!`, '#ff69b4');
                 }
                 createParticles(item.x, item.y, '#ff69b4', 30);
+                playPopSound('surprise');
             } else if (item.type === 'clock') {
                 timeLeft += 5;
                 createParticles(item.x, item.y, '#4ade80', 20);
                 createFloatingText(item.x, item.y, `⏰ +5s`, '#4ade80');
+                playPopSound('clock');
             } else if (item.type === 'crystal') {
                 const points = 15 * combo;
                 score += points;
                 updateCombo();
                 createParticles(item.x, item.y, '#a855f7', 25);
                 createFloatingText(item.x, item.y, `💎 CRYSTAL! +${points}`, '#a855f7');
+                playPopSound('crystal');
             } else if (item.type === 'ticket') {
                 combo++;
                 score += 50;
                 createParticles(item.x, item.y, '#fbbf24', 40);
                 createFloatingText(item.x, item.y, '🎟️ GOLDEN TICKET!', '#fbbf24');
+                playPopSound('ticket');
             } else if (item.type === 'magnet') {
                 activateMagnet();
                 createParticles(item.x, item.y, '#3b82f6', 30);
                 createFloatingText(item.x, item.y, '🧲 MAGNET POWER!', '#3b82f6');
+                playPopSound('magnet');
             } else {
                 score = Math.max(0, score - 5);
                 resetCombo();
@@ -447,6 +487,7 @@ function update() {
                 // Screen shake effect when hitting a lemon
                 document.body.classList.add('shake');
                 setTimeout(() => document.body.classList.remove('shake'), 500);
+                playPopSound('lemon');
             }
             scoreElement.textContent = score;
             items.splice(i, 1);
