@@ -15,7 +15,7 @@ let score = 0;
 let highscore = parseInt(localStorage.getItem('rainbowReefHighscore')) || 0;
 let difficultyMultiplier = 1;
 let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0 };
-let frenzyTimer = 0;
+let frenzyTimer = 0; // Frenzy mode grants invincibility and speed
 
 // Audio setup
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -110,7 +110,7 @@ class Fish {
 
 
         // Wrap around or reset
-        if (this.x < -50 || this.x > canvas.width + 50 || this.y < -50 || this.y > canvas.height + 50) {
+        if (this.x < -100 || this.x > canvas.width + 100 || this.y < -100 || this.y > canvas.height + 100) {
             this.reset();
         }
     }
@@ -380,7 +380,7 @@ function checkCollisions() {
             // Trigger Frenzy Mode every 10 rescues
             if (rescuedCount > 0 && rescuedCount % 10 === 0) {
                 frenzyTimer = 300; // 5 seconds approx
-                playSound(880, 'sine', 0.5);
+                playSound(880, 'sine', 0.5); // Victory sound
                 createParticles(player.x, player.y, 'gold', 30);
                 showFloatingText("FRENZY MODE! 🌟⚡", player.x, player.y);
             }
