@@ -428,11 +428,12 @@ class Seaweed {
             this.x + sway, canvas.height - this.height
         );
         ctx.stroke();
-        ctx.restore();
+    tideX = 0;
+    tideY = 0;
     }
 }
 
-function spawnEntities() {
+function spawnEntities(isInitial = false) {
     friends = [];
     enemies = [];
     pearls = [];
@@ -641,7 +642,7 @@ function start() {
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
     companion = new Companion();
-    spawnEntities();
+    spawnEntities(true);
     requestAnimationFrame(gameLoop);
 }
 
