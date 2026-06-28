@@ -37,11 +37,13 @@ const levelConfigs = [
 ];
 
 let currentLevelIdx = 0;
+let gameMode = 'classic';
 let cards = [];
 let flippedCards = [];
 let moves = 0;
 let matches = 0;
     let isLockBoard = false;
+    let isPaused = false;
     let peeksLeft = 1;
     let hintsLeft = 1;
 
@@ -65,6 +67,11 @@ function playSound(freq, type, duration, vol = 0.1) {
     osc.stop(audioCtx.currentTime + duration);
 }
 
+function setGameMode(mode) {
+    gameMode = mode;
+    initGame();
+}
+
 function initGame() {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     
@@ -75,7 +82,7 @@ function initGame() {
     document.getElementById('level').textContent = currentLevelIdx + 1;
     
     resetTimer();
-
+    
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
     const cols = config.grid;
@@ -92,6 +99,12 @@ function initGame() {
     peeksLeft = 1;
     hintsLeft = 1;
 
+    if (gameMode === 'zen') {
+        document.getElementById('timer-container').style.visibility = 'hidden';
+    } else {
+        document.getElementById('timer-container').style.visibility = 'visible';
+    }
+    
     updatePeekButton();
     updateHintButton();
     
@@ -119,8 +132,10 @@ function resetTimer() {
     secondsElapsed = 0;
     document.getElementById('timer').textContent = '0';
     timerInterval = setInterval(() => {
-        secondsElapsed++;
-        document.getElementById('timer').textContent = secondsElapsed;
+        if (!isPaused) {
+            secondsElapsed++;
+            document.getElementById('timer').textContent = secondsElapsed;
+        }
     }, 1000);
 }
 
@@ -133,7 +148,7 @@ function shuffle(array) {
 
 function flipCard() {
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    if (isLockBoard) return;
+    if (isLockBoard || isPaused) return;
     if (this === flippedCards[0]) return;
     if (this.classList.contains('matched')) return;
 
@@ -226,6 +241,20 @@ function activateFeverMode() {
             container.classList.remove('fever-mode');
         }, 5000);
     }
+
+    // Fever Mode Power: Briefly reveal 4 random unmatched cards! ✨
+    const unmatched = Array.from(document.querySelectorAll('.card:not(.matched)'));
+    if (unmatched.length >= 4) {
+        for (let i = 0; i < 4; i++) {
+            const randomCard = unmatched[Math.floor(Math.random() * unmatched.length)];
+            randomCard.classList.add('flipped');
+            setTimeout(() => {
+                if (!flippedCards.includes(randomCard) && !randomCard.classList.contains('matched')) {
+                    randomCard.classList.remove('flipped');
+                }
+            }, 1200);
+        }
+    }
     
     for (let i = 0; i < 20; i++) {
         setTimeout(() => {
@@ -299,7 +328,14 @@ function showWinMessage() {
 
     setTimeout(() => {
         document.getElementById('star-rating').innerText = stars;
-        document.getElementById('final-stats').innerText = `Du fant alle parene på ${moves} trekk og ${secondsElapsed} sekunder! Din høyeste combo var ${combo}! 🌟`;
+        
+        let finalStatsText = `Du fant alle parene på ${moves} trekk`;
+        if (gameMode === 'classic') {
+            finalStatsText += ` og ${secondsElapsed} sekunder!`;
+        }
+        finalStatsText += ` Din høyeste combo var ${combo}! 🌟`;
+        
+        document.getElementById('final-stats').innerText = finalStatsText;
         document.getElementById('win-message').classList.add('show');
         startConfetti();
         
@@ -408,12 +444,11 @@ function updateHintButton() {
     }
 }
 
-function updatePeekButton() {
-    const btn = document.getElementById('peek-btn');
-    if (btn) {
-        btn.innerText = peeksLeft > 0 ? `Magic Peek ✨ (${peeksLeft})` : `Magic Peek ✨ (Tom!)`;
-        btn.disabled = peeksLeft <= 0;
-    }
-}
-
 initGame();
+
+function togglePause() {
+    isPaused = !isPaused;
+    const btn = document.getElementById('pause-btn');
+    btn.innerText = isPaused ? 'Resume ▶️' : 'Pause ⏸️';
+    playSound(isPaused ? 330 : 440, 'sine', 0.2);
+}
