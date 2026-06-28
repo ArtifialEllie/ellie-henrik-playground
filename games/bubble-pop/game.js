@@ -484,10 +484,14 @@ class Bubble {
        if (this.isSneezing) {
            drawX += this.sneezeOffset.x * (this.sneezeTimer / 30);
            drawY += this.sneezeOffset.y * (this.sneezeTimer / 30);
-        }
-        
-        ctx.beginPath();
-        ctx.arc(drawX, drawY, currentRadius, 0, Math.PI * 2);
+       }
+       if (this.type === 'cosmic-singularity') {
+           ctx.shadowBlur = 20;
+           ctx.shadowColor = '#000033';
+       }
+       
+       ctx.beginPath();
+       ctx.arc(drawX, drawY, currentRadius, 0, Math.PI * 2);
         
         let grad = ctx.createRadialGradient(
             drawX - currentRadius * 0.3, drawY - currentRadius * 0.3, currentRadius * 0.1,
