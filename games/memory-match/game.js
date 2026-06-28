@@ -206,6 +206,7 @@ function checkMatch() {
 
 function handleMatch() {
     combo++;
+    if (combo >= 3) activateFeverMode();
     // Every 3 matches, you get a peek! ✨
     if (matches % 3 === 0 && matches !== 0) {
         peeksLeft++;
