@@ -87,9 +87,9 @@ function spawnObject() {
     
     const rand = Math.random();
     let type;
-    if (rand > 0.97) type = objectTypes.RAINBOW;
-    else if (rand > 0.93) type = objectTypes.MAGNET;
-    else if (rand > 0.25) type = objectTypes.STAR;
+    if (rand > 0.98) type = objectTypes.RAINBOW;
+    else if (rand > 0.94) type = objectTypes.MAGNET;
+    else if (rand > 0.30) type = objectTypes.STAR;
     else type = objectTypes.CLOUD;
     
     objects.push({
