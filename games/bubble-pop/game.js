@@ -102,9 +102,7 @@ function completeQuest() {
     if (!quest) return;
 
     score += quest.reward;
-    totalGold += quest.rewardGold;
-    localStorage.setItem('bubblePopTotalGold', totalGold);
-    totalGoldEl.innerText = totalGold;
+    updateTotalGold(quest.rewardGold);
     
     floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, `QUEST COMPLETE! +${quest.reward} 🌟`, 'gold'));
     playSound(880, 'sine', 0.3);
@@ -439,6 +437,23 @@ class Bubble {
                if (dist < 200) {
                    b.vx += dx / dist * 0.15;
                    b.vy += dy / dist * 0.15;
+               }
+           });
+       }
+       if (this.type === 'cosmic-singularity') {
+           bubbles.forEach(b => {
+               if (b === this) return;
+               const dx = this.x - b.x;
+               const dy = this.y - b.y;
+               const dist = Math.hypot(dx, dy);
+               if (dist < 150) {
+                   b.vx += dx / dist * 0.3;
+                   b.vy += dy / dist * 0.3;
+                   if (dist < 30) {
+                       b.popped = true;
+                       createPopEffect(b.x, b.y, b.color);
+                       score += 5;
+                   }
                }
            });
        }
