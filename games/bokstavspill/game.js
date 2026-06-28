@@ -497,24 +497,26 @@ function levelUp() {
            }
        }
 
-    function triggerBonusRound() {
-        bonusBanner.style.display = 'block';
-        speak(`BONUSRUNDE! Få ekstra stjerner nå!`);
-        spawnConfetti();
-        
-        const interval = setInterval(() => {
-            const increment = Math.floor(Math.random() * 3) + 1;
-            totalStars += increment;
-            localStorage.setItem('bokstavspillStars', totalStars);
-            updateStatus();
-            floatingTexts.push(new FloatingText(window.innerWidth / 2, window.innerHeight / 2, `+${increment} ⭐`, 'gold'));
-        }, 200);
-        
-        setTimeout(() => {
-            clearInterval(interval);
-            bonusBanner.style.display = 'none';
-        }, 2000);
-    }
+function triggerBonusRound() {
+    if (bonusBanner.style.display === 'block') return;
+
+    bonusBanner.style.display = 'block';
+    speak(`BONUSRUNDE! Få ekstra stjerner nå!`);
+    spawnConfetti();
+    
+    const interval = setInterval(() => {
+        const increment = Math.floor(Math.random() * 3) + 1;
+        totalStars += increment;
+        localStorage.setItem('bokstavspillStars', totalStars);
+        updateStatus();
+        floatingTexts.push(new FloatingText(window.innerWidth / 2, window.innerHeight / 2, `+${increment} ⭐`, 'gold'));
+    }, 200);
+    
+    setTimeout(() => {
+        clearInterval(interval);
+        bonusBanner.style.display = 'none';
+    }, 2000);
+}
 
 function updateProgressBar() {
     const pool = levelData[currentLevel].items;
