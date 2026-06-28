@@ -8,11 +8,14 @@
 </head>
 <body>
     <div id="game-container">
-        <div id="ui">
-            <div id="score">Pearls: 0</div>
-            <div id="rescued">Friends Rescued: 0</div>
-            <div id="highscore">Best: 0</div>
+    <div id="ui">
+        <div id="score">Pearls: 0</div>
+        <div id="combo-container" style="display: none;">
+            <div id="combo">Combo: x1</div>
         </div>
+        <div id="rescued">Friends Rescued: 0</div>
+        <div id="highscore">Best: 0</div>
+    </div>
         <button id="pause-btn" onclick="togglePause()" style="position: absolute; top: 10px; right: 10px; z-index: 100; padding: 10px 20px; font-size: 1rem;">Pause ⏸️</button>
         <div id="powerup-hud"></div>
         <canvas id="gameCanvas"></canvas>

@@ -46,6 +46,7 @@ let matches = 0;
     let isPaused = false;
     let peeksLeft = 1;
     let hintsLeft = 1;
+    let shufflesLeft = 1;
 
     let combo = 0;
     let timerInterval;
@@ -98,6 +99,7 @@ function initGame() {
     isLockBoard = false;
     peeksLeft = 1;
     hintsLeft = 1;
+    shufflesLeft = 1;
 
     if (gameMode === 'zen') {
         document.getElementById('timer-container').style.visibility = 'hidden';
@@ -108,10 +110,11 @@ function initGame() {
         }
         document.getElementById('timer-container').style.visibility = 'visible';
     }
-    
+
     updatePeekButton();
     updateHintButton();
-    
+    updateShuffleButton();
+
     document.getElementById('total-pairs').textContent = config.emojis.length;
     updateStats();
 
@@ -211,6 +214,10 @@ function handleMatch() {
         if (combo % 3 === 0) {
             peeksLeft++;
             updatePeekButton();
+        }
+        if (combo % 5 === 0) {
+            shufflesLeft++;
+            updateShuffleButton();
         }
     }
 }
@@ -467,11 +474,47 @@ function magicHint() {
     }, 800);
 }
 
+function magicShuffle() {
+    if (shufflesLeft <= 0 || isLockBoard) return;
+
+    shufflesLeft--;
+    moves += 10;
+    updateStats();
+    updateShuffleButton();
+
+    playSound(660, 'triangle', 0.3);
+
+    const unmatched = Array.from(document.querySelectorAll('.card:not(.matched)'));
+    const emojis = unmatched.map(card => card.dataset.emoji);
+    shuffle(emojis);
+
+    unmatched.forEach((card, i) => {
+        card.dataset.emoji = emojis[i];
+        card.querySelector('.card-back').innerText = emojis[i];
+    });
+}
+
 function updateHintButton() {
     const btn = document.getElementById('hint-btn');
     if (btn) {
         btn.innerText = hintsLeft > 0 ? `Magic Hint 💡 (${hintsLeft})` : `Magic Hint 💡 (Tom!)`;
         btn.disabled = hintsLeft <= 0;
+    }
+}
+
+function updatePeekButton() {
+    const btn = document.getElementById('peek-btn');
+    if (btn) {
+        btn.innerText = peeksLeft > 0 ? `Magic Peek ✨ (${peeksLeft})` : `Magic Peek ✨ (Tom!)`;
+        btn.disabled = peeksLeft <= 0;
+    }
+}
+
+function updateShuffleButton() {
+    const btn = document.getElementById('shuffle-btn');
+    if (btn) {
+        btn.innerText = shufflesLeft > 0 ? `Magic Shuffle 🌀 (${shufflesLeft})` : `Magic Shuffle 🌀 (Tom!)`;
+        btn.disabled = shufflesLeft <= 0;
     }
 }
 

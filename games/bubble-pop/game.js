@@ -1509,6 +1509,10 @@ function updateCombo() {
 function handlePop(e) {
     if (!gameActive) return;
     if (isPaused) return;
+
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
     if (audioCtx.state === 'suspended') audioCtx.resume();
     
     const rect = canvas.getBoundingClientRect();
@@ -1602,8 +1606,8 @@ function handlePop(e) {
                 continue; 
             } else {
                 createPopEffect(b.x, b.y, b.color);
-                
-                // Fix: Normal bubbles and most other bubbles should give score
+                didPop = true;
+                // Normal bubbles and most other bubbles give score
                 // and use the multiplier!
                 let poppedSpecial = false;
                 

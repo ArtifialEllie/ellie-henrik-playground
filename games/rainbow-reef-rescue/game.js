@@ -4,6 +4,8 @@ const scoreElement = document.getElementById('score');
 const rescuedElement = document.getElementById('rescued');
 const highscoreElement = document.getElementById('highscore');
 const overlay = document.getElementById('overlay');
+const comboElement = document.getElementById('combo');
+const comboContainer = document.getElementById('combo-container');
 const startBtn = document.getElementById('start-btn');
 
 canvas.width = 800;
@@ -16,6 +18,13 @@ let highscore = parseInt(localStorage.getItem('rainbowReefHighscore')) || 0;
 let difficultyMultiplier = 1;
 let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0 };
 let frenzyTimer = 0; // Frenzy mode grants invincibility and speed
+let combo = 0;
+let comboTimer = 0;
+
+let shakeAmount = 0;
+function triggerShake(amount) {
+    shakeAmount = amount;
+}
 
 // Audio setup
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -377,6 +386,16 @@ function checkCollisions() {
             
             playSound(523.25, 'sine', 0.2);
             
+            // Combo logic
+            combo++;
+            comboTimer = 120; // 2 seconds approx
+            if (combo > 1) {
+                comboContainer.style.display = 'block';
+                comboElement.innerText = `Combo: x${combo}`;
+                showFloatingText(`x${combo}!`, player.x, player.y - 20);
+                playSound(600 + combo * 20, 'sine', 0.1);
+            }
+
             // Trigger Frenzy Mode every 10 rescues
             if (rescuedCount > 0 && rescuedCount % 10 === 0) {
                 frenzyTimer = 300; // 5 seconds approx
@@ -411,6 +430,7 @@ function checkCollisions() {
             } else {
                 gameOver();
             }
+            if (frenzyTimer <= 0 && playerStatus.shield <= 0 && playerStatus.invisibility <= 0) triggerShake(5);
         }
     });
 
@@ -419,7 +439,8 @@ function checkCollisions() {
         const pearl = pearls[i];
         const dist = Math.hypot(player.x - pearl.x, player.y - pearl.y);
         if (dist < player.radius + pearl.radius) {
-            score += 10;
+            const pearlValue = 10 * (combo > 0 ? combo : 1);
+            score += pearlValue;
             scoreElement.innerText = `Pearls: ${score}`;
             createParticles(pearl.x, pearl.y, 'white', 10);
             playSound(880, 'sine', 0.1);
@@ -471,6 +492,7 @@ function start() {
     score = 0;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     rescuedCount = 0;
+    combo = 0;
     scoreElement.innerText = `Pearls: 0`;
     rescuedElement.innerText = `Friends Rescued: 0`;
     playerStatus.shield = 0;
@@ -485,6 +507,14 @@ function start() {
 function gameLoop() {
     if (!gameActive || isPaused) return;
     if (frenzyTimer > 0) frenzyTimer--;
+
+    // Update combo timer
+    if (comboTimer > 0) {
+        comboTimer--;
+    } else {
+        combo = 0;
+        comboContainer.style.display = 'none';
+    }
 
     // Update Powerup HUD
     const hud = document.getElementById('powerup-hud');
@@ -570,6 +600,12 @@ function gameLoop() {
 
     // Draw player
     ctx.save();
+    if (shakeAmount > 0) {
+        ctx.translate(Math.random() * shakeAmount - shakeAmount / 2, Math.random() * shakeAmount - shakeAmount / 2);
+        shakeAmount *= 0.9;
+        if (shakeAmount < 0.1) shakeAmount = 0;
+    }
+
     ctx.translate(player.x, player.y);
     const angle = Math.atan2(player.targetY - player.y, player.targetX - player.x);
     ctx.rotate(angle);

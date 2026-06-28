@@ -34,7 +34,7 @@ body {
     z-index: 10;
 }
 
-#score, #rescued {
+#score, #rescued, #highscore, #combo {
     background: rgba(255, 255, 255, 0.7);
     padding: 10px 20px;
     border-radius: 20px;
@@ -45,14 +45,14 @@ body {
     box-shadow: 0 4px 0 #ddd;
 }
 
-#highscore {
-    background: rgba(255, 255, 255, 0.7);
-    padding: 10px 20px;
-    border-radius: 20px;
-    color: #ff69b4;
-    font-weight: bold;
-    font-size: 20px;
-    box-shadow: 0 4px 0 #ddd;
+#combo {
+    color: #ff4500;
+    animation: bounce 0.3s infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
 }
 
 #powerup-hud {
