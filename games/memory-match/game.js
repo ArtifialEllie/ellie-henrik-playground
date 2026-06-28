@@ -206,19 +206,20 @@ function checkMatch() {
 
 function handleMatch() {
     combo++;
-    if (combo >= 2) {
-        if (combo >= 5) {
-            activateFeverMode();
-        }
-        createComboText();
-        if (combo % 3 === 0) {
-            peeksLeft++;
-            updatePeekButton();
-        }
-        if (combo % 5 === 0) {
-            shufflesLeft++;
-            updateShuffleButton();
-        }
+    // Every 3 matches, you get a peek! ✨
+    if (matches % 3 === 0 && matches !== 0) {
+        peeksLeft++;
+        updatePeekButton();
+    }
+    // Every 5 matches, you get a hint! 💡
+    if (matches % 5 === 0 && matches !== 0) {
+        hintsLeft++;
+        updateHintButton();
+    }
+    // Every 10 matches, you get a shuffle! 🌀
+    if (matches % 10 === 0 && matches !== 0) {
+        shufflesLeft++;
+        updateShuffleButton();
     }
 }
 
