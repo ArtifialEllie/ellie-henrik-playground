@@ -20,6 +20,10 @@ let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0 };
 let frenzyTimer = 0; // Frenzy mode grants invincibility and speed
 let combo = 0;
 let comboTimer = 0;
+let eventTimer = 0;
+let currentEvent = 'NONE';
+let currentCurrentX = 0;
+let currentCurrentY = 0;
 
 let shakeAmount = 0;
 function triggerShake(amount) {
@@ -356,6 +360,10 @@ function updatePlayer() {
         player.x += (dx / dist) * moveDist;
         player.y += (dy / dist) * moveDist;
     }
+    
+    // Apply current tide effect
+    player.x += currentCurrentX;
+    player.y += currentCurrentY;
 }
 
 function checkCollisions() {
@@ -508,6 +516,30 @@ function gameLoop() {
     if (!gameActive || isPaused) return;
     if (frenzyTimer > 0) frenzyTimer--;
 
+    // Event System
+    if (eventTimer > 0) {
+        eventTimer--;
+    } else if (Math.random() < 0.001) { // Rare event trigger
+        const events = ['PEARL_STORM', 'STRONG_TIDE'];
+        currentEvent = events[Math.floor(Math.random() * events.length)];
+        eventTimer = 300; // ~5 seconds
+        
+        if (currentEvent === 'STRONG_TIDE') {
+            currentCurrentX = (Math.random() - 0.5) * 4;
+            currentCurrentY = (Math.random() - 0.5) * 4;
+            showFloatingText("STRONG TIDE! 🌊", canvas.width/2, canvas.height/2);
+        } else if (currentEvent === 'PEARL_STORM') {
+            showFloatingText("PEARL STORM! 🌟✨", canvas.width/2, canvas.height/2);
+        }
+        playSound(440, 'sine', 0.3);
+    }
+
+    if (eventTimer <= 0) {
+        currentEvent = 'NONE';
+        currentCurrentX = 0;
+        currentCurrentY = 0;
+    }
+
     // Update combo timer
     if (comboTimer > 0) {
         comboTimer--;
@@ -558,7 +590,12 @@ function gameLoop() {
         powerups[i].draw();
         if (powerups[i].life <= 0) powerups.splice(i, 1);
     }
- 
+
+    // Pearl Storm Effect
+    if (currentEvent === 'PEARL_STORM' && Math.random() < 0.1) {
+        pearls.push(new Pearl());
+    }
+
     // Spawn power-ups occasionally
     if (Math.random() < 0.002) {
         powerups.push(new PowerUp());
