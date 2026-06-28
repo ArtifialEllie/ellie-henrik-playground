@@ -242,6 +242,25 @@ h1 {
     100% { transform: scale(1) translateY(-100px); opacity: 0; }
 }
 
+.perfect-text {
+    position: absolute;
+    font-size: 4rem;
+    font-weight: bold;
+    color: #ffeb3b;
+    text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff69b4;
+    pointer-events: none;
+    z-index: 1000;
+    animation: perfectPop 0.6s ease-out forwards;
+    text-align: center;
+    width: 100%;
+}
+
+@keyframes perfectPop {
+    0% { transform: scale(0.5) translateY(0); opacity: 0; }
+    50% { transform: scale(1.2) translateY(-30px); opacity: 1; }
+    100% { transform: scale(1) translateY(-60px); opacity: 0; }
+}
+
 .star-particle {
     position: absolute;
     pointer-events: none;

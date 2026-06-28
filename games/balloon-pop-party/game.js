@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
+const levelElement = document.getElementById('level');
 const comboElement = document.getElementById('combo');
 const comboBoard = document.getElementById('combo-board');
 const feverBoard = document.getElementById('fever-board');
@@ -14,6 +15,8 @@ const restartButton = document.getElementById('restart-button');
 let score = 0;
 let combo = 0;
 let timeLeft = 60;
+let currentLevel = 1;
+let difficultyMultiplier = 1;
 let highscore = localStorage.getItem('balloonPopHighscore') || 0;
 let gameActive = false;
 let balloons = [];
@@ -112,7 +115,7 @@ class Balloon {
     }
 
     update() {
-        this.y -= this.speed;
+        this.y -= this.speed * difficultyMultiplier;
         this.x += this.vx;
         this.vx += Math.sin(Date.now() / 1000) * 0.01;
     }
@@ -338,6 +341,14 @@ function handleInput(e) {
                 if (score < 0) score = 0;
                 
                 scoreElement.textContent = score;
+
+                // Level Up Logic
+                if (score > 0 && score % 50 === 0) {
+                    currentLevel++;
+                    difficultyMultiplier += 0.15;
+                    levelElement.textContent = currentLevel;
+                    // Visual feedback for level up could be added here
+                }
                 
                 if (combo > 1) {
                     comboBoard.classList.remove('hidden');
@@ -381,6 +392,9 @@ function startGame() {
     score = 0;
     combo = 0;
     timeLeft = 60;
+    currentLevel = 1;
+    difficultyMultiplier = 1;
+    levelElement.textContent = currentLevel;
     gameActive = true;
     balloons = [];
     globalParticles = [];

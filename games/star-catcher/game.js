@@ -51,8 +51,21 @@ const player = {
     y: 0,
     width: 70,
     height: 70,
-    emoji: '🐱'
+    emoji: '🐱',
+    skin: '🐱'
 };
+
+const playerSkins = [
+    { emoji: '🐱', name: 'Katt' },
+    { emoji: '🐰', name: 'Kanin' },
+    { emoji: '🦊', name: 'Rev' },
+    { emoji: '🐼', name: 'Panda' },
+    { emoji: '🐨', name: 'Koala' },
+    { emoji: '🦄', name: 'Enhjørning' },
+    { emoji: '🐲', name: 'Drage' },
+    { emoji: '🧚', name: 'Fe' }
+];
+
 
 let objects = [];
 const objectTypes = {
@@ -126,6 +139,23 @@ function drawPlayer() {
     ctx.fillText(player.emoji, 0, 0);
     ctx.restore();
 }
+
+function renderSkinSelector() {
+    const selector = document.getElementById('skin-selector');
+    if (!selector) return;
+    selector.innerHTML = '';
+    playerSkins.forEach(skin => {
+        const btn = document.createElement('button');
+        btn.className = 'skin-btn';
+        btn.innerText = skin.emoji;
+        btn.onclick = () => {
+            player.emoji = skin.emoji;
+            playSound(600, 'sine', 0.1);
+        };
+        selector.appendChild(btn);
+    });
+}
+
 
 function update() {
     if (!gameActive) return;
@@ -362,9 +392,11 @@ function resetGame() {
     magnetAlert.style.display = 'none';
     rainbowAlert.style.display = 'none';
     feverAlert.style.display = 'none';
+    renderSkinSelector();
     spawnObject();
     requestAnimationFrame(update);
 }
+
 
 document.getElementById('start-btn').addEventListener('click', () => {
     if (audioCtx.state === 'suspended') audioCtx.resume();

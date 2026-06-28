@@ -2,6 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const rescuedElement = document.getElementById('rescued');
+const levelElement = document.getElementById('level');
 const highscoreElement = document.getElementById('highscore');
 const overlay = document.getElementById('overlay');
 const comboElement = document.getElementById('combo');
@@ -16,14 +17,34 @@ let isPaused = false;
 let score = 0;
 let highscore = parseInt(localStorage.getItem('rainbowReefHighscore')) || 0;
 let difficultyMultiplier = 1;
+let currentLevel = 1;
 let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0 };
 let frenzyTimer = 0; // Frenzy mode grants invincibility and speed
 let combo = 0;
 let comboTimer = 0;
 let eventTimer = 0;
 let currentEvent = 'NONE';
-let currentCurrentX = 0;
-let currentCurrentY = 0;
+let tideX = 0;
+let tideY = 0;
+let lastBossTriggerCount = 0;
+let bossActive = false;
+let boss = null;
+
+const ellieFeedback = {
+    rescue: [
+        "Yay! A friend is safe! 🐠",
+        "You're a reef hero! ✨",
+        "Keep saving them! 🌊",
+        "So sweet! 💖",
+        "Another one rescued! 🌟"
+    ],
+    levelUp: [
+        "Level Up! You're getting better! 🚀",
+        "Wow, look at you go! 🌈",
+        "More friends to save! 🐠",
+        "Super swimmer! ⚡"
+    ]
+};
 
 let shakeAmount = 0;
 function triggerShake(amount) {
@@ -66,7 +87,9 @@ let pearls = [];
 let bubbles = [];
 let powerups = [];
 let particles = [];
+let plankton = [];
 let seaweeds = [];
+let companion = null;
 
 const COLORS = ['#FF69B4', '#00FF7F', '#00BFFF', '#FFD700', '#FF4500', '#DA70D6'];
 
@@ -97,20 +120,20 @@ class Fish {
             const dx = player.x - this.x;
             const dy = player.y - this.y;
             const angle = Math.atan2(dy, dx);
-            this.x += Math.cos(angle) * (this.speed * 1.8);
-            this.y += Math.sin(angle) * (this.speed * 1.8);
+            this.x += Math.cos(angle) * (this.speed * 1.8 * difficultyMultiplier);
+            this.y += Math.sin(angle) * (this.speed * 1.8 * difficultyMultiplier);
         } else if (this.behavior === 'track') {
             // Enemies track player
             const dx = player.x - this.x;
             const dy = player.y - this.y;
             const angle = Math.atan2(dy, dx);
-            this.x += Math.cos(angle) * this.speed;
-            this.y += Math.sin(angle) * this.speed;
+            this.x += Math.cos(angle) * this.speed * difficultyMultiplier;
+            this.y += Math.sin(angle) * this.speed * difficultyMultiplier;
         } else {
             // Patrol behavior: move in a wavy pattern
-            this.angle += 0.02;
-            this.x += Math.cos(this.angle) * this.speed;
-            this.y += Math.sin(this.angle * 0.5) * this.speed;
+            this.angle += 0.02 * difficultyMultiplier;
+            this.x += Math.cos(this.angle) * this.speed * difficultyMultiplier;
+            this.y += Math.sin(this.angle * 0.5) * this.speed * difficultyMultiplier;
         }
     } else {
             // Friends wander
@@ -219,6 +242,86 @@ class Bubble {
     }
 }
  
+class Plankton {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.speed = Math.random() * 0.5 + 0.2;
+        this.opacity = Math.random() * 0.5 + 0.2;
+    }
+
+    update() {
+        this.y -= this.speed;
+        if (this.y < -10) this.reset();
+    }
+
+    draw() {
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+class Companion {
+    constructor() {
+        this.radius = 8;
+        this.x = player.x;
+        this.y = player.y;
+        this.color = '#ff69b4';
+        this.angle = 0;
+        this.speed = 0.1; // Following speed
+        this.helpTimer = 0;
+    }
+
+    update() {
+        // Follow player with some lag
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
+        this.x += dx * this.speed;
+        this.y += dy * this.speed;
+        this.angle = Math.atan2(dy, dx);
+
+        this.helpTimer++;
+        if (this.helpTimer > 300) { // Every ~5 seconds
+            this.triggerHelp();
+            this.helpTimer = 0;
+        }
+    }
+
+    triggerHelp() {
+        // Help: Attract nearest pearl
+        if (pearls.length > 0) {
+            const nearest = pearls[0];
+            nearest.x = this.x;
+            nearest.y = this.y;
+            showFloatingText("Companion Help! ✨", this.x, this.y - 20);
+            playSound(880, 'sine', 0.1);
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Eye
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(this.radius * 0.8, -this.radius * 0.3, this.radius * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
 function showFloatingText(text, x, y) {
     const el = document.createElement('div');
     el.className = 'floating-text';
@@ -341,6 +444,7 @@ function spawnEntities() {
     for (let i = 0; i < 3 + Math.floor((score / 50) * 2); i++) enemies.push(new Fish(true));
     for (let i = 0; i < 15; i++) bubbles.push(new Bubble());
     for (let i = 0; i < 10; i++) seaweeds.push(new Seaweed());
+    for (let i = 0; i < 50; i++) plankton.push(new Plankton());
 }
 
 function handleInput() {
@@ -362,8 +466,8 @@ function updatePlayer() {
     }
     
     // Apply current tide effect
-    player.x += currentCurrentX;
-    player.y += currentCurrentY;
+    player.x += tideX;
+    player.y += tideY;
 }
 
 function checkCollisions() {
@@ -386,7 +490,21 @@ function checkCollisions() {
         if (dist < player.radius + friend.radius) {
             rescuedCount++;
             rescuedElement.innerText = `Friends Rescued: ${rescuedCount}`;
-            
+
+            const feedback = ellieFeedback.rescue[Math.floor(Math.random() * ellieFeedback.rescue.length)];
+            showFloatingText(feedback, friend.x, friend.y - 40);
+
+            // Level Up Logic
+            if (rescuedCount > 0 && rescuedCount % 5 === 0) {
+                currentLevel++;
+                difficultyMultiplier += 0.2;
+                levelElement.innerText = `Level: ${currentLevel}`;
+                const luFeedback = ellieFeedback.levelUp[Math.floor(Math.random() * ellieFeedback.levelUp.length)];
+                showFloatingText(`${luFeedback} (Lvl ${currentLevel})`, player.x, player.y - 60);
+                playSound(880, 'sine', 0.3);
+                createParticles(player.x, player.y, 'gold', 20);
+            }
+
             // Add sparkle particles
             for(let i=0; i<10; i++) {
                 particles.push(new Particle(friend.x, friend.y, friend.color));
@@ -406,8 +524,9 @@ function checkCollisions() {
 
             // Trigger Frenzy Mode every 10 rescues
             if (rescuedCount > 0 && rescuedCount % 10 === 0) {
+                combo += 5;
                 frenzyTimer = 300; // 5 seconds approx
-                playSound(880, 'sine', 0.5); // Victory sound
+                playSound(880, 'sine', 0.5); 
                 createParticles(player.x, player.y, 'gold', 30);
                 showFloatingText("FRENZY MODE! 🌟⚡", player.x, player.y);
             }
@@ -419,6 +538,16 @@ function checkCollisions() {
             }
         }
     });
+
+    // Check boss collision
+    if (bossActive && boss) {
+        const bossDist = Math.hypot(player.x - boss.x, player.y - boss.y);
+        if (bossDist < boss.radius + player.radius) {
+            damageBoss(10);
+            showFloatingText("-10", boss.x, boss.y);
+            playSound(200, 'sine', 0.2);
+        }
+    }
 
     // Check enemy collision
     enemies.forEach(enemy => {
@@ -498,6 +627,9 @@ function gameOver() {
 function start() {
     gameActive = true;
     score = 0;
+    currentLevel = 1;
+    difficultyMultiplier = 1;
+    levelElement.innerText = `Level: 1`;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     rescuedCount = 0;
     combo = 0;
@@ -508,6 +640,7 @@ function start() {
     playerStatus.invisibility = 0;
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
+    companion = new Companion();
     spawnEntities();
     requestAnimationFrame(gameLoop);
 }
@@ -520,24 +653,30 @@ function gameLoop() {
     if (eventTimer > 0) {
         eventTimer--;
     } else if (Math.random() < 0.001) { // Rare event trigger
+        if (rescuedCount > 0 && rescuedCount % 20 === 0 && rescuedCount !== lastBossTriggerCount && !bossActive) {
+            triggerBossFight();
+            lastBossTriggerCount = rescuedCount;
+            return;
+        }
+        
         const events = ['PEARL_STORM', 'STRONG_TIDE'];
         currentEvent = events[Math.floor(Math.random() * events.length)];
         eventTimer = 300; // ~5 seconds
         
         if (currentEvent === 'STRONG_TIDE') {
-            currentCurrentX = (Math.random() - 0.5) * 4;
-            currentCurrentY = (Math.random() - 0.5) * 4;
+            tideX = (Math.random() - 0.5) * 4;
+            tideY = (Math.random() - 0.5) * 4;
             showFloatingText("STRONG TIDE! 🌊", canvas.width/2, canvas.height/2);
         } else if (currentEvent === 'PEARL_STORM') {
-            showFloatingText("PEARL STORM! 🌟✨", canvas.width/2, canvas.height/2);
+            showFloatingText("PEARL STORM! 🌟✨", canvas.width/2, canvas.height/2, 'gold');
         }
         playSound(440, 'sine', 0.3);
     }
 
     if (eventTimer <= 0) {
         currentEvent = 'NONE';
-        currentCurrentX = 0;
-        currentCurrentY = 0;
+        tideX = 0;
+        tideY = 0;
     }
 
     // Update combo timer
@@ -578,12 +717,22 @@ function gameLoop() {
         bubble.draw();
     });
 
+    plankton.forEach(p => {
+        p.update();
+        p.draw();
+    });
+
     // Draw pearls
     pearls.forEach(pearl => {
         pearl.update();
         pearl.draw();
     });
- 
+
+    if (companion) {
+        companion.update();
+        companion.draw();
+    }
+
     // Draw power-ups
     for (let i = powerups.length - 1; i >= 0; i--) {
         powerups[i].update();
@@ -609,6 +758,11 @@ function gameLoop() {
         friend.update();
         friend.draw();
     });
+
+    if (bossActive && boss) {
+        boss.update();
+        boss.draw();
+    }
 
     // Draw enemies
     enemies.forEach(enemy => {
@@ -667,7 +821,14 @@ function gameLoop() {
     if (frenzyTimer > 0) {
         ctx.shadowBlur = 20;
         ctx.shadowColor = 'gold';
-        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.arc(0, 0, player.radius * 2.5, 0, Math.PI * 2);
+        ctx.strokeStyle = 'gold';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([10, 10]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 0.9;
     }
     
     ctx.fillStyle = player.color;

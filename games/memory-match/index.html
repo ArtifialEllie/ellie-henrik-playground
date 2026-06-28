@@ -9,6 +9,24 @@
 <body>
 
     <div class="palace-container">
+        <div id="main-menu" class="overlay-menu">
+            <h1>Magic Memory Palace ✨</h1>
+        <div class="menu-options">
+            <button class="btn" onclick="startGame('classic')">Klassisk ⏳</button>
+            <button class="btn" onclick="startGame('zen')">Zen 🌸</button>
+            <button class="btn" onclick="startGame('timed')">Tidsutfordring ⏱️</button>
+            <button class="btn" onclick="startGame('challenge')">Utfordring 🏆</button>
+        </div>
+        <div class="level-selector-menu">
+            <p>Velg et nivå: ✨</p>
+            <div id="level-grid" class="level-grid"></div>
+        </div>
+        <div class="menu-footer">
+                <p>Kan du finne alle parene?</p>
+                <div id="global-best">Beste resultat: -</div>
+            </div>
+        </div>
+
         <h1 id="game-title">Magic Memory Palace ✨</h1>
         
         <div class="mode-selector">
@@ -24,12 +42,18 @@
                 <input type="radio" name="game-mode" value="timed" onchange="setGameMode('timed')">
                 <span>Tidsutfordring ⏱️</span>
             </label>
+            <label>
+                <input type="radio" name="game-mode" value="challenge" onchange="setGameMode('challenge')">
+                <span>Utfordring 🏆</span>
+            </label>
         </div>
 
         <div class="stats">
             <span>Level: <span id="level">1</span></span>
             <span>Trekk: <span id="moves">0</span></span>
             <span>Par: <span id="matches">0</span>/<span id="total-pairs">0</span></span>
+            <span>Combo: <span id="combo">0</span> ✨</span>
+            <span id="move-limit-container" style="display:none;">Grense: <span id="move-limit">0</span></span>
             <span id="timer-container">Tid: <span id="timer">0</span>s</span>
         </div>
 

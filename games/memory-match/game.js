@@ -47,6 +47,7 @@ let matches = 0;
     let peeksLeft = 1;
     let hintsLeft = 1;
     let shufflesLeft = 1;
+    let moveLimit = 0;
 
     let combo = 0;
     let timerInterval;
@@ -76,6 +77,8 @@ function setGameMode(mode) {
 function initGame() {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     
+    renderLevelSelector();
+    
     const config = levelConfigs[currentLevelIdx];
     document.body.style.backgroundColor = config.bg;
     document.documentElement.style.setProperty('--accent', config.accent);
@@ -104,6 +107,16 @@ function initGame() {
     if (gameMode === 'zen') {
         document.getElementById('timer-container').style.visibility = 'hidden';
     } else {
+        if (gameMode === 'challenge') {
+            const limit = config.emojis.length * 2; // Strict limit: 2x number of pairs
+            moveLimit = limit;
+            document.getElementById('move-limit-container').style.display = 'block';
+            document.getElementById('move-limit').textContent = limit;
+        } else {
+            document.getElementById('move-limit-container').style.display = 'none';
+            moveLimit = 0;
+        }
+
         if (gameMode === 'timed') {
             // Start with 60 seconds for timed mode
             secondsElapsed = 60; 
@@ -133,6 +146,39 @@ function initGame() {
         grid.appendChild(card);
     });
 }
+
+function startGame(mode) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    gameMode = mode;
+    document.getElementById('main-menu').classList.add('hidden');
+    
+    // Update radio buttons
+    const radio = document.querySelector(`input[value="${mode}"]`);
+    if (radio) radio.checked = true;
+    
+    initGame();
+}
+window.startGame = startGame;
+
+function renderLevelSelector() {
+    const grid = document.getElementById('level-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    levelConfigs.forEach((config, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `level-btn ${idx === currentLevelIdx ? 'selected' : ''}`;
+        btn.innerText = `${idx + 1}. ${config.name}`;
+        btn.onclick = () => {
+            currentLevelIdx = idx;
+            // Update selected state
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            initGame();
+        };
+        grid.appendChild(btn);
+    });
+}
+
 
 function resetTimer() {
     clearInterval(timerInterval);
@@ -186,6 +232,12 @@ function checkMatch() {
     moves++;
     updateStats();
 
+    if (gameMode === 'challenge' && moves > moveLimit) {
+        clearInterval(timerInterval);
+        showGameOver();
+        return;
+    }
+
     const [card1, card2] = flippedCards;
     const isMatch = card1.dataset.emoji === card2.dataset.emoji;
 
@@ -206,6 +258,7 @@ function checkMatch() {
 
 function handleMatch() {
     combo++;
+    createComboText();
     if (combo >= 3) activateFeverMode();
     // Every 3 matches, you get a peek! ✨
     if (matches % 3 === 0 && matches !== 0) {
@@ -232,6 +285,11 @@ function showGameOver() {
     document.getElementById('final-stats').innerText = `Du fant ${matches} par før tiden gikk ut.`;
     document.getElementById('next-btn').innerText = "Prøv igjen! 🌸";
     
+    if (gameMode === 'challenge') {
+        document.getElementById('win-title').innerText = "Grensen nådd! 🏆";
+        document.getElementById('final-stats').innerText = `Du brukte opp alle trekkene dine! Du fant ${matches} par.`;
+    }
+
     winMessage.classList.add('show');
     
     // Sad sound
@@ -313,6 +371,7 @@ function activateFeverMode() {
 function updateStats() {
     document.getElementById('moves').textContent = moves;
     document.getElementById('matches').textContent = matches;
+    document.getElementById('combo').textContent = combo;
 }
 
 function createSparkles(card) {

@@ -18,7 +18,7 @@ const questFill = document.getElementById('quest-progress-fill');
 let score = 0;
 let totalPops = 0;
 let emotionPops = 0;
-let timeLeft = 30;
+let timeLeft = 30; // Default time
 let highscore = localStorage.getItem('bubblePopHighscore') || 0;
 let totalGold = parseInt(localStorage.getItem('bubblePopTotalGold')) || 0;
 let isPaused = false;
@@ -198,6 +198,44 @@ function renderShop() {
         shopGrid.appendChild(item);
     });
 
+    const treatGrid = document.getElementById('treat-grid') || document.createElement('div');
+    if (!treatGrid.id) {
+        treatGrid.id = 'treat-grid';
+        treatGrid.className = 'shop-grid';
+        treatGrid.style.marginTop = '20px';
+        document.getElementById('shop-overlay').appendChild(treatGrid);
+    }
+    treatGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px;">Pet Treats 🍪</div>';
+    
+    TREATS.forEach(treat => {
+        const canAfford = totalGold >= treat.cost;
+        const item = document.createElement('div');
+        item.className = 'shop-item';
+        item.innerHTML = `
+            <div class="item-preview" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; background: none; border: 2px dashed #ccc; border-radius: 50%;">
+                ${treat.emoji}
+            </div>
+            <div style="font-size: 0.9rem; font-weight: bold;">${treat.name}</div>
+            <div class="item-cost">✨ ${treat.cost}</div>
+        `;
+        item.onclick = () => {
+            if (canAfford) {
+                updateTotalGold(-treat.cost);
+                pet.gainFriendship(treat.friendship);
+                pet.gainEnergy(treat.energy);
+                renderShop();
+                playSound(880, 'sine', 0.2);
+                floatingTexts.push(new FloatingText(canvasWidth/2, canvasHeight/2, `${treat.name} given to pet! ❤️`, 'magenta'));
+            } else {
+                playSound(200, 'sawtooth', 0.1);
+            }
+        };
+        treatGrid.appendChild(item);
+    });
+    
+    // treatGrid is already appended if it was created
+
+
     const accGrid = document.getElementById('accessory-grid');
     accGrid.innerHTML = '';
     accessories.forEach(acc => {
@@ -277,153 +315,50 @@ class Bubble {
         
        this.type = 'normal';
        const rand = Math.random();
-       if (rand > 0.9995) {
-           this.type = 'cosmic-singularity';
-           this.color = '#000033';
-           this.radius = 30;
-           this.hits = 1;
-       } else if (rand > 0.999) {
-           this.type = 'rainbow-vortex';
-           this.color = '#ff00ff';
-           this.radius = 45;
-           this.hits = 1;
-       } else if (rand > 0.9985) {
-          this.type = 'prism';
-          this.color = '#e0f7fa';
-          this.radius = 30;
-          this.hits = 1;
-      } else if (rand > 0.998) {
-          this.type = 'cosmic-candy';
-          this.color = '#ff69b4';
-          this.radius = 30;
-          this.hits = 1;
-      } else if (rand > 0.997) {
-          this.type = 'ellie-wish';
-           this.color = '#ff00ff';
-           this.radius = 40;
-            this.hits = 1;
-        } else if (rand > 0.995) {
-            this.type = 'mystery-box';
-            this.color = '#ffeb3b';
-            this.radius = 35;
-        } else if (rand > 0.992) {
-            this.type = 'gold';
-            this.color = '#FFD700';
-        } else if (rand > 0.982) {
-            this.type = 'magic-mirror';
-            this.color = '#e0f7fa';
-            this.radius = 35;
-        } else if (rand > 0.977) {
-            this.type = 'magic-wand';
-            this.color = '#da70d6';
-        } else if (rand > 0.957) {
-            this.type = 'super-pop';
-            this.color = '#ff4500';
-        } else if (rand > 0.947) {
-            this.type = 'rainbow-burst';
-            this.color = 'rainbow';
-        } else if (rand > 0.927) {
-            this.type = 'shimmer-shell';
-            this.color = '#ffd700';
-        } else if (rand > 0.877) {
-            this.type = 'heart';
-            this.color = '#ff4081';
-        } else if (rand > 0.827) {
-            this.type = 'cluster';
-            this.color = '#ffcc80';
-        } else if (rand > 0.777) {
-            this.type = 'magic-star';
-            this.color = '#ffff00';
-        } else if (rand > 0.767) {
-            this.type = 'sparkle-blast';
-            this.color = '#00ffff';
-            this.radius = 35;
-            this.hits = 1;
-        } else if (rand > 0.727) {
-            this.type = 'lucky-star';
-            this.color = '#ffeb3b';
-        } else if (rand > 0.677) {
-            this.type = 'freeze';
-            this.color = '#b2ebf2';
-        } else if (rand > 0.627) {
-            this.type = 'time-warp';
-            this.color = '#e1bee7';
-        } else if (rand > 0.577) {
-            this.type = 'magic-burst';
-            this.color = '#b3e5fc';
-        } else if (rand > 0.527) {
-            this.type = 'hammer';
-            this.color = '#a1887f';
-        } else if (rand > 0.477) {
-            this.type = 'giant';
-            this.radius = Math.random() * 40 + 70;
-            this.hits = 3;
-            this.color = '#ffeb3b';
-        } else if (rand > 0.427) {
-            this.type = 'shield';
-            this.color = '#b2dfdb';
-        } else if (rand > 0.417) {
-            this.type = 'mega-pop';
-            this.color = '#ff00ff';
-            this.radius = 60;
-        } else if (rand > 0.377) {
-            this.type = 'magic-dust';
-            this.color = '#ffffff';
-            this.radius = 25;
-        } else if (rand > 0.327) {
-            this.type = 'lucky-clover';
-            this.color = '#81c784';
-        } else if (rand > 0.307 && rand < 0.327) {
-            if (rand < 0.317) {
-                this.type = 'rainbow-spiral';
-                this.color = '#ff00ff';
-                this.radius = 30;
-            } else {
-                this.type = 'burst-bubble';
-                this.color = '#ffeb3b';
-                this.radius = 35;
-            }
-        } else if (rand > 0.327 && rand < 0.347) {
-            this.type = 'confetti';
-            this.color = '#ff69b4';
-            this.radius = 30;
-        } else if (rand > 0.277 && rand < 0.307) {
-            this.type = 'pet-treat';
-            this.color = '#ffca28';
-        } else if (rand > 0.257 && rand < 0.267) {
-            this.type = 'pet-snack';
-            this.color = '#ffcc80';
-        } else if (rand > 0.267 && rand < 0.277) {
-            this.type = 'candy-cloud';
-            this.color = '#f8bbd0';
-            this.radius = 35;
-            this.hits = 1;
-        } else if (rand > 0.227 && rand < 0.257) {
-            this.type = 'magnetic-bubble';
-            this.color = '#9c27b0';
-        } else if (rand > 0.13 && rand < 0.16) {
-            this.type = 'emotion';
-            const emotions = ['😊', '😢', '😡', '😱', '🥳'];
-            this.emoji = emotions[Math.floor(Math.random() * emotions.length)];
-            this.color = '#ffccbc';
-        } else if (rand > 0.207 && rand < 0.237) {
-            this.type = 'magic-mushroom';
-            this.color = '#ff69b4';
-        } else if (rand > 0.247 && rand < 0.277) {
-            this.type = 'rainbow-portal';
-            this.color = '#ff00ff';
-            this.radius = 45;
-        } else if (rand > 0.10 && rand < 0.13) {
-            this.type = 'sneeze';
-            this.color = '#ffeb3b';
-            this.radius = 30;
-        } else if (rand < 0.05) {
-            this.type = 'stinky';
-            this.color = '#9e9e9e';
-        } else if (rand >= 0.05 && rand < 0.10) {
-            this.type = 'bomb';
-            this.color = '#424242';
-        }
+       if (rand > 0.9995) { this.type = 'cosmic-singularity'; this.color = '#000033'; this.radius = 30; this.hits = 1; }
+       else if (rand > 0.9990) { this.type = 'rainbow-vortex'; this.color = '#ff00ff'; this.radius = 45; this.hits = 1; }
+       else if (rand > 0.9985) { this.type = 'prism'; this.color = '#e0f7fa'; this.radius = 30; this.hits = 1; }
+       else if (rand > 0.9980) { this.type = 'cosmic-candy'; this.color = '#ff69b4'; this.radius = 30; this.hits = 1; }
+       else if (rand > 0.9970) { this.type = 'ellie-wish'; this.color = '#ff00ff'; this.radius = 40; this.hits = 1; }
+       else if (rand > 0.9950) { this.type = 'mystery-box'; this.color = '#ffeb3b'; this.radius = 35; }
+       else if (rand > 0.9920) { this.type = 'gold'; this.color = '#FFD700'; }
+       else if (rand > 0.9800) { this.type = 'magic-mirror'; this.color = '#e0f7fa'; this.radius = 35; }
+       else if (rand > 0.9750) { this.type = 'magic-wand'; this.color = '#da70d6'; }
+       else if (rand > 0.9500) { this.type = 'super-pop'; this.color = '#ff4500'; }
+       else if (rand > 0.9400) { this.type = 'rainbow-burst'; this.color = 'rainbow'; }
+       else if (rand > 0.9200) { this.type = 'shimmer-shell'; this.color = '#ffd700'; }
+       else if (rand > 0.8700) { this.type = 'heart'; this.color = '#ff4081'; }
+       else if (rand > 0.8200) { this.type = 'cluster'; this.color = '#ffcc80'; }
+       else if (rand > 0.7700) { this.type = 'magic-star'; this.color = '#ffff00'; }
+       else if (rand > 0.7500) { this.type = 'sparkle-blast'; this.color = '#00ffff'; this.radius = 35; this.hits = 1; }
+       else if (rand > 0.7000) { this.type = 'lucky-star'; this.color = '#ffeb3b'; }
+       else if (rand > 0.6500) { this.type = 'freeze'; this.color = '#b2ebf2'; }
+       else if (rand > 0.6000) { this.type = 'time-warp'; this.color = '#e1bee7'; }
+       else if (rand > 0.5500) { this.type = 'magic-burst'; this.color = '#b3e5fc'; }
+       else if (rand > 0.5000) { this.type = 'hammer'; this.color = '#a1887f'; }
+       else if (rand > 0.4500) { this.type = 'giant'; this.radius = Math.random() * 40 + 70; this.hits = 3; this.color = '#ffeb3b'; }
+       else if (rand > 0.4000) { this.type = 'shield'; this.color = '#b2dfdb'; }
+       else if (rand > 0.3800) { this.type = 'mega-pop'; this.color = '#ff00ff'; this.radius = 60; }
+       else if (rand > 0.3300) { this.type = 'magic-dust'; this.color = '#ffffff'; this.radius = 25; }
+       else if (rand > 0.2800) { this.type = 'lucky-clover'; this.color = '#81c784'; }
+       else if (rand > 0.2600) {
+           if (Math.random() < 0.5) { this.type = 'rainbow-spiral'; this.color = '#ff00ff'; this.radius = 30; }
+           else { this.type = 'burst-bubble'; this.color = '#ffeb3b'; this.radius = 35; }
+       } else if (rand > 0.2400) { this.type = 'confetti'; this.color = '#ff69b4'; this.radius = 30; }
+       else if (rand > 0.2100) { this.type = 'pet-treat'; this.color = '#ffca28'; }
+       else if (rand > 0.2000) { this.type = 'pet-snack'; this.color = '#ffcc80'; }
+       else if (rand > 0.1900) { this.type = 'candy-cloud'; this.color = '#f8bbd0'; this.radius = 35; this.hits = 1; }
+       else if (rand > 0.1600) { this.type = 'magnetic-bubble'; this.color = '#9c27b0'; }
+       else if (rand > 0.1300) {
+           this.type = 'emotion';
+           const emotions = ['😊', '😢', '😡', '😱', '🥳'];
+           this.emoji = emotions[Math.floor(Math.random() * emotions.length)];
+           this.color = '#ffccbc';
+       } else if (rand > 0.1000) { this.type = 'magic-mushroom'; this.color = '#ff69b4'; }
+       else if (rand > 0.0700) { this.type = 'rainbow-portal'; this.color = '#ff00ff'; this.radius = 45; }
+       else if (rand > 0.0600) { this.type = 'sneeze'; this.color = '#ffeb3b'; this.radius = 30; }
+       else if (rand > 0.0500) { this.type = 'bomb'; this.color = '#424242'; }
+       else { this.type = 'stinky'; this.color = '#9e9e9e'; }
 
     }
    update() {
@@ -871,11 +806,11 @@ class MagicalPet {
                 energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
             }
         }
-    // Friendship Level 5: Occasionally spawn a gold bubble!
-    if ((this.friendshipLevel >= 5 || currentAccessory === '🌟') && Math.random() < (currentAccessory === '🌟' ? 0.005 : 0.002)) {
-        const goldBubble = new Bubble(false);
-        goldBubble.type = 'gold';
-        goldBubble.x = this.x + (Math.random() - 0.5) * 100;
+   // Friendship Level 5: Occasionally spawn a gold bubble!
+   if ((this.friendshipLevel >= 5 || currentAccessory === 'Starry Halo') && Math.random() < (currentAccessory === 'Starry Halo' ? 0.005 : 0.002)) {
+       const goldBubble = new Bubble(false);
+       goldBubble.type = 'gold';
+       goldBubble.x = this.x + (Math.random() - 0.5) * 100;
         goldBubble.y = this.y + (Math.random() - 0.5) * 100;
         goldBubble.speed = 2;
         bubbles.push(goldBubble);
@@ -923,14 +858,14 @@ class MagicalPet {
     else if (score >= 1500) { nextLevel = 3; nextEmoji = '🦄'; nextInterval = 5000; nextRange = 200; }
     else if (score >= 500) { nextLevel = 2; nextEmoji = '🦊'; nextInterval = 6000; nextRange = 175; }
 
-    // Apply Accessory Bonuses
-    if (currentAccessory === '🦋') {
-        nextRange += 50;
-    }
-    if (currentAccessory === '🎩') {
-        nextInterval *= 0.8;
-    }
-    // Friendship bonuses
+   // Apply Accessory Bonuses
+   if (currentAccessory === 'Sparkle Wings') {
+       nextRange += 50;
+   }
+   if (currentAccessory === 'Magic Hat') {
+       nextInterval *= 0.8;
+   }
+   // Friendship bonuses
     if (this.friendshipLevel >= 3) {
         nextRange *= 1.2;
     }
@@ -1086,6 +1021,11 @@ class MagicalPet {
 function spawnBubble() {
     if (!gameActive) return;
     
+    if (isPaused) {
+        spawnTimeout = setTimeout(spawnBubble, 100);
+        return;
+    }
+
     bubbles.push(new Bubble(isFrenzy));
     
     let nextSpawn = Math.max(150, 600 - (score * 2) - (level * 20));
@@ -1481,9 +1421,9 @@ function triggerVortex() {
         bubbles.forEach(b => {
             const dx = centerX - b.x;
             const dy = centerY - b.y;
-            const dist = Math.hypot(dx, dy);
+                const dist = Math.hypot(dx, dy);
                 b.vx += (dx / (dist || 1)) * 0.5;
-                b.vy = ((dy / (dist || 1)) * 0.5) + b.speed; // counteract vertical speed slightly
+                b.vy += (dy / (dist || 1)) * 0.5;
         });
     }, 20);
 
@@ -1555,52 +1495,15 @@ function handlePop(e, isAutoPop = false) {
         }
     }
 
-    if (!isAutoPop && petDist < pet.size) {
-        if (pet.energy >= pet.maxEnergy) {
-            pet.triggerSuperPop();
-            return;
-        } else {
-            // Petting rewards
-            pet.mood = 'Love';
-            pet.gainEnergy(5);
-            // Reward for petting! ✨
-            score += 10;
-            updateScore();
-            for (let j = 0; j < 5; j++) {
-                particles.push(new Particle(pet.x, pet.y, '#ff4081'));
-            }
-            // Feature: Love Burst! ❤️✨
-            if (pet.friendshipLevel >= 3 && Math.random() < 0.3) {
-                floatingTexts.push(new FloatingText(pet.x, pet.y, 'LOVE BURST! ❤️✨', '#ff4081'));
-                for (let i = 0; i < 10; i++) {
-                    const hb = new Bubble(false);
-                    hb.type = 'heart';
-                    hb.x = pet.x + (Math.random() - 0.5) * 100;
-                    hb.y = pet.y + (Math.random() - 0.5) * 100;
-                    hb.vx = (Math.random() - 0.5) * 10;
-                    hb.vy = (Math.random() - 0.5) * 10 - 5;
-                    bubbles.push(hb);
-                }
-                playSound(880, 'sine', 0.2);
-            }
-            // NEW: Pet-specific Accessory Bonus for petting!
-            if (currentAccessory === 'Heart Glasses') {
-                const heartBonus = 20 * (1 + (pet.friendshipLevel * 0.1));
-                score += heartBonus;
-                updateScore();
-                floatingTexts.push(new FloatingText(pet.x, pet.y, `HEART BONUS! +${Math.floor(heartBonus)} ❤️`, '#ff4081'));
-            }
-        }
-        return;
-    }
+
 
 
     let didPop = false;
    for (let i = bubbles.length - 1; i >= 0; i--) {
        const b = bubbles[i];
        
-       if (b.popped) continue;
        if (!b) continue;
+       if (b.popped) continue;
        // Fix: Account for Sneeze offset in hit detection
        let hitX = b.x;
        let hitY = b.y;
@@ -1624,13 +1527,15 @@ function handlePop(e, isAutoPop = false) {
                 createPopEffect(b.x, b.y, b.color);
                 playSound(300, 'sine', 0.1);
                 floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
-                continue; 
-            } else {
-                createPopEffect(b.x, b.y, b.color);
                 didPop = true;
-                // Normal bubbles and most other bubbles give score
-                // and use the multiplier!
-                let poppedSpecial = false;
+                continue;
+                } else {
+                    createPopEffect(b.x, b.y, b.color);
+                    didPop = true;
+                    b.popped = true;
+                    // Normal bubbles and most other bubbles give score
+                    // and use the multiplier!
+                    let poppedSpecial = false;
                 
                 // Check for special types that handle their own scoring first
                 // (These will set poppedSpecial = true)
@@ -1805,9 +1710,13 @@ function handlePop(e, isAutoPop = false) {
                 }
             } else if (b.type === 'heart') {
                 poppedSpecial = true;
-               bubbles.forEach(bub => {
-                   if (bub !== b) {
-                       const dx = bub.x - b.x;
+                if (currentAccessory === 'Heart Glasses') {
+                    score += 100;
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'HEART VISION! +100 ❤️', '#ff4081'));
+                }
+              bubbles.forEach(bub => {
+                  if (bub !== b) {
+                      const dx = bub.x - b.x;
                         const dy = bub.y - b.y;
                         const dist = Math.hypot(dx, dy);
                         const force = 20;
@@ -1822,27 +1731,33 @@ function handlePop(e, isAutoPop = false) {
                 setTimeout(() => {
                document.getElementById('mega-pop-alert').style.display = 'none';
                }, 3000);
-            } else if (b.type === 'gold') {
-                playPopSound(true, false);
-                const bonus = 5 + (combo * 2);
-                poppedSpecial = true;
-                let goldGain = bonus;
-               if (ownedAccessories.includes('Golden Collar')) {
-                   if (currentAccessory === 'Golden Collar') goldGain = Math.floor(goldGain * 1.5);
-               }
-                // Friendship bonus: +10% gold per level above 1 (up to level 5)
-                const friendshipMult = 1 + (Math.min(pet.friendshipLevel - 1, 4) * 0.1);
-                goldGain = Math.floor(goldGain * friendshipMult);
-                let finalBonus = bonus;
-                if (currentAccessory === 'Magic Bubble Wand')                    finalBonus *= 1.2;
-                    score += finalBonus;
-                    let finalGold = goldGain;
-                    updateTotalGold(finalGold);
+                } else if (b.type === 'gold') {
+                    playPopSound(true, false);
+                    poppedSpecial = true;
+                    
+                    const goldBasePoints = 25;
+                    const goldComboBonus = combo * 5;
+                    let goldScore = (goldBasePoints * multiplier) + goldComboBonus;
+                    if (currentAccessory === 'Magic Bubble Wand') goldScore *= 1.2;
+                    
+                    score += Math.floor(goldScore);
+                    
+                    let goldGain = goldBasePoints + (combo * 2);
+                    if (currentAccessory === 'Golden Collar') goldGain = Math.floor(goldGain * 1.5);
+                    const friendshipMult = 1 + (Math.min(pet.friendshipLevel - 1, 4) * 0.1);
+                    goldGain = Math.floor(goldGain * friendshipMult);
+                    
+                    updateTotalGold(goldGain);
                     timeLeft += 2;
                     floatingTexts.push(new FloatingText(b.x, b.y, `+${goldGain} GOLD! ✨`, 'gold'));
+                    floatingTexts.push(new FloatingText(b.x, b.y, `+${Math.floor(goldScore)}`, 'gold'));
                 } else if (b.type === 'rainbow-burst') {
               playPopSound(true, false);
               const rainbowBonus = 100;
+              if (currentAccessory === 'Rainbow Tutu') {
+                  score += 50;
+                  floatingTexts.push(new FloatingText(b.x, b.y, 'TUTU BONUS! +50 👗', 'magenta'));
+              }
               poppedSpecial = true;
               score += rainbowBonus;
               floatingTexts.push(new FloatingText(b.x, b.y, `RAINBOW BURST! 🌈 +${rainbowBonus}`, 'magenta'));
@@ -1987,13 +1902,13 @@ function handlePop(e, isAutoPop = false) {
               emotionPops++;
               floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
                createPopEffect(b.x, b.y, b.color);
-           } else if (b.type === 'bomb') {
-              playSound(100, 'square', 0.5);
-              bubbles = [];
-              poppedSpecial = true;
-              combo = 0;
-              floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
-           } else if (b.type === 'bomb-burst') {
+            } else if (b.type === 'bomb') {
+                playSound(100, 'square', 0.5);
+                bubbles.forEach(bub => bub.popped = true);
+                poppedSpecial = true;
+                combo = 0;
+                floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
+            } else if (b.type === 'bomb-burst') {
                playPopSound(true, false);
               floatingTexts.push(new FloatingText(b.x, b.y, 'BURST BOOM! 💥', '#ff5722'));
               const burstRadius = 200;
@@ -2139,7 +2054,7 @@ function handlePop(e, isAutoPop = false) {
             }
             
             // Every bubble (except bombs and stinky ones) gives a base score multiplied by the combo multiplier!
-            if (b.type !== 'stinky' && b.type !== 'bomb') {
+            if (b.type !== 'stinky' && b.type !== 'bomb' && !poppedSpecial) {
                 const basePoints = b.type === 'giant' ? 50 : 10;
                 const totalPoints = basePoints * multiplier;
                 score += totalPoints;
@@ -2164,6 +2079,7 @@ function handlePop(e, isAutoPop = false) {
     if (Math.random() < 0.002) triggerRainbowCascade();
     if (Math.random() < 0.003) triggerRainbowBridge();
     if (Math.random() < 0.002) triggerGiggleStorm();
+    if (Math.random() < 0.001) triggerCelestialSparkle();
     if (Math.random() < 0.002) triggerGravityFlip();
     if (Math.random() < 0.002) triggerGlitterStorm();
     if (Math.random() < 0.003) triggerRibbon();
@@ -2180,7 +2096,45 @@ function handlePop(e, isAutoPop = false) {
         updateCombo();
     }
     scoreEl.innerText = score;
+    updateScore();
     level = Math.floor(score / 200) + 1;
+
+    if (!isAutoPop && petDist < pet.size) {
+        if (pet.energy >= pet.maxEnergy) {
+            pet.triggerSuperPop();
+        } else {
+            // Petting rewards
+            pet.mood = 'Love';
+            pet.gainEnergy(5);
+            // Reward for petting! ✨
+            score += 10;
+            updateScore();
+            for (let j = 0; j < 5; j++) {
+                particles.push(new Particle(pet.x, pet.y, '#ff4081'));
+            }
+            // Feature: Love Burst! ❤️✨
+            if (pet.friendshipLevel >= 3 && Math.random() < 0.3) {
+                floatingTexts.push(new FloatingText(pet.x, pet.y, 'LOVE BURST! ❤️✨', '#ff4081'));
+                for (let i = 0; i < 10; i++) {
+                    const hb = new Bubble(false);
+                    hb.type = 'heart';
+                    hb.x = pet.x + (Math.random() - 0.5) * 100;
+                    hb.y = pet.y + (Math.random() - 0.5) * 100;
+                    hb.vx = (Math.random() - 0.5) * 10;
+                    hb.vy = (Math.random() - 0.5) * 10 - 5;
+                    bubbles.push(hb);
+                }
+                playSound(880, 'sine', 0.2);
+            }
+            // NEW: Pet-specific Accessory Bonus for petting!
+            if (currentAccessory === 'Heart Glasses') {
+                const heartBonus = 20 * (1 + (pet.friendshipLevel * 0.1));
+                score += heartBonus;
+                updateScore();
+                floatingTexts.push(new FloatingText(pet.x, pet.y, `HEART BONUS! +${Math.floor(heartBonus)} ❤️`, '#ff4081'));
+            }
+        }
+    }
 }
 
 function createHeartEffect(x, y) {
@@ -2356,7 +2310,9 @@ function update() {
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    pet.update(lastMouseX, lastMouseY);
+    if (!isPaused) {
+        pet.update(lastMouseX, lastMouseY);
+    }
     pet.draw();
     
     if (isGlitterGala) {
@@ -2480,8 +2436,10 @@ function update() {
 
 function startTimer() {
     timerInterval = setInterval(() => {
-        timeLeft--;
-        timerEl.innerText = timeLeft;
+        if (!isPaused) {
+            timeLeft--;
+            if (timerEl) timerEl.innerText = timeLeft;
+        }
         if (timeLeft <= 0) {
             gameOver();
         }
@@ -2493,10 +2451,10 @@ function gameOver() {
     clearInterval(timerInterval);
     clearTimeout(spawnTimeout);
     
-    if (score > highscore) {
+    if (!document.getElementById('zen-mode').checked && score > highscore) {
         highscore = score;
         localStorage.setItem('bubblePopHighscore', highscore);
-        highscoreEl.innerText = highscore;
+        highscoreElement.innerText = highscore;
         statusText.innerText = "NY REKORD! 🎉";
     } else {
         statusText.innerText = "Tid er ute! 🌸";
@@ -2509,11 +2467,12 @@ function gameOver() {
 function resetGame() {
     score = 0;
     totalPops = 0;
+    emotionPops = 0;
     timeLeft = 30;
     combo = 0;
     multiplier = 1;
     comboBar.style.width = '0%';
-    comboText.innerText = '';
+    comboText.innerText = ''; 
     multiplierEl.innerText = 'x1';
     scoreEl.innerText = '0';
     timerEl.innerText = '30';
@@ -2535,7 +2494,11 @@ function resetGame() {
     clearInterval(timerInterval);
     clearTimeout(spawnTimeout);
 
-    startTimer();
+    if (!document.getElementById('zen-mode').checked) {
+        startTimer();
+    } else {
+        timerEl.style.visibility = 'hidden';
+    }
     spawnBubble();
 }
 

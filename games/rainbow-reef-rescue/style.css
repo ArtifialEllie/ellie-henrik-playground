@@ -139,3 +139,16 @@ body {
     transform: translateY(4px);
     box-shadow: 0 2px 0 #c44d8d;
 }
+
+.floating-text {
+    position: absolute;
+    pointer-events: none;
+    font-weight: bold;
+    font-size: 24px;
+    z-index: 100;
+    animation: floatUp 0.8s ease-out forwards;
+}
+
+@keyframes floatUp {
+    to { transform: translateY(-50px); opacity: 0; }
+}

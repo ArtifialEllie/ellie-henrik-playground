@@ -59,6 +59,8 @@ function triggerBossFight() {
             clearInterval(bossInterval);
             return;
         }
+        if (isPaused) return;
+
         const b = new Bubble(false);
         b.type = 'stinky';
         b.radius = 40;

@@ -47,6 +47,7 @@ const QUESTS = [
     { text: 'Reach a x20 Multiplier! 🚀', goal: 20, reward: 250000, rewardGold: 200000, type: 'multiplier' },
     { text: 'Pop 200 emotion bubbles! 🥳', goal: 200, reward: 300000, rewardGold: 250000, type: 'emotion' },
     { text: 'Collect 500,000 Gold! ✨', goal: 500000, reward: 500000, rewardGold: 0, type: 'gold' },
+];
 
 const SKINS = [
     { color: '#ff80ab', name: 'Pastel Pink', cost: 0 },
@@ -89,4 +90,10 @@ const ACCESSORIES = [
     { name: 'Magic Bubble Wand', emoji: '🪄', cost: 9000, effect: 'score_boost' },
     { name: 'Heart Glasses', emoji: '❤️🕶️', cost: 12000, effect: 'heart_bonus' },
     { name: 'Starry Halo', emoji: '🌟', cost: 25000, effect: 'gold_spawn_boost' },
+];
+
+const TREATS = [
+    { name: 'Magic Cookie', emoji: '🍪', cost: 50, friendship: 20, energy: 20 },
+    { name: 'Rainbow Candy', emoji: '🍭', cost: 150, friendship: 50, energy: 50 },
+    { name: 'Golden Fish', emoji: '🐟', cost: 500, friendship: 150, energy: 100 },
 ];

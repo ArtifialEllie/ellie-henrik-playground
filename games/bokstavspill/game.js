@@ -138,6 +138,25 @@ const levelData = {
     let levelProgress = 0;
     let floatingTexts = [];
     
+    const ellieFeedback = {
+        correct: [
+            "Helt riktig! Du er en stjerne! ⭐",
+            "Wow! For en fantastisk innsats! 🌈",
+            "Heia! Du knuser dette! 🚀",
+            "Riktig! Ellie er så stolt av deg! 💖",
+            "Kjempebra! Du er superflink! ✨",
+            "Ja! Du traff blink! 🎯",
+            "Utrolig! Du er en ekte bokstav-mester! 📚"
+        ],
+        wrong: [
+            "Nesten! Prøv en gang til, du klarer det! 💪",
+            "Ikke helt, men du er på god vei! ✨",
+            "Ups! Prøv igjen, jeg heier på deg! 🌸",
+            "Liten bommert, men vi prøver bare igjen! 🎈",
+            "Helt greit! Prøv en annen bokstav! 🌈"
+        ]
+    };
+
 const startScreen = document.getElementById('start-screen');
 const startBtn = document.getElementById('start-btn');
 const galleryBtn = document.getElementById('gallery-btn');
@@ -223,12 +242,25 @@ class FloatingText {
         gain.gain.exponentialRampToValueAtTime(0.01, sfxCtx.currentTime + 0.3);
 
         osc.start();
-        osc.stop(sfxCtx.currentTime + 0.3);
-    }
+       osc.stop(sfxCtx.currentTime + 0.3);
+   }
+   
+   function spawnCorrectParticles(x, y) {
+       for (let i = 0; i < 8; i++) {
+           const p = document.createElement('div');
+           p.className = 'star-particle';
+           p.innerText = ['✨', '⭐', '🌸', '💖'][Math.floor(Math.random() * 4)];
+           p.style.left = x + 'px';
+           p.style.top = y + 'px';
+           p.style.animation = `starFall ${Math.random() * 1 + 0.5}s linear forwards`;
+           document.body.appendChild(p);
+           setTimeout(() => p.remove(), 1000);
+       }
+   }
 
    function playItemSound(key, item, level) {
        if (!item) return;
-        
+       
         let text = item.name;
         if (level === 2) {
             text = `Lyd: ${key}. ${item.name}`;
@@ -278,7 +310,7 @@ function nextRound() {
     currentRoundItem = itemOptions[Math.floor(Math.random() * itemOptions.length)];
     
     let options = [currentItem];
-    while(options.length < 3) {
+    while(options.length < Math.min(3, keys.length)) {
         let randomK = keys[Math.floor(Math.random() * keys.length)];
         if(!options.includes(randomK)) options.push(randomK);
     }
@@ -306,7 +338,19 @@ function checkAnswer(letter, btn) {
 
    if(letter === currentItem) {
            btn.classList.add('correct');
+           const rect = btn.getBoundingClientRect();
+           spawnCorrectParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+           floatingTexts.push(new FloatingText(rect.left + rect.width / 2, rect.top, 'Súper!', '#ff69b4'));
+
            streak++;
+           
+           if (streak >= 10) {
+               const perfect = document.createElement('div');
+               perfect.className = 'perfect-text';
+               perfect.innerText = 'PERFEKT! ✨';
+               document.body.appendChild(perfect);
+               setTimeout(() => perfect.remove(), 600);
+           }
            
            if (streak > 1) {
            if (streak >= 5) {
@@ -339,8 +383,9 @@ function checkAnswer(letter, btn) {
             } else {
                 successText = `Det er ${item.name}!`;
             }
-            nameDiv.innerText = successText;
-            speak(`Riktig! ${successText}`);
+            const feedback = ellieFeedback.correct[Math.floor(Math.random() * ellieFeedback.correct.length)];
+            nameDiv.innerText = `${feedback} ${successText}`;
+            speak(`${feedback} ${successText}`);
         
         updateStatus();
         
@@ -363,7 +408,8 @@ function checkAnswer(letter, btn) {
         
         streak = 0;
         updateStatus();
-        speak(`Nei, prøv igjen!`);
+        const feedback = ellieFeedback.wrong[Math.floor(Math.random() * ellieFeedback.wrong.length)];
+        speak(feedback);
         
         document.getElementById('game-container')?.classList.remove('fever-mode');
         
