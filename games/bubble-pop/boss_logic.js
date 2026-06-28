@@ -67,13 +67,6 @@ function triggerBossFight() {
     }, 800);
 
     // Boss moves across the top
-    const bossMove = setInterval(() => {
-        if (!bossActive || !gameActive) {
-            clearInterval(bossMove);
-            return;
-        }
-    }, 100);
-
     // We'll handle damage in handlePop
 }
 

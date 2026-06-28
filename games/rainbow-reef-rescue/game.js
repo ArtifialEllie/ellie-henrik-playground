@@ -10,6 +10,7 @@ canvas.width = 800;
 canvas.height = 600;
 
 let gameActive = false;
+let isPaused = false;
 let score = 0;
 let highscore = parseInt(localStorage.getItem('rainbowReefHighscore')) || 0;
 let difficultyMultiplier = 1;
@@ -482,7 +483,7 @@ function start() {
 }
 
 function gameLoop() {
-    if (!gameActive) return;
+    if (!gameActive || isPaused) return;
     if (frenzyTimer > 0) frenzyTimer--;
 
     // Update Powerup HUD
@@ -612,22 +613,32 @@ function gameLoop() {
     ctx.shadowBlur = 0;
 
     player.angle = Math.atan2(player.targetY - player.y, player.targetX - player.x);
-    updatePlayer();
-    checkCollisions();
-    
-    // Update player status timers
-    if (playerStatus.shield > 0) playerStatus.shield--;
-    if (playerStatus.turbo > 0) playerStatus.turbo--;
-    if (frenzyTimer > 0) playerStatus.magnet = Math.max(playerStatus.magnet, frenzyTimer);
-    if (playerStatus.invisibility > 0) playerStatus.invisibility--;
     
     // Apply turbo speed
     let speedMult = playerStatus.turbo > 0 ? 1.8 : 1;
     if (frenzyTimer > 0) speedMult *= 1.5;
     player.speed = player.baseSpeed * speedMult;
+
+    updatePlayer();
+    checkCollisions();
+
+    // Update player status timers
+    if (playerStatus.shield > 0) playerStatus.shield--;
+    if (playerStatus.turbo > 0) playerStatus.turbo--;
+    if (playerStatus.magnet > 0) playerStatus.magnet--;
+    if (frenzyTimer > 0) playerStatus.magnet = Math.max(playerStatus.magnet, frenzyTimer);
+    if (playerStatus.invisibility > 0) playerStatus.invisibility--;
  
     requestAnimationFrame(gameLoop);
 }
 
 startBtn.addEventListener('click', start);
 handleInput();
+
+function togglePause() {
+    if (!gameActive) return;
+    isPaused = !isPaused;
+    const btn = document.getElementById('pause-btn');
+    if (btn) btn.innerText = isPaused ? 'Resume ▶️' : 'Pause ⏸️';
+    playSound(isPaused ? 330 : 440, 'sine', 0.2);
+}

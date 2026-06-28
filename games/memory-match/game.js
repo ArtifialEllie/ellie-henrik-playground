@@ -102,6 +102,10 @@ function initGame() {
     if (gameMode === 'zen') {
         document.getElementById('timer-container').style.visibility = 'hidden';
     } else {
+        if (gameMode === 'timed') {
+            // Start with 60 seconds for timed mode
+            secondsElapsed = 60; 
+        }
         document.getElementById('timer-container').style.visibility = 'visible';
     }
     
@@ -131,9 +135,22 @@ function resetTimer() {
     clearInterval(timerInterval);
     secondsElapsed = 0;
     document.getElementById('timer').textContent = '0';
+    
+    if (gameMode === 'timed') {
+        secondsElapsed = 60;
+    }
+
     timerInterval = setInterval(() => {
         if (!isPaused) {
-            secondsElapsed++;
+            if (gameMode === 'timed') {
+                secondsElapsed--;
+                if (secondsElapsed <= 0) {
+                    clearInterval(timerInterval);
+                    showGameOver();
+                }
+            } else {
+                secondsElapsed++;
+            }
             document.getElementById('timer').textContent = secondsElapsed;
         }
     }, 1000);
@@ -196,6 +213,20 @@ function handleMatch() {
             updatePeekButton();
         }
     }
+}
+
+function showGameOver() {
+    const winMessage = document.getElementById('win-message');
+    document.getElementById('win-title').innerText = "Tiden rant ut! ⏰";
+    document.getElementById('star-rating').innerText = "☁️";
+    document.getElementById('best-score').innerText = "Prøv igjen for å vinne!";
+    document.getElementById('final-stats').innerText = `Du fant ${matches} par før tiden gikk ut.`;
+    document.getElementById('next-btn').innerText = "Prøv igjen! 🌸";
+    
+    winMessage.classList.add('show');
+    
+    // Sad sound
+    playSound(220, 'sine', 0.5);
 }
 
 function disableCards() {

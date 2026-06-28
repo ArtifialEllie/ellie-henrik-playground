@@ -11,16 +11,32 @@
     <div class="palace-container">
         <h1 id="game-title">Magic Memory Palace ✨</h1>
         
+        <div class="mode-selector">
+            <label>
+                <input type="radio" name="game-mode" value="classic" checked onchange="setGameMode('classic')">
+                <span>Klassisk ⏳</span>
+            </label>
+            <label>
+                <input type="radio" name="game-mode" value="zen" onchange="setGameMode('zen')">
+                <span>Zen 🌸</span>
+            </label>
+            <label>
+                <input type="radio" name="game-mode" value="timed" onchange="setGameMode('timed')">
+                <span>Tidsutfordring ⏱️</span>
+            </label>
+        </div>
+
         <div class="stats">
             <span>Level: <span id="level">1</span></span>
             <span>Trekk: <span id="moves">0</span></span>
             <span>Par: <span id="matches">0</span>/<span id="total-pairs">0</span></span>
-            <span>Tid: <span id="timer">0</span>s</span>
+            <span id="timer-container">Tid: <span id="timer">0</span>s</span>
         </div>
 
         <div class="button-group">
             <button class="btn" id="peek-btn" onclick="magicPeek()">Magic Peek ✨ (1)</button>
             <button class="btn" id="hint-btn" onclick="magicHint()">Magic Hint 💡</button>
+            <button class="btn" id="pause-btn" onclick="togglePause()">Pause ⏸️</button>
             <button class="btn" id="reset-btn" onclick="initGame()">Start på nytt! 🌸</button>
         </div>
         <div class="game-container" id="grid"></div>

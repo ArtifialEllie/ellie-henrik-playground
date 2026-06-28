@@ -273,13 +273,14 @@ function gameLoop() {
         cloud.draw();
     });
 
-    balloons.forEach((balloon, index) => {
+    for (let i = balloons.length - 1; i >= 0; i--) {
+        const balloon = balloons[i];
         balloon.update();
         balloon.draw();
         if (balloon.y + balloon.radius * 2 < 0) {
-            balloons.splice(index, 1);
+            balloons.splice(i, 1);
         }
-    });
+    }
     
     globalParticles.forEach((p, index) => {
         p.update();

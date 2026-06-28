@@ -13,6 +13,7 @@ let spawnInterval;
 
 const treats = ['🧁', '🍰', '🍩', '🍪', '🍬', '🍭'];
 const rareTreats = ['🌟', '👑', '💎'];
+const bombTreats = ['💣', '💥', '🔥'];
 let slowMoActive = false;
 
 function init() {
@@ -50,12 +51,15 @@ function spawnTreats() {
 
     // Randomly choose between common and rare treats
     const isRare = Math.random() < 0.1;
-    const treatType = isRare 
-        ? rareTreats[Math.floor(Math.random() * rareTreats.length)]
-        : treats[Math.floor(Math.random() * treats.length)];
+    const isBomb = Math.random() < 0.05;
+    const treatType = isBomb
+        ? bombTreats[Math.floor(Math.random() * bombTreats.length)]
+        : isRare 
+            ? rareTreats[Math.floor(Math.random() * rareTreats.length)]
+            : treats[Math.floor(Math.random() * treats.length)];
     
     const treat = document.createElement('div');
-    treat.className = isRare ? 'cupcake rare' : 'cupcake';
+    treat.className = isBomb ? 'cupcake bomb' : (isRare ? 'cupcake rare' : 'cupcake');
     treat.textContent = treatType;
     
     const rect = gameCanvas.getBoundingClientRect();
@@ -84,6 +88,16 @@ function spawnTreats() {
             pRect.top < tRect.bottom &&
             pRect.bottom > tRect.top
         ) {
+            if (isBomb) {
+                score = Math.max(0, score - 10);
+                lives--;
+                updateUI();
+                createSparkles(tRect.left, tRect.top, '#ff4500');
+                treat.remove();
+                clearInterval(checkCollision);
+                if (lives <= 0) endGame();
+                return;
+            }
             const points = isRare ? 5 : 1;
             score += points;
             updateUI();

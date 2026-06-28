@@ -136,6 +136,7 @@ const levelData = {
     let isProcessing = false;
     let unlockedItems = JSON.parse(localStorage.getItem('bokstavspillUnlocked')) || [];
     let levelProgress = 0;
+    let floatingTexts = [];
     
 const startScreen = document.getElementById('start-screen');
 const startBtn = document.getElementById('start-btn');
@@ -155,6 +156,7 @@ const letterGrid = document.getElementById('letter-grid');
     
     const collectionOverlay = document.getElementById('collection-overlay');
     const closeGalleryBtn = document.getElementById('close-gallery-btn');
+    const bonusBanner = document.getElementById('bonus-banner');
 
     function speak(text) {
         window.speechSynthesis.cancel();
@@ -165,6 +167,42 @@ const letterGrid = document.getElementById('letter-grid');
     }
 
     const sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+class FloatingText {
+    constructor(x, y, text, color = '#ff69b4') {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.opacity = 1;
+        this.life = 1.0;
+        
+        this.el = document.createElement('div');
+        this.el.className = 'floating-text';
+        this.el.innerText = text;
+        this.el.style.color = color;
+        this.el.style.left = x + 'px';
+        this.el.style.top = y + 'px';
+        this.el.style.position = 'absolute';
+        this.el.style.pointerEvents = 'none';
+        this.el.style.fontWeight = 'bold';
+        this.el.style.fontSize = '2rem';
+        this.el.style.zIndex = '1000';
+        document.body.appendChild(this.el);
+    }
+    update() {
+        this.life -= 0.02;
+        this.y -= 2;
+        this.opacity = this.life;
+        this.el.style.top = this.y + 'px';
+        this.el.style.opacity = this.opacity;
+        if (this.life <= 0) {
+            this.el.remove();
+            return false;
+        }
+        return true;
+    }
+}
 
     function playSfx(type) {
         const osc = sfxCtx.createOscillator();
@@ -271,10 +309,13 @@ function checkAnswer(letter, btn) {
            streak++;
            
            if (streak > 1) {
-               if (streak >= 5) {
-                   activateFeverMode();
-               }
-               createComboPopup(btn);
+           if (streak >= 5) {
+               activateFeverMode();
+           }
+            if (streak > 0 && streak % 10 === 0) {
+                triggerBonusRound();
+            }
+           createComboPopup(btn);
            }
            
            playSfx('correct');
@@ -450,12 +491,30 @@ function levelUp() {
         setTimeout(() => {
             levelUpBanner.style.display = 'none';
         }, 3000);
-    } else {
-        speak(`Gratulerer! Du har fullført alle nivåene! 🏆`);
+           } else {
+               speak(`Gratulerer! Du har fullført alle nivåene! 🏆`);
+               spawnConfetti();
+           }
+       }
+
+    function triggerBonusRound() {
+        bonusBanner.style.display = 'block';
+        speak(`BONUSRUNDE! Få ekstra stjerner nå!`);
         spawnConfetti();
-        // Reset to level 1 or keep at max? Let's keep at max but notify.
+        
+        const interval = setInterval(() => {
+            const increment = Math.floor(Math.random() * 3) + 1;
+            totalStars += increment;
+            localStorage.setItem('bokstavspillStars', totalStars);
+            updateStatus();
+            floatingTexts.push(new FloatingText(window.innerWidth / 2, window.innerHeight / 2, `+${increment} ⭐`, 'gold'));
+        }, 200);
+        
+        setTimeout(() => {
+            clearInterval(interval);
+            bonusBanner.style.display = 'none';
+        }, 2000);
     }
-}
 
 function updateProgressBar() {
     const pool = levelData[currentLevel].items;
@@ -498,6 +557,13 @@ startBtn.onclick = () => {
     renderCollection();
     nextRound();
 };
+
+function updateGameLoop() {
+    floatingTexts = floatingTexts.filter(ft => ft.update());
+    requestAnimationFrame(updateGameLoop);
+}
+
+updateGameLoop();
 
 galleryBtn.onclick = () => {
     startScreen.style.display = 'none';
