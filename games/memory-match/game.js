@@ -72,9 +72,10 @@ let matches = 0;
     let warpsLeft = 1;
     let moveLimit = 0;
 
+    let particleInterval;
     let combo = 0;
     let timerInterval;
-let secondsElapsed = 0;
+    let secondsElapsed = 0;
 
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioCtx();
@@ -110,6 +111,7 @@ function initGame() {
     
     resetTimer();
     
+    startThemeParticles();
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
     const cols = config.grid;
@@ -213,7 +215,12 @@ function renderLevelSelector() {
         grid.appendChild(btn);
     });
 }
-
+function stopThemeParticles() {
+    if (particleInterval) {
+        clearInterval(particleInterval);
+        particleInterval = null;
+    }
+}
 
 function resetTimer() {
     clearInterval(timerInterval);
@@ -245,6 +252,36 @@ function shuffle(array) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
+}
+
+function startThemeParticles() {
+    stopThemeParticles();
+    const config = levelConfigs[currentLevelIdx];
+    const themeParticles = {
+        0: ['🍭', '🧁', '🍩', '🍦'],
+        1: ['🌸', '🍃', '🍄', '🧚'],
+        2: ['⭐', '🌙', '🌌', '☄️'],
+        3: ['🫧', '🐠', '🐚', '🌊'],
+        4: ['💎', '✨', '👑', '🏰'],
+        5: ['☁️', '💖', '🎀', '🍭'],
+        6: ['❄️', '💎', '🔮', '💠'],
+        7: ['🎵', '🎶', '🎹', '🎻']
+    };
+    
+    const emojis = themeParticles[currentLevelIdx] || ['✨'];
+    
+    particleInterval = setInterval(() => {
+        if (isPaused) return;
+        const p = document.createElement('div');
+        p.className = 'bg-particle';
+        p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.fontSize = Math.random() * 20 + 10 + 'px';
+        p.style.animationDuration = Math.random() * 5 + 5 + 's';
+        p.style.opacity = Math.random() * 0.5 + 0.2;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 10000);
+    }, 600);
 }
 
 function flipCard() {

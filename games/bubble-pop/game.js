@@ -28,7 +28,7 @@ let timerInterval;
 let spawnTimeout;
 let combo = 0;
 let multiplier = 1;
-let isStarting = true;
+let isStarting = false; // Unused but kept for consistency, initialized to false
 let isGoldenRain = false;
 let level = 1;
 let comboTimer;
@@ -48,7 +48,7 @@ let magicDustPopsRemaining = 0;
 let lastBossCheckpoint = 0;
 let lastBossFightMilestone = 0;
 let shieldActive = false;
-let freezeMultiplier = 1;
+let freezeMultiplier = 1; // Unused
 
 function checkBossMilestones() {
     const milestone = BOSS_MILESTONES.find(m => score >= m.score && lastBossCheckpoint < m.score);
@@ -2483,6 +2483,18 @@ function resetGame() {
     bubbles = [];
     particles = [];
     floatingTexts = [];
+    singularities = [];
+    shockwaves = [];
+    magicFlowers = [];
+    bossActive = false;
+    boss = null;
+    bossHealth = 100;
+    bossMaxHealth = 100;
+    gameSpeed = 1;
+    magicDustPopsRemaining = 0;
+    lastBossCheckpoint = 0;
+    lastBossFightMilestone = 0;
+    shieldActive = false;
     gameActive = true;
     level = 1;
     currentQuest = 0;
