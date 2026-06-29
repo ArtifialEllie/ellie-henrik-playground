@@ -195,18 +195,21 @@ class Pearl {
         this.radius = 6;
         this.x = Math.random() * (canvas.width - 20) + 10;
         this.y = Math.random() * (canvas.height - 20) + 10;
+        this.isGolden = Math.random() < 0.1;
         this.pulse = 0;
+        this.life = 600;
     }
 
     update() {
         this.pulse += 0.1;
+        this.life--;
     }
 
     draw() {
         const glow = 5 + Math.sin(this.pulse) * 3;
         ctx.save();
         ctx.shadowBlur = glow;
-        ctx.shadowColor = 'white';
+        ctx.shadowColor = this.isGolden ? 'yellow' : 'white';
         ctx.fillStyle = '#fdfdfd';
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -428,8 +431,6 @@ class Seaweed {
             this.x + sway, canvas.height - this.height
         );
         ctx.stroke();
-    tideX = 0;
-    tideY = 0;
     }
 }
 
@@ -577,8 +578,16 @@ function checkCollisions() {
         const pearl = pearls[i];
         const dist = Math.hypot(player.x - pearl.x, player.y - pearl.y);
         if (dist < player.radius + pearl.radius) {
-            const pearlValue = 10 * (combo > 0 ? combo : 1);
-            score += pearlValue;
+            if (pearl.isGolden) {
+                score += 50;
+                showFloatingText("+50 GOLDEN PEARL! ✨", pearl.x, pearl.y - 20);
+                playSound(1046, 'sine', 0.3);
+                createParticles(pearl.x, pearl.y, 'yellow', 20);
+                playerStatus.turbo = 300;
+            } else {
+                const pearlValue = 10 * (combo > 0 ? combo : 1);
+                score += pearlValue;
+            }
             scoreElement.innerText = `Pearls: ${score}`;
             createParticles(pearl.x, pearl.y, 'white', 10);
             playSound(880, 'sine', 0.1);
@@ -724,6 +733,7 @@ function gameLoop() {
     });
 
     // Draw pearls
+    pearls = pearls.filter(p => p.life > 0);
     pearls.forEach(pearl => {
         pearl.update();
         pearl.draw();

@@ -27,6 +27,7 @@ let timerInterval;
 let lastPopTime = 0;
 let feverMode = false;
 let feverTimer = 0;
+let floatingTexts = [];
 
 const COLORS = {
     NORMAL: ['#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF'],
@@ -94,6 +95,11 @@ class Balloon {
             this.color = COLORS.SPARKLE;
             this.points = 3;
             this.speedMultiplier = 1.3;
+        } else if (rand < 0.25) {
+            this.type = 'CLUSTER';
+            this.color = '#B2EBF2';
+            this.points = 1;
+            this.speedMultiplier = 0.8;
         } else if (rand < 0.3) {
             this.type = 'BOMB';
             this.color = COLORS.BOMB;
@@ -178,12 +184,25 @@ class Balloon {
     }
 
     pop() {
-        this.popped = true;
-        playPopSound(this.type);
-        
-        if (this.type === 'HEART') {
-            timeLeft += 2;
-            timerElement.style.color = '#FF69B4';
+            this.popped = true;
+            playPopSound(this.type);
+            
+            if (this.type === 'CLUSTER') {
+                for (let i = 0; i < 3; i++) {
+                    const mini = new Balloon();
+                    mini.radius = this.radius * 0.5;
+                    mini.x = this.x + (Math.random() - 0.5) * 40;
+                    mini.y = this.y + (Math.random() - 0.5) * 40;
+                    mini.type = 'NORMAL';
+                    mini.color = this.color;
+                    mini.points = 1;
+                    balloons.push(mini);
+                }
+            }
+
+            if (this.type === 'HEART') {
+                timeLeft += 2;
+                timerElement.style.color = '#FF69B4';
             setTimeout(() => timerElement.style.color = '', 500);
         }
 
@@ -218,6 +237,30 @@ class Particle {
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
+    }
+}
+
+class FloatingText {
+    constructor(x, y, text, color = 'white') {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 1.0;
+        this.vy = -2;
+    }
+    update() {
+        this.y += this.vy;
+        this.life -= 0.02;
+    }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
     }
 }
 
@@ -271,6 +314,11 @@ function spawnBalloon() {
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    if (feverMode) {
+        ctx.fillStyle = 'rgba(255, 255, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     clouds.forEach(cloud => {
         cloud.update();
         cloud.draw();
@@ -290,6 +338,12 @@ function gameLoop() {
         p.draw();
         if (p.life <= 0) globalParticles.splice(index, 1);
     });
+
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        floatingTexts[i].update();
+        floatingTexts[i].draw();
+        if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
+    }
     
     balloons = balloons.filter(b => !b.popped);
     
@@ -341,6 +395,7 @@ function handleInput(e) {
                 if (score < 0) score = 0;
                 
                 scoreElement.textContent = score;
+                floatingTexts.push(new FloatingText(x, y, `+${Math.floor(balloon.points * multiplier)}`, balloon.color));
 
                 // Level Up Logic
                 if (score > 0 && score % 50 === 0) {
@@ -353,6 +408,7 @@ function handleInput(e) {
                 if (combo > 1) {
                     comboBoard.classList.remove('hidden');
                     comboElement.textContent = combo;
+                    if (combo % 5 === 0) floatingTexts.push(new FloatingText(x, y, `COMBO x${combo}! 🔥`, '#FFD700'));
                 } else {
                     comboBoard.classList.add('hidden');
                 }
@@ -379,6 +435,11 @@ function triggerFever() {
     feverTimer = 300; // Approx 5 seconds at 60fps
     feverBoard.classList.remove('hidden');
     
+    document.body.style.backgroundColor = '#fffbe6';
+    setTimeout(() => {
+        document.body.style.backgroundColor = '';
+    }, 5000);
+
     // Special effects for fever
     for (let i = 0; i < 20; i++) {
         globalParticles.push(new Particle(canvas.width / 2, canvas.height / 2, '#FFD700'));
@@ -398,6 +459,7 @@ function startGame() {
     gameActive = true;
     balloons = [];
     globalParticles = [];
+    floatingTexts = [];
     feverMode = false;
     scoreElement.textContent = score;
     timerElement.textContent = timeLeft;
@@ -408,10 +470,23 @@ function startGame() {
     gameOverScreen.classList.add('hidden');
     
     resize();
-    spawnBalloon();
-    startTimer();
-    gameLoop();
+    
+    let count = 3;
+    const countdownInterval = setInterval(() => {
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 120px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(count, canvas.width / 2, canvas.height / 2);
+        count--;
+        if (count < 0) {
+            clearInterval(countdownInterval);
+            spawnBalloon();
+            startTimer();
+            gameLoop();
+        }
+    }, 1000);
 }
+
 
 function stopGame() {
     gameActive = false;
