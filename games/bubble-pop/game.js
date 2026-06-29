@@ -332,6 +332,7 @@ class Bubble {
        else if (rand > 0.9980) { this.type = 'cosmic-candy'; this.color = '#ff69b4'; this.radius = 30; this.hits = 1; }
        else if (rand > 0.9970) { this.type = 'ellie-wish'; this.color = '#ff00ff'; this.radius = 40; this.hits = 1; }
        else if (rand > 0.9950) { this.type = 'mystery-box'; this.color = '#ffeb3b'; this.radius = 35; }
+       else if (rand > 0.9930) { this.type = 'golden-ticket'; this.color = '#ffd700'; this.radius = 30; this.hits = 1; }
        else if (rand > 0.9920) { this.type = 'gold'; this.color = '#FFD700'; }
        else if (rand > 0.9800) { this.type = 'magic-mirror'; this.color = '#e0f7fa'; this.radius = 35; }
        else if (rand > 0.9750) { this.type = 'magic-wand'; this.color = '#da70d6'; }
@@ -1479,11 +1480,19 @@ function updateCombo() {
     multiplier = (1 + Math.floor(combo / 5)) * accessoryMultiplier;
     multiplierEl.innerText = `x${multiplier}`;
     
-    clearTimeout(comboTimer);
-    comboTimer = setTimeout(() => {
-        combo = 0;
-        updateCombo();
-    }, 1500);
+    if (combo > 0) {
+        clearTimeout(comboTimer);
+        comboTimer = setTimeout(() => {
+            combo = 0;
+            updateCombo();
+        }, 1500);
+    }
+}
+
+function updateCombo() {
+    comboContainer.style.display = combo > 0 ? 'block' : 'none';
+    comboText.innerText = `Combo: x${combo}`;
+    comboBar.style.width = `${Math.min(100, (combo / 20) * 100)}%`;
 }
 
 function handlePop(e, isAutoPop = false) {
@@ -2099,7 +2108,6 @@ function handlePop(e, isAutoPop = false) {
     if (didPop) {
         updateCombo();
     }
-    scoreEl.innerText = score;
     updateScore();
     level = Math.floor(score / 200) + 1;
 

@@ -662,12 +662,12 @@ function gameLoop() {
     // Event System
     if (eventTimer > 0) {
         eventTimer--;
+    } else if (rescuedCount > 0 && rescuedCount % 20 === 0 && rescuedCount !== lastBossTriggerCount && !bossActive) {
+        triggerBossFight();
+        lastBossTriggerCount = rescuedCount;
+        eventTimer = 1; // Prevent immediate re-trigger
+        return;
     } else if (Math.random() < 0.001) { // Rare event trigger
-        if (rescuedCount > 0 && rescuedCount % 20 === 0 && rescuedCount !== lastBossTriggerCount && !bossActive) {
-            triggerBossFight();
-            lastBossTriggerCount = rescuedCount;
-            return;
-        }
         
         const events = ['PEARL_STORM', 'STRONG_TIDE'];
         currentEvent = events[Math.floor(Math.random() * events.length)];

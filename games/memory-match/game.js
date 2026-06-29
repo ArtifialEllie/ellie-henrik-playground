@@ -127,10 +127,11 @@ function initGame() {
     isLockBoard = false;
     peeksLeft = 1;
     hintsLeft = 1;
-    shufflesLeft = 1;
-    freezesLeft = 1;
-
-    if (gameMode === 'zen') {
+   shufflesLeft = 1;
+   freezesLeft = 1;
+   warpsLeft = 1;
+   
+   if (gameMode === 'zen') {
         document.getElementById('timer-container').style.visibility = 'hidden';
     } else {
         if (gameMode === 'challenge') {
@@ -738,11 +739,12 @@ function magicTimeWarp() {
     const matchedCards = Array.from(document.querySelectorAll('.card.matched'));
     if (matchedCards.length >= 2) {
         const lastTwo = matchedCards.slice(-2);
-        lastTwo.forEach(card => {
-            card.classList.remove('matched');
-            card.querySelector('.card-back').style.backgroundColor = 'white';
-            card.querySelector('.card-back').style.boxShadow = 'none';
-            card.querySelector('.card-back').style.border = '4px solid white';
+       lastTwo.forEach(card => {
+           card.classList.remove('matched');
+           card.classList.remove('flipped');
+           card.querySelector('.card-back').style.backgroundColor = 'white';
+           card.querySelector('.card-back').style.boxShadow = 'none';
+           card.querySelector('.card-back').style.border = '4px solid white';
         });
         matches--;
         updateStats();

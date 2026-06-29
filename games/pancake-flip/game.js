@@ -113,9 +113,10 @@ const canvas = document.getElementById('gameCanvas');
                 this.butterMelt += 0.02;
             }
 
-            draw(cumulativeTilt) {
+            draw(cumulativeTilt, index) {
                 ctx.save();
-                ctx.translate(this.x + this.width/2, this.y + this.height/2);
+                const leanShift = stack.length > 1 ? (index / (stack.length - 1)) * currentTotalLean : 0;
+                ctx.translate(this.x + this.width/2 + leanShift, this.y + this.height/2);
                 ctx.rotate(cumulativeTilt + this.rotation);
                 ctx.scale(1, this.scaleY);
 
@@ -302,7 +303,7 @@ const canvas = document.getElementById('gameCanvas');
                 const overlap = Math.min(activePancake.x + activePancake.width, visualLastX + last.width) - 
                                 Math.max(activePancake.x, visualLastX);
                 
-                if (overlap > 30) {
+                if (overlap > Math.min(activePancake.width, last.width) * 0.2) {
                     activePancake.isFlipping = false;
                     activePancake.vy = 0;
                     activePancake.vx = 0;
@@ -545,17 +546,17 @@ const canvas = document.getElementById('gameCanvas');
             }
 
             let currentTilt = 0;
-            stack.forEach((p) => {
+            stack.forEach((p, index) => {
                 p.update();
                 currentTilt += p.tiltOffset;
-                p.draw(currentTilt);
+                p.draw(currentTilt, index);
             });
             
             if (activePancake) {
                 activePancake.update();
                 let topTilt = 0;
                 stack.forEach(p => topTilt += p.tiltOffset);
-                activePancake.draw(topTilt);
+                activePancake.draw(topTilt, stack.length - 1);
                 checkLanding();
             }
 

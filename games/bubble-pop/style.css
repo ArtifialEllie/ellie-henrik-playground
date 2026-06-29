@@ -288,6 +288,22 @@ h1 {
     0% { filter: hue-rotate(0deg); }
     100% { filter: hue-rotate(360deg); }
 #ribbon-alert {
+ #mirror-realm-alert, #bridge-alert, #celestial-sparkle-alert, #starfall-alert, #glitter-gala-alert, #vortex-alert {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 5rem;
+    color: var(--accent-gold);
+    font-weight: bold;
+    text-shadow: 4px 4px var(--primary-pink);
+    pointer-events: none;
+    z-index: 15;
+    display: none;
+    animation: flash 0.5s infinite alternate;
+}
+
+ #ribbon-alert {
     color: #ff69b4;
     text-shadow: 4px 4px #fff;
 }

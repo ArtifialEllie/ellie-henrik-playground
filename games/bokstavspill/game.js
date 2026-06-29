@@ -605,14 +605,6 @@ function renderCollection() {
 
 startBtn.onclick = () => {
     startScreen.style.display = 'none';
-    createBackgroundBubbles();
-    updateStatus();
-    renderCollection();
-    nextRound();
-};
-
-startBtn.onclick = () => {
-    startScreen.style.display = 'none';
     levelScreen.style.display = 'flex';
     renderLevelButtons();
 };
