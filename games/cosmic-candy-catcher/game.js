@@ -13,6 +13,7 @@ let highScore = localStorage.getItem('cosmicCandyHighScore') || 0;
 let gameActive = false;
 let lives = 3;
 let candies = [];
+let debris = [];
 let particles = [];
 let player = {
     x: 0,
@@ -120,6 +121,36 @@ function spawnCandy() {
     setTimeout(spawnCandy, spawnRate);
 }
 
+function spawnDebris() {
+    if (!gameActive) return;
+    debris.push(new Debris());
+    
+    let spawnRate = Math.max(1000, 3000 - (score * 2));
+    setTimeout(spawnDebris, spawnRate);
+}
+
+class Debris {
+    constructor() {
+        this.radius = Math.random() * 10 + 10;
+        this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+        this.y = -this.radius;
+        this.speed = Math.random() * 3 + 3 + (score / 200);
+        this.color = '#888';
+    }
+
+    update() {
+        this.y += this.speed;
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+    }
+}
+
 function createExplosion(x, y, color) {
     for (let i = 0; i < 10; i++) {
         particles.push(new Particle(x, y, color));
@@ -163,6 +194,22 @@ function update() {
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('🎀', player.x + player.width / 2, player.y + player.height / 2 + 10);
+
+    // Update and draw debris
+    for (let i = debris.length - 1; i >= 0; i--) {
+        const d = debris[i];
+        d.update();
+        d.draw();
+        if (checkCollision(d)) {
+            lives--;
+            document.getElementById('lives').innerText = lives;
+            createExplosion(d.x, d.y, '#ff0000');
+            debris.splice(i, 1);
+            if (lives <= 0) endGame();
+        } else if (d.y - d.radius > canvas.height) {
+            debris.splice(i, 1);
+        }
+    }
 
     // Update and draw candies
     for (let i = candies.length - 1; i >= 0; i--) {
@@ -231,11 +278,13 @@ function startGame() {
     lives = 3;
     document.getElementById('lives').innerText = lives;
     candies = [];
+    debris = [];
     particles = [];
     gameActive = true;
     startScreen.style.display = 'none';
     gameOverScreen.style.display = 'none';
     spawnCandy();
+    spawnDebris();
     update();
 }
 
