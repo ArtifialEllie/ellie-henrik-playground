@@ -249,6 +249,10 @@ const canvas = document.getElementById('gameCanvas');
                 specialType = 'giant';
                 isSpecial = true;
                 isGiant = true;
+            } else if (rand > 0.68) {
+                colorSet = ['#ffccbc', '#ffab91'];
+                specialType = 'slippery';
+                isSpecial = true;
             } else {
                 colorSet = pancakeColors.normal;
             }
@@ -414,6 +418,11 @@ const canvas = document.getElementById('gameCanvas');
                             currentTotalLean += (Math.random() - 0.5) * 5;
                             showFloatingText("WOBBLY! 😵", activePancake.x + activePancake.width/2, activePancake.y - 30);
                             playSound(300, 'sawtooth', 0.2);
+                        } else if (activePancake.specialType === 'slippery') {
+                            currentTotalLean += (Math.random() - 0.5) * 2;
+                            showFloatingText("SLIPPERY! ⛸️", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(400, 'sine', 0.1);
+                            shakeAmount = 5;
                         }
                     }
                     activePancake.targetScaleY = 0.7;
