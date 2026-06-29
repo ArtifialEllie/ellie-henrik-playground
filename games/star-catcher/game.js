@@ -28,6 +28,8 @@ let magnetActive = false;
 let magnetTimer = 0;
 let rainbowActive = false;
 let rainbowTimer = 0;
+let shieldActive = false;
+let shieldTimer = 0;
 
 highscoreEl.innerText = highscore;
 
@@ -72,7 +74,9 @@ const objectTypes = {
     STAR: { emoji: '🌟', points: 1, speed: 2, color: 'gold' },
     CLOUD: { emoji: '☁️', points: -1, speed: 3, color: 'grey' },
     MAGNET: { emoji: '🧲', points: 0, speed: 2.5, color: 'red' },
-    RAINBOW: { emoji: '🌈', points: 5, speed: 4, color: 'rainbow' }
+    RAINBOW: { emoji: '🌈', points: 5, speed: 4, color: 'rainbow' },
+    SHIELD: { emoji: '🛡️', points: 0, speed: 3, color: 'blue' },
+    GOLDEN_STAR: { emoji: '✨', points: 10, speed: 5, color: 'yellow' }
 };
 
 function resize() {
@@ -101,7 +105,9 @@ function spawnObject() {
     const rand = Math.random();
     let type;
     if (rand > 0.98) type = objectTypes.RAINBOW;
+    else if (rand > 0.96) type = objectTypes.GOLDEN_STAR;
     else if (rand > 0.94) type = objectTypes.MAGNET;
+    else if (rand > 0.92) type = objectTypes.SHIELD;
     else if (rand > 0.30) type = objectTypes.STAR;
     else type = objectTypes.CLOUD;
     
@@ -179,6 +185,13 @@ function update() {
         }
     }
 
+    if (shieldActive) {
+        shieldTimer--;
+        if (shieldTimer <= 0) {
+            shieldActive = false;
+        }
+    }
+
     if (rainbowActive) {
         rainbowTimer--;
         if (rainbowTimer <= 0) {
@@ -251,14 +264,18 @@ function update() {
                     activateFever();
                 }
             } else if (obj.type === objectTypes.CLOUD) {
-                if (!rainbowActive) {
-                    loseLife();
-                    playSound(150, 'sawtooth', 0.3);
-                    shakeAmount = 20;
-                } else {
+                if (rainbowActive) {
                     score += 1;
                     showFloatingText("+1 🌈", obj.x + 20, obj.y + 20);
                     playSound(600, 'sine', 0.1);
+                } else if (shieldActive) {
+                    activateShieldOff();
+                    showFloatingText("Shield Blocked! 🛡️", obj.x + 20, obj.y + 20);
+                    playSound(300, 'square', 0.2);
+                } else {
+                    loseLife();
+                    playSound(150, 'sawtooth', 0.3);
+                    shakeAmount = 20;
                 }
                 createParticles(player.x + 35, player.y + 35, 'grey');
                 playerScale = 0.8;
@@ -266,12 +283,22 @@ function update() {
                 activateMagnet();
                 playSound(523, 'square', 0.2);
                 createParticles(obj.x + 25, obj.y + 25, 'red');
+            } else if (obj.type === objectTypes.SHIELD) {
+                activateShield();
+                playSound(400, 'sine', 0.3);
+                createParticles(obj.x + 25, obj.y + 25, 'blue');
             } else if (obj.type === objectTypes.RAINBOW) {
                 activateRainbow();
                 score += 5;
                 showFloatingText("+5 ✨", obj.x + 20, obj.y + 20);
                 playSound(880, 'sine', 0.3);
                 createParticles(obj.x + 25, obj.y + 25, 'rainbow');
+            } else if (obj.type === objectTypes.GOLDEN_STAR) {
+                score += 10;
+                showFloatingText("+10 GOLDEN! ✨", obj.x + 20, obj.y + 20);
+                playSound(1046, 'sine', 0.3);
+                createParticles(obj.x + 25, obj.y + 25, 'yellow');
+                activateRainbow();
             }
             
             scoreEl.innerText = score;
@@ -334,6 +361,16 @@ function activateMagnet() {
     magnetAlert.style.display = 'block';
 }
 
+function activateShield() {
+    shieldActive = true;
+    shieldTimer = 600;
+}
+
+function activateShieldOff() {
+    shieldActive = false;
+    shieldTimer = 0;
+}
+
 function activateRainbow() {
     rainbowActive = true;
     rainbowTimer = 400;
@@ -389,6 +426,7 @@ function resetGame() {
     magnetActive = false;
     rainbowActive = false;
     feverMode = false;
+    shieldActive = false;
     magnetAlert.style.display = 'none';
     rainbowAlert.style.display = 'none';
     feverAlert.style.display = 'none';
