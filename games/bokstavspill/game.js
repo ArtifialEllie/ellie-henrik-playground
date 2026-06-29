@@ -89,8 +89,6 @@ const levelData = {
             'Blomst': [{ name: 'Blomst', emoji: '🌸' }],
             'Tre': [{ name: 'Tre', emoji: '🌳' }],
             'Seng': [{ name: 'Seng', emoji: '🛏️' }],
-
-            'Sykkel': [{ name: 'Sykkel', emoji: '🚲' }],
             'Tromme': [{ name: 'Tromme', emoji: '🥁' }],
             'Kamera': [{ name: 'Kamera', emoji: '📷' }],
             'Saks': [{ name: 'Saks', emoji: '✂️' }],
