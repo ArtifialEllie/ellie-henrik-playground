@@ -54,6 +54,13 @@ const levelConfigs = [
         emojis: ['⭐', '🌟', '🌙', '🎵', '🎶', '🎹', '🎻', '🎺', '🎼', '🎤', '🎷', '🎸'],
         bg: '#2e0854',
         accent: '#ffd700'
+    },
+    {
+        name: "Regnbue Safari 🌈🦁",
+        grid: 4,
+        emojis: ['🦁', '🦒', '🐘', '🦓', '🐒', '🐯', '🐼', '🦛'],
+        bg: '#fdf5e6',
+        accent: '#ffcc00'
     }
 ];
 
@@ -147,7 +154,8 @@ function initGame() {
 
         if (gameMode === 'timed') {
             // Start with 60 seconds for timed mode
-            secondsElapsed = 60; 
+            // Time scales with level: 60s for lvl 1, decreasing by 5s per level, min 20s
+        secondsElapsed = Math.max(20, 60 - (currentLevelIdx * 5));
         }
         document.getElementById('timer-container').style.visibility = 'visible';
     }
@@ -230,7 +238,8 @@ function resetTimer() {
     document.getElementById('timer').textContent = '0';
     
     if (gameMode === 'timed') {
-        secondsElapsed = 60;
+            // Time scales with level: 60s for lvl 1, decreasing by 5s per level, min 20s
+            secondsElapsed = Math.max(20, 60 - (currentLevelIdx * 5));
     }
 
     timerInterval = setInterval(() => {

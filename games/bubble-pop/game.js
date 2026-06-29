@@ -21,6 +21,7 @@ let emotionPops = 0;
 let timeLeft = 30; // Default time
 let highscore = localStorage.getItem('bubblePopHighscore') || 0;
 let totalGold = parseInt(localStorage.getItem('bubblePopTotalGold')) || 0;
+let totalGoldEarned = parseInt(localStorage.getItem('bubblePopTotalGoldEarned')) || 0;
 let isPaused = false;
 let gameActive = false;
 let canvasWidth, canvasHeight;
@@ -28,7 +29,7 @@ let timerInterval;
 let spawnTimeout;
 let combo = 0;
 let multiplier = 1;
-let isStarting = false; // Unused but kept for consistency, initialized to false
+
 let isGoldenRain = false;
 let level = 1;
 let comboTimer;
@@ -48,7 +49,7 @@ let magicDustPopsRemaining = 0;
 let lastBossCheckpoint = 0;
 let lastBossFightMilestone = 0;
 let shieldActive = false;
-let freezeMultiplier = 1; // Unused
+
 
 function checkBossMilestones() {
     const milestone = BOSS_MILESTONES.find(m => score >= m.score && lastBossCheckpoint < m.score);
@@ -86,7 +87,7 @@ function updateQuest() {
     } else if (quest.type === 'level') {
         progress = (level / quest.goal) * 100;
     } else if (quest.type === 'gold') {
-        progress = (totalGold / quest.goal) * 100;
+        progress = (totalGoldEarned / quest.goal) * 100;
     } else if (quest.type === 'emotion') {
         progress = (emotionPops / quest.goal) * 100;
     } else {
@@ -105,6 +106,10 @@ function updateTotalGold(amount) {
     totalGold += amount;
     localStorage.setItem('bubblePopTotalGold', totalGold);
     totalGoldEl.innerText = totalGold;
+    if (amount > 0) {
+        totalGoldEarned += amount;
+        localStorage.setItem('bubblePopTotalGoldEarned', totalGoldEarned);
+    }
 }
 
 function completeQuest() {
@@ -1047,10 +1052,14 @@ function spawnBubble() {
 }
 
 function triggerFrenzy() {
-    isFrenzy = true;
-    frenzyAlert.style.display = 'block';
-    document.body.classList.add('frenzy-bg');
-    setTimeout(() => {
+    if (!isFrenzy) {
+        isFrenzy = true;
+        frenzyAlert.style.display = 'block';
+        document.body.classList.add('frenzy-bg');
+    }
+    
+    clearTimeout(window.frenzyTimer);
+    window.frenzyTimer = setTimeout(() => {
         isFrenzy = false;
         frenzyAlert.style.display = 'none';
         document.body.classList.remove('frenzy-bg');

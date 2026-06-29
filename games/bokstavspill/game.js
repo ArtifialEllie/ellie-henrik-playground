@@ -31,7 +31,7 @@ const levelData = {
             'Æ': [{ name: 'Ærfugl', emoji: '🦆' }, { name: 'Æble', emoji: '🍎' }],
             'Ø': [{ name: 'Ørn', emoji: '🦅' }, { name: 'Øks', emoji: '🪓' }, { name: 'Øye', emoji: '👁️' }, { name: 'Øre', emoji: '👂' }],
             'Å': [{ name: 'Ål', emoji: '🐍' }, { name: 'Åker', emoji: '🌾' }, { name: 'Århundre', emoji: '⏳' }, { name: 'Åpen', emoji: '🔓' }],
-        }
+        },
     },
     2: {
         name: "Lure Lyder",
@@ -57,7 +57,7 @@ const levelData = {
             'Sl': [{ name: 'Sleip', emoji: '🐍', audioHint: 'lyden i starten av sleip' }, { name: 'Slo', emoji: '🥊', audioHint: 'lyden i starten av slo' }, { name: 'Sleiv', emoji: '🥄', audioHint: 'lyden i starten av sleiv' }],
             'Fr': [{ name: 'Frosk', emoji: '🐸', audioHint: 'lyden i starten av frosk' }, { name: 'Frukt', emoji: '🍏', audioHint: 'lyden i starten av frukt' }, { name: 'Frø', emoji: '🌱', audioHint: 'lyden i starten av frø' }],
             'Gr': [{ name: 'Gress', emoji: '🌿', audioHint: 'lyden i starten av gress' }, { name: 'Grøn', emoji: '🟩', audioHint: 'lyden i starten av grøn' }, { name: 'Gris', emoji: '🐷', audioHint: 'lyden i starten av gris' }],
-        }
+        },
     },
     3: {
         name: "Ord-utfordring",
@@ -120,7 +120,7 @@ const levelData = {
             'Sommer': [{ name: 'Sommer', emoji: '☀️' }],
             'Høst': [{ name: 'Høst', emoji: '🍂' }],
             'Vår': [{ name: 'Vår', emoji: '🌱' }],
-        }
+        },
     }
 };
 
@@ -179,6 +179,11 @@ const letterGrid = document.getElementById('letter-grid');
     const collectionOverlay = document.getElementById('collection-overlay');
     const closeGalleryBtn = document.getElementById('close-gallery-btn');
     const bonusBanner = document.getElementById('bonus-banner');
+    const challengeBtn = document.getElementById('challenge-btn');
+    const timerDisplay = document.getElementById('timer-display');
+
+    let isChallengeMode = false;
+    let challengeTimer = null;
 
     function speak(text) {
         window.speechSynthesis.cancel();
@@ -606,13 +611,59 @@ function renderCollection() {
     });
 }
 
-startBtn.onclick = () => {
-    startScreen.style.display = 'none';
-    levelScreen.style.display = 'flex';
-    renderLevelButtons();
-};
+    startBtn.onclick = () => {
+        startScreen.style.display = 'none';
+        levelScreen.style.display = 'flex';
+        renderLevelButtons();
+    };
 
-function renderLevelButtons() {
+    challengeBtn.onclick = () => {
+        startScreen.style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        isChallengeMode = true;
+        currentLevel = 1; // Start at Level 1 for challenge
+        localStorage.setItem('bokstavspillLevel', currentLevel);
+        createBackgroundBubbles();
+        updateStatus();
+        renderCollection();
+        nextRound();
+        startChallengeTimer();
+    };
+
+    function startChallengeTimer() {
+        let timeLeft = 60;
+        timerDisplay.style.display = 'block';
+        timerDisplay.innerText = `Tid: ${timeLeft}s`;
+        
+        if (challengeTimer) clearInterval(challengeTimer);
+        
+        challengeTimer = setInterval(() => {
+            timeLeft--;
+            timerDisplay.innerText = `Tid: ${timeLeft}s`;
+            
+            if (timeLeft <= 10) {
+                timerDisplay.style.color = 'red';
+            } else {
+                timerDisplay.style.color = '#ff69b4';
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(challengeTimer);
+                endChallenge();
+            }
+        }, 1000);
+    }
+
+    function endChallenge() {
+        isProcessing = true;
+        speak(`Tiden er ute! Du klarte ${streak} riktige på rad! Fantastisk innsats!`);
+        setTimeout(() => {
+            alert(`Utfordring Slutt! Poengsum: ${streak}`);
+            location.reload();
+        }, 2000);
+    }
+
+    function renderLevelButtons() {
     levelButtonsContainer.innerHTML = '';
     Object.entries(levelData).forEach(([levelStr, levelObj]) => {
         const level = parseInt(levelStr);

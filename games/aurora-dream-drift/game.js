@@ -9,6 +9,14 @@ let width, height;
 let score = 0;
 let gameActive = false;
 let player = { x: 0, y: 0, radius: 8, color: '#fff', targetX: 0, targetY: 0 };
+let combo = 0;
+let comboTimer = 0;
+let multiplier = 1;
+let powerUps = [];
+let activePowerUp = null;
+let powerUpTimer = 0;
+let audioCtx = null;
+
 let particles = [];
 let auroraCurtains = [];
 let frameCount = 0;
@@ -41,6 +49,42 @@ window.addEventListener('touchmove', e => {
     player.targetY = e.touches[0].clientY;
 }, { passive: false });
 
+function playPopSound(freq = 440, type = 'sine', duration = 0.1) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+function showFloatingText(text, x, y) {
+    const el = document.createElement('div');
+    el.className = 'floating-text';
+    el.innerText = text;
+    el.style.position = 'absolute';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.color = 'white';
+    el.style.pointerEvents = 'none';
+    el.style.transition = 'all 0.8s ease-out';
+    el.style.fontSize = '20px';
+    el.style.fontWeight = 'bold';
+    el.style.textShadow = '0 0 10px rgba(0,0,0,0.5)';
+    document.getElementById('game-container').appendChild(el);
+    setTimeout(() => {
+        el.style.transform = 'translateY(-50px)';
+        el.style.opacity = '0';
+    }, 10);
+    setTimeout(() => el.remove(), 800);
+}
+
 class Particle {
     constructor(x, y, color) {
         this.x = x;
@@ -66,6 +110,35 @@ class Particle {
     }
 }
 
+class PowerUp {
+    constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.radius = 12;
+        this.type = Math.random() > 0.5 ? 'MULT' : 'SPEED';
+        this.color = this.type === 'MULT' ? '#ffd700' : '#00ffff';
+        this.life = 600;
+        this.pulse = 0;
+    }
+    update() {
+        this.life--;
+        this.pulse += 0.1;
+    }
+    draw() {
+        const scale = 1 + Math.sin(this.pulse) * 0.2;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(scale, scale);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
 class AuroraCurtain {
     constructor() {
         this.reset();
@@ -87,7 +160,6 @@ class AuroraCurtain {
             this.reset();
         }
         
-        // Wave motion for points
         this.points.forEach((p, i) => {
             p.y += Math.sin(frameCount * 0.05 + i) * 0.5;
         });
@@ -126,6 +198,34 @@ function spawnAurora() {
     }
 }
 
+function updatePowerUps() {
+    if (Math.random() < 0.002) {
+        powerUps.push(new PowerUp());
+    }
+    
+    for (let i = powerUps.length - 1; i >= 0; i--) {
+        const pu = powerUps[i];
+        pu.update();
+        
+        const dist = Math.hypot(player.x - pu.x, player.y - pu.y);
+        if (dist < player.radius + pu.radius) {
+            if (pu.type === 'MULT') {
+                multiplier += 1;
+                showFloatingText('MULTIPLIER UP! 🌟', pu.x, pu.y);
+            } else {
+                // Speed bonus: increase responsiveness
+                // In this game, responsiveness is the 0.15 factor in updatePlayer
+                // We can't easily change that globally without a variable, 
+                // but we can simulate it by giving a score boost for a while.
+                showFloatingText('STARDUST SPEED! ⚡', pu.x, pu.y);
+                score += 50;
+            }
+            playPopSound(880, 'sine', 0.2);
+            powerUps.splice(i, 1);
+        }
+    }
+}
+
 function updatePlayer() {
     if (keys['ArrowLeft']) player.targetX -= 10;
     if (keys['ArrowRight']) player.targetX += 10;
@@ -141,8 +241,6 @@ function updatePlayer() {
 }
 
 function checkCollision(curtain) {
-    // Simplified collision: if player is within the horizontal bounds of the curtain
-    // and the vertical position is near the "wave" center
     if (player.x > curtain.x && player.x < curtain.x + curtain.width) {
         const relativeX = (player.x - curtain.x) / curtain.width;
         const segmentIdx = Math.floor(relativeX * curtain.segments);
@@ -174,14 +272,27 @@ function gameLoop() {
         updatePlayer();
         
         spawnAurora();
+        updatePowerUps();
 
         auroraCurtains.forEach((curtain, index) => {
             curtain.update();
             curtain.draw();
             if (checkCollision(curtain)) {
-                score++;
+                const points = 1 * multiplier;
+                score += points;
                 scoreElement.innerText = score;
                 
+                // Combo Logic
+                combo++;
+                comboTimer = 60; // 1 second at 60fps
+                multiplier = 1 + Math.floor(combo / 5);
+                
+                if (combo > 1) {
+                    showFloatingText(`x${multiplier}!`, player.x, player.y - 20);
+                }
+                
+                playPopSound(600, 'sine', 0.1);
+
                 // Visual feedback
                 for (let i = 0; i < 10; i++) {
                     particles.push(new Particle(player.x, player.y, curtain.color));
@@ -191,6 +302,10 @@ function gameLoop() {
                 curtain.reset();
             }
         });
+        
+        // Draw PowerUps
+        powerUps.forEach(pu => pu.draw());
+
     } else {
         // Just draw curtains for background effect
         auroraCurtains.forEach(curtain => {
@@ -211,9 +326,16 @@ function gameLoop() {
     ctx.shadowColor = 'white';
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius, player.onmouseover = 'white', 0, Math.PI * 2);
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+
+    if (comboTimer > 0) {
+        comboTimer--;
+    } else {
+        combo = 0;
+        multiplier = 1;
+    }
 
     requestAnimationFrame(gameLoop);
 }
