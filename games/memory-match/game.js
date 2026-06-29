@@ -167,7 +167,12 @@ function renderLevelSelector() {
     levelConfigs.forEach((config, idx) => {
         const btn = document.createElement('button');
         btn.className = `level-btn ${idx === currentLevelIdx ? 'selected' : ''}`;
-        btn.innerText = `${idx + 1}. ${config.name}`;
+        
+        const medalKey = `memoryMatchMedal_${idx}`;
+        const bestMedal = localStorage.getItem(medalKey) || '';
+        
+        btn.innerText = `${idx + 1}. ${config.name} ${bestMedal}`;
+        
         btn.onclick = () => {
             currentLevelIdx = idx;
             // Update selected state
@@ -405,12 +410,25 @@ function createComboText() {
 
 function showWinMessage() {
     const config = levelConfigs[currentLevelIdx];
-    const maxMoves = config.emojis.length * 2.5;
-    let stars = "⭐";
-    if (moves <= config.emojis.length) {
-        stars = "⭐⭐⭐";
-    } else if (moves <= maxMoves) {
-        stars = "⭐⭐";
+    const pairs = config.emojis.length;
+    let medal = "";
+    let medalName = "";
+
+    if (moves <= pairs) {
+        medal = "💎";
+        medalName = "Platinum!";
+    } else if (moves <= pairs * 1.3) {
+        medal = "🥇";
+        medalName = "Gull!";
+    } else if (moves <= pairs * 1.7) {
+        medal = "🥈";
+        medalName = "Sølv!";
+    } else if (moves <= pairs * 2.2) {
+        medal = "🥉";
+        medalName = "Bronse!";
+    } else {
+        medal = "⭐";
+        medalName = "Fullført!";
     }
 
     const bestScoreKey = `memoryMatchBest_${currentLevelIdx}`;
@@ -423,10 +441,18 @@ function showWinMessage() {
         localStorage.setItem(bestScoreKey, moves);
         bestScoreText = `Ny rekord! 🌈`;
     }
+
+    const medalKey = `memoryMatchMedal_${currentLevelIdx}`;
+    const currentMedalRank = { '💎': 4, '🥇': 3, '🥈': 2, '🥉': 1, '⭐': 0 }[medal];
+    const savedMedalRank = { '💎': 4, '🥇': 3, '🥈': 2, '🥉': 1, '⭐': 0 }[localStorage.getItem(medalKey) || ''];
+    if (currentMedalRank > savedMedalRank) {
+        localStorage.setItem(medalKey, medal);
+    }
+
     document.getElementById('best-score').innerText = bestScoreText;
 
     setTimeout(() => {
-        document.getElementById('star-rating').innerText = stars;
+        document.getElementById('star-rating').innerText = `${medal} ${medalName}`;
         
         let finalStatsText = `Du fant alle parene på ${moves} trekk`;
         if (gameMode === 'classic') {
