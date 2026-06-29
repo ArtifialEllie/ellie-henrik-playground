@@ -36,13 +36,18 @@ const ellieFeedback = {
         "You're a reef hero! ✨",
         "Keep saving them! 🌊",
         "So sweet! 💖",
-        "Another one rescued! 🌟"
+        "Another one rescued! 🌟",
+        "You're simply amazing! 🌈",
+        "Ellie is so proud of you! 🌸",
+        "Splish splash, you're a star! ⭐"
     ],
     levelUp: [
         "Level Up! You're getting better! 🚀",
         "Wow, look at you go! 🌈",
         "More friends to save! 🐠",
-        "Super swimmer! ⚡"
+        "Super swimmer! ⚡",
+        "You're diving deep into success! 🌊",
+        "Unbelievable skills! ✨"
     ]
 };
 
@@ -96,6 +101,7 @@ const COLORS = ['#FF69B4', '#00FF7F', '#00BFFF', '#FFD700', '#FF4500', '#DA70D6'
 class Fish {
     constructor(isEnemy = false) {
         this.isEnemy = isEnemy;
+        this.isRare = !isEnemy && Math.random() < 0.1;
         this.behavior = isEnemy ? (Math.random() > 0.7 ? 'patrol' : 'track') : 'wander';
         if (isEnemy && Math.random() > 0.8) this.behavior = 'fast';
         this.radius = isEnemy ? 15 : 12;
@@ -111,7 +117,7 @@ class Fish {
 
         this.speed = this.isEnemy ? (2 + Math.random() * 2) : (1 + Math.random() * 1.5);
         this.angle = Math.atan2(player.y - this.y, player.x - this.x);
-        this.color = this.isEnemy ? '#4B0082' : COLORS[Math.floor(Math.random() * COLORS.length)];
+        this.color = this.isEnemy ? '#4B0082' : (this.isRare ? '#FFD700' : COLORS[Math.floor(Math.random() * COLORS.length)]);
     }
 
     update() {
@@ -163,6 +169,10 @@ class Fish {
 
         // Body
         ctx.fillStyle = this.color;
+        if (this.isRare) {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'gold';
+        }
         if (this.behavior === 'fast') ctx.fillStyle = '#ff0000';
         ctx.beginPath();
         ctx.ellipse(0, 0, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
@@ -185,8 +195,8 @@ class Fish {
         ctx.beginPath();
         ctx.arc(this.radius * 0.8, -this.radius * 0.3, this.radius * 0.15, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.restore();
+        ctx.shadowBlur = 0;
     }
 }
 
