@@ -1450,12 +1450,11 @@ function triggerVortex() {
 
 
 function updateCombo() {
-    if (combo > 1) {
-        comboText.innerText = `Combo x${combo}`;
-        comboText.style.opacity = '1';
-        const progress = Math.min(100, (combo % 10) * 10);
-        comboBar.style.width = `${progress}%`;
+    comboContainer.style.display = combo > 0 ? 'block' : 'none';
+    comboText.innerText = `Combo: x${combo}`;
+    comboBar.style.width = `${Math.min(100, (combo / 20) * 100)}%`;
 
+    if (combo > 1) {
         // Combo Milestones! ✨
         if (combo === 10) {
             floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, 'UNSTOPPABLE! 🔥', 'orange'));
@@ -1468,9 +1467,6 @@ function updateCombo() {
             playSound(1000, 'sine', 0.3);
             triggerFrenzy();
         }
-    } else {
-        comboText.style.opacity = '0';
-        comboBar.style.width = '0%';
     }
     
     // Oppdater multiplikator basert på combo og tilbehør
@@ -1487,12 +1483,6 @@ function updateCombo() {
             updateCombo();
         }, 1500);
     }
-}
-
-function updateCombo() {
-    comboContainer.style.display = combo > 0 ? 'block' : 'none';
-    comboText.innerText = `Combo: x${combo}`;
-    comboBar.style.width = `${Math.min(100, (combo / 20) * 100)}%`;
 }
 
 function handlePop(e, isAutoPop = false) {
