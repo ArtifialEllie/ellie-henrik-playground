@@ -332,30 +332,30 @@ function checkMatch() {
 function handleMatch() {
     combo++;
     createComboText();
-    if (combo >= 3) activateFeverMode();
-    // Every 3 matches, you get a peek! ✨
-    if (matches % 3 === 0 && matches !== 0) {
-        peeksLeft++;
-        updatePeekButton();
-    }
-    // Every 5 matches, you get a hint! 💡
-    if (matches % 5 === 0 && matches !== 0) {
-        hintsLeft++;
-        updateHintButton();
-    }
-    if (matches % 7 === 0 && matches !== 0) {
-        freezesLeft++;
-        updateFreezeButton();
-    }
-    if (matches % 12 === 0 && matches !== 0) {
-        warpsLeft++;
-        updateWarpButton();
-    }
-    // Every 10 matches, you get a shuffle! 🌀
-    if (matches % 10 === 0 && matches !== 0) {
-        shufflesLeft++;
-        updateShuffleButton();
-    }
+   if (combo >= 3) activateFeverMode();
+   // Every 3 matches, you get a peek! ✨
+   if ((matches + 1) % 3 === 0) {
+       peeksLeft++;
+       updatePeekButton();
+   }
+   // Every 5 matches, you get a hint! 💡
+   if ((matches + 1) % 5 === 0) {
+       hintsLeft++;
+       updateHintButton();
+   }
+   if ((matches + 1) % 7 === 0) {
+       freezesLeft++;
+       updateFreezeButton();
+   }
+   if ((matches + 1) % 12 === 0) {
+       warpsLeft++;
+       updateWarpButton();
+   }
+   // Every 10 matches, you get a shuffle! 🌀
+   if ((matches + 1) % 10 === 0) {
+       shufflesLeft++;
+       updateShuffleButton();
+   }
 }
 
 function showGameOver() {
