@@ -1082,6 +1082,7 @@ function triggerGoldenRain() {
             goldBubble.type = 'gold';
             goldBubble.color = '#ffd700';
             goldBubble.y = -goldBubble.radius;
+            goldBubble.speed = -goldBubble.speed;
             bubbles.push(goldBubble);
         }, i * 100);
     }
@@ -1109,6 +1110,7 @@ function triggerCupcakeRain() {
             // Add a little cupcake emoji to the center (by monkey-patching the draw method slightly or just relying on type)
             // Since Bubble.draw uses type, let's give it a custom type
             cupcake.type = 'cupcake'; 
+            cupcake.speed = -cupcake.speed;
             bubbles.push(cupcake);
         }, i * 150);
     }
@@ -1221,7 +1223,7 @@ function triggerRainbowCascade() {
             rb.color = 'rainbow';
             rb.x = Math.random() * canvasWidth;
             rb.y = -rb.radius;
-            rb.speed = Math.random() * 3 + 2;
+            rb.speed = -(Math.random() * 3 + 2);
             bubbles.push(rb);
         }, i * 80);
     }
@@ -1556,11 +1558,9 @@ function handlePop(e, isAutoPop = false) {
                     // Normal bubbles and most other bubbles give score
                     // and use the multiplier!
                     let poppedSpecial = false;
-                
-                // Check for special types that handle their own scoring first
-                // (These will set poppedSpecial = true)
-                
-                if (magicDustPopsRemaining > 0) {
+                    // Check for special types that handle their own scoring first
+                    // (These will set poppedSpecial = true)
+                    if (magicDustPopsRemaining > 0) {
                     score += 5;
                     magicDustPopsRemaining--;
                     floatingTexts.push(new FloatingText(b.x, b.y, `+5 ✨`, 'white'));

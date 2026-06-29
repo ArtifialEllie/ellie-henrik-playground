@@ -495,11 +495,14 @@ function stopGame() {
     
     finalScoreElement.textContent = score;
     gameOverScreen.classList.remove('hidden');
+    finalScoreElement.textContent = score;
+    gameOverScreen.classList.remove('hidden');
 
     if (score > highscore) {
         highscore = score;
         localStorage.setItem('balloonPopHighscore', highscore);
     }
+    document.getElementById('high-score').textContent = highscore;
 }
 
 function startTimer() {

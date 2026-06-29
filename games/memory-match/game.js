@@ -192,14 +192,18 @@ function renderLevelSelector() {
     grid.innerHTML = '';
     levelConfigs.forEach((config, idx) => {
         const btn = document.createElement('button');
-        btn.className = `level-btn ${idx === currentLevelIdx ? 'selected' : ''}`;
+        const isUnlocked = idx === 0 || localStorage.getItem(`memoryMatchUnlocked_${idx}`) === 'true';
+        btn.className = `level-btn ${idx === currentLevelIdx ? 'selected' : ''} ${!isUnlocked ? 'locked' : ''}`;
         
         const medalKey = `memoryMatchMedal_${idx}`;
         const bestMedal = localStorage.getItem(medalKey) || '';
         
-        btn.innerText = `${idx + 1}. ${config.name} ${bestMedal}`;
+        btn.innerText = isUnlocked 
+            ? `${idx + 1}. ${config.name} ${bestMedal}` 
+            : `${idx + 1}. 🔒 Låst`;
         
         btn.onclick = () => {
+            if (!isUnlocked) return;
             currentLevelIdx = idx;
             // Update selected state
             document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
@@ -498,6 +502,11 @@ function showWinMessage() {
         document.getElementById('win-message').classList.add('show');
         startConfetti();
         
+        // Unlock next level
+        if (currentLevelIdx < levelConfigs.length - 1) {
+            localStorage.setItem(`memoryMatchUnlocked_${currentLevelIdx + 1}`, 'true');
+        }
+
         // Victory fanfare
         const melody = [
             { f: 523.25, d: 0.2 }, { f: 659.25, d: 0.2 }, 

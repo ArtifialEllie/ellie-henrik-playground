@@ -153,6 +153,13 @@ h1 {
     color: var(--text);
     transition: all 0.2s;
 }
+
+.level-btn.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
 .level-btn:hover {
     background: var(--primary);
     color: white;
@@ -395,6 +402,13 @@ h1 {
     color: var(--text);
     transition: all 0.2s;
 }
+
+.level-btn.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
 .level-btn:hover {
     background: var(--primary);
     color: white;

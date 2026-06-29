@@ -160,6 +160,11 @@ const levelData = {
 const startScreen = document.getElementById('start-screen');
 const startBtn = document.getElementById('start-btn');
 const galleryBtn = document.getElementById('gallery-btn');
+const levelScreen = document.getElementById('level-screen');
+const levelButtonsContainer = document.getElementById('level-buttons');
+const backToStartBtn = document.getElementById('back-to-start');
+
+
 const letterGrid = document.getElementById('letter-grid');
     const resultDiv = document.getElementById('result');
     const nameDiv = document.getElementById('animal-name');
@@ -604,6 +609,41 @@ startBtn.onclick = () => {
     updateStatus();
     renderCollection();
     nextRound();
+};
+
+startBtn.onclick = () => {
+    startScreen.style.display = 'none';
+    levelScreen.style.display = 'flex';
+    renderLevelButtons();
+};
+
+function renderLevelButtons() {
+    levelButtonsContainer.innerHTML = '';
+    Object.entries(levelData).forEach(([levelStr, levelObj]) => {
+        const level = parseInt(levelStr);
+        const btn = document.createElement('button');
+        btn.className = 'letter-btn';
+        btn.style.width = '300px';
+        btn.style.backgroundColor = ['#FF6B6B', '#4ECDC4', '#FFE66D'][level-1] || '#A29BFE';
+        btn.style.boxShadow = `0 8px 0 #d81b60`;
+        btn.innerText = `Nivå ${level}: ${levelObj.name}`;
+        btn.onclick = () => {
+            levelScreen.style.display = 'none';
+            currentLevel = level;
+            localStorage.setItem('bokstavspillLevel', currentLevel);
+            createBackgroundBubbles();
+            updateStatus();
+            renderCollection();
+            nextRound();
+            document.getElementById('game-container').style.display = 'block';
+        };
+        levelButtonsContainer.appendChild(btn);
+    });
+}
+
+backToStartBtn.onclick = () => {
+    levelScreen.style.display = 'none';
+    startScreen.style.display = 'flex';
 };
 
 function updateGameLoop() {
