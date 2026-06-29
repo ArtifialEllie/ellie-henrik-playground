@@ -64,6 +64,7 @@ let flippedCards = [];
 let moves = 0;
 let matches = 0;
     let isLockBoard = false;
+    let matchHistory = [];
     let isPaused = false;
     let peeksLeft = 1;
     let hintsLeft = 1;
@@ -124,8 +125,8 @@ function initGame() {
     matches = 0;
     combo = 0;
     flippedCards = [];
+    matchHistory = [];
     isLockBoard = false;
-    peeksLeft = 1;
     hintsLeft = 1;
    shufflesLeft = 1;
    freezesLeft = 1;
@@ -317,6 +318,7 @@ function checkMatch() {
     if (isMatch) {
         handleMatch();
         disableCards();
+        matchHistory.push([...flippedCards]);
     } else {
         combo = 0;
         unflipCards();
@@ -736,15 +738,11 @@ function magicTimeWarp() {
     // Time Warp: Rewind the last 2 moves (if possible) 
     // Since we don't have a full history, we'll simulate it by 
     // unmatching the last matched pair.
-    const matchedCards = Array.from(document.querySelectorAll('.card.matched'));
-    if (matchedCards.length >= 2) {
-        const lastTwo = matchedCards.slice(-2);
-       lastTwo.forEach(card => {
-           card.classList.remove('matched');
-           card.classList.remove('flipped');
-           card.querySelector('.card-back').style.backgroundColor = 'white';
-           card.querySelector('.card-back').style.boxShadow = 'none';
-           card.querySelector('.card-back').style.border = '4px solid white';
+    if (matchHistory.length > 0) {
+        const lastPair = matchHistory.pop();
+        lastPair.forEach(card => {
+            card.classList.remove('matched');
+            card.classList.remove('flipped');
         });
         matches--;
         updateStats();

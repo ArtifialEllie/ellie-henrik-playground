@@ -392,7 +392,12 @@ function checkAnswer(letter, btn) {
         
         updateStatus();
         
-        if(streak >= 5 && currentLevel < 3) {
+        const pool = levelData[currentLevel].items;
+        const unlockedInLevel = Object.keys(pool).filter(k => {
+            return pool[k].some(item => unlockedItems.includes(`${k}_${item.name}`));
+        }).length;
+
+        if(streak >= 5 && unlockedInLevel >= 10 && currentLevel < 3) {
             levelUp();
         }
 
