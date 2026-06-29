@@ -119,10 +119,15 @@ function spawnObject() {
         type: type,
         speed: type.speed + (score * 0.05),
         rotation: Math.random() * Math.PI * 2,
-        vr: (Math.random() - 0.5) * 0.1
+        vr: (Math.random() - 0.5) * 0.1,
+        scale: 1.0
     });
     
     spawnTimer = setTimeout(spawnObject, Math.max(300, 1000 - (score * 5)));
+}
+
+function getRainbowEffect() {
+    return `hsl(${Date.now() % 360}, 100%, 70%)`;
 }
 
 function showFloatingText(text, x, y) {
@@ -223,18 +228,23 @@ function update() {
             const dx = (player.x + player.width / 2) - (obj.x + obj.width / 2);
             obj.x += dx * 0.05;
         }
+        if (rainbowActive) { obj.x += (Math.random() - 0.5) * 2; }
+        
+        // Added juice: objects pulse slightly
+        obj.scale = 1.0 + Math.sin(Date.now() * 0.005) * 0.1;
 
         obj.y += obj.speed;
         obj.rotation += obj.vr;
 
-        ctx.save();
-        ctx.translate(obj.x + obj.width / 2, obj.y + obj.height / 2);
-        ctx.rotate(obj.rotation);
-        ctx.font = '45px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(obj.type.emoji, 0, 0);
-        ctx.restore();
+    ctx.save();
+    ctx.translate(obj.x + obj.width / 2, obj.y + obj.height / 2);
+    ctx.rotate(obj.rotation);
+    ctx.scale(obj.scale, obj.scale);
+    ctx.font = '45px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(obj.type.emoji, 0, 0);
+    ctx.restore();
 
         // Collision check
         if (obj.y + 40 > player.y && 
@@ -315,6 +325,12 @@ function update() {
             }
             objects.splice(i, 1);
         }
+    }
+    if (rainbowActive) {
+        ctx.fillStyle = getRainbowEffect();
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('🌈 RAINBOW POWER! 🌈', canvasWidth / 2, 50);
     }
     drawParticles();
     if (shakeAmount > 0) ctx.restore();
@@ -430,6 +446,7 @@ function resetGame() {
     magnetAlert.style.display = 'none';
     rainbowAlert.style.display = 'none';
     feverAlert.style.display = 'none';
+    player.x = canvasWidth / 2 - player.width / 2;
     renderSkinSelector();
     spawnObject();
     requestAnimationFrame(update);

@@ -14,7 +14,7 @@ class Boss {
 
     update() {
         const speedMult = this.isEnraged ? 2 : 1;
-        this.x += this.vx * speedMult;
+        this.x += this.vx * speedMult * gameSpeed;
         if (this.x - this.radius < 0 || this.x + this.radius > canvasWidth) {
             this.vx *= -1;
         }

@@ -49,6 +49,12 @@ const QUESTS = [
     { text: 'Collect 500,000 Gold! ✨', goal: 500000, reward: 500000, rewardGold: 0, type: 'gold' },
 ];
 
+const BOSS_MILESTONES = [
+    { score: 1000, text: 'A stinky presence is looming... 💨' },
+    { score: 5000, text: 'The Behemoth is waking up! 😡' },
+    { score: 15000, text: 'Legendary Stinkiness approaching! ☣️' }
+];
+
 const SKINS = [
     { color: '#ff80ab', name: 'Pastel Pink', cost: 0 },
     { color: '#81d4fa', name: 'Sky Blue', cost: 50 },

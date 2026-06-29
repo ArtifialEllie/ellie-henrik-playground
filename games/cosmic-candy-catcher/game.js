@@ -11,6 +11,7 @@ const finalScoreElement = document.getElementById('final-score');
 let score = 0;
 let highScore = localStorage.getItem('cosmicCandyHighScore') || 0;
 let gameActive = false;
+let lives = 3;
 let candies = [];
 let particles = [];
 let player = {
@@ -180,14 +181,24 @@ function update() {
             scoreElement.innerText = score;
             candies.splice(i, 1);
         } else if (candy.y - candy.radius > canvas.height) {
-            // Candy missed!
             candies.splice(i, 1);
-            
-            // Game over if we miss too many? 
-            // For now, let's just lose a life or something.
-            // Let's implement a "Missed" count.
             if (candy.type === 'golden') {
-                endGame();
+                lives--;
+                document.getElementById('lives').innerText = lives;
+                createExplosion(candy.x, canvas.height, '#ff0000');
+                if (lives <= 0) {
+                    endGame();
+                }
+            } else {
+                // Normal candy missed: minor penalty or just ignore
+                // Let's make it a small life penalty every 5 missed normal candies
+                // For simplicity, let's just lose a life if it's a golden one.
+                // But to make it a bit harder, let's occasionally lose a life for normal ones too
+                if (Math.random() > 0.9) {
+                    lives--;
+                    document.getElementById('lives').innerText = lives;
+                    if (lives <= 0) endGame();
+                }
             }
         }
     }
@@ -217,6 +228,8 @@ function endGame() {
 function startGame() {
     score = 0;
     scoreElement.innerText = score;
+    lives = 3;
+    document.getElementById('lives').innerText = lives;
     candies = [];
     particles = [];
     gameActive = true;

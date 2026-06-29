@@ -33,6 +33,27 @@ const levelConfigs = [
         emojis: ['🏰', '👑', '💎', '🗝️', '🛡️', '⚔️', '🐉', '🦄', '🪄', '📜', '🕯️', '🌙', '☀️', '☁️', '🌟', '🎇', '🎐', '🔮', '🧿', '💠', '🔱', '🚩', '🏮'],
         bg: '#fff0f5',
         accent: '#da70d6'
+    },
+    {
+        name: "Sukkerspinns-Sky ☁️",
+        grid: 4,
+        emojis: ['☁️', '🍭', '🍬', '🧁', '🎀', '💖', '🌸', '🎈'],
+        bg: '#fff0f5',
+        accent: '#ffc0cb'
+    },
+    {
+        name: "Krystall-Hulen 💎",
+        grid: 4,
+        emojis: ['💎', '🔮', '✨', '❄️', '🧊', '💠', '🧿', '🌌'],
+        bg: '#f0f8ff',
+        accent: '#b0c4de'
+    },
+    {
+        name: "Stjerne-Symphoni 🌟",
+        grid: 6,
+        emojis: ['⭐', '🌟', '🌙', '🎵', '🎶', '🎹', '🎻', '🎺', '🎼', '🎤', '🎷', '🎸'],
+        bg: '#2e0854',
+        accent: '#ffd700'
     }
 ];
 
@@ -47,6 +68,8 @@ let matches = 0;
     let peeksLeft = 1;
     let hintsLeft = 1;
     let shufflesLeft = 1;
+    let freezesLeft = 1;
+    let warpsLeft = 1;
     let moveLimit = 0;
 
     let combo = 0;
@@ -103,6 +126,7 @@ function initGame() {
     peeksLeft = 1;
     hintsLeft = 1;
     shufflesLeft = 1;
+    freezesLeft = 1;
 
     if (gameMode === 'zen') {
         document.getElementById('timer-container').style.visibility = 'hidden';
@@ -127,7 +151,9 @@ function initGame() {
     updatePeekButton();
     updateHintButton();
     updateShuffleButton();
-
+    updateFreezeButton();
+    updateWarpButton();
+    
     document.getElementById('total-pairs').textContent = config.emojis.length;
     updateStats();
 
@@ -274,6 +300,14 @@ function handleMatch() {
     if (matches % 5 === 0 && matches !== 0) {
         hintsLeft++;
         updateHintButton();
+    }
+    if (matches % 7 === 0 && matches !== 0) {
+        freezesLeft++;
+        updateFreezeButton();
+    }
+    if (matches % 12 === 0 && matches !== 0) {
+        warpsLeft++;
+        updateWarpButton();
     }
     // Every 10 matches, you get a shuffle! 🌀
     if (matches % 10 === 0 && matches !== 0) {
@@ -581,6 +615,27 @@ function magicShuffle() {
     });
 }
 
+function magicFreeze() {
+    if (freezesLeft <= 0 || isLockBoard) return;
+    
+    freezesLeft--;
+    moves += 7;
+    updateStats();
+    updateFreezeButton();
+    
+    playSound(300, 'sine', 0.5);
+    
+    const unmatched = Array.from(document.querySelectorAll('.card:not(.matched)'));
+    unmatched.forEach(card => {
+        card.classList.add('flipped');
+        setTimeout(() => {
+            if (!flippedCards.includes(card) && !card.classList.contains('matched')) {
+                card.classList.remove('flipped');
+            }
+        }, 1000);
+    });
+}
+
 function updateHintButton() {
     const btn = document.getElementById('hint-btn');
     if (btn) {
@@ -602,6 +657,41 @@ function updateShuffleButton() {
     if (btn) {
         btn.innerText = shufflesLeft > 0 ? `Magic Shuffle 🌀 (${shufflesLeft})` : `Magic Shuffle 🌀 (Tom!)`;
         btn.disabled = shufflesLeft <= 0;
+    }
+}
+
+function magicTimeWarp() {
+    if (warpsLeft <= 0 || isLockBoard) return;
+    
+    warpsLeft--;
+    moves += 15;
+    updateStats();
+    updateWarpButton();
+    
+    playSound(440, 'triangle', 0.5);
+    
+    // Time Warp: Rewind the last 2 moves (if possible) 
+    // Since we don't have a full history, we'll simulate it by 
+    // unmatching the last matched pair.
+    const matchedCards = Array.from(document.querySelectorAll('.card.matched'));
+    if (matchedCards.length >= 2) {
+        const lastTwo = matchedCards.slice(-2);
+        lastTwo.forEach(card => {
+            card.classList.remove('matched');
+            card.querySelector('.card-back').style.backgroundColor = 'white';
+            card.querySelector('.card-back').style.boxShadow = 'none';
+            card.querySelector('.card-back').style.border = '4px solid white';
+        });
+        matches--;
+        updateStats();
+    }
+}
+
+function updateWarpButton() {
+    const btn = document.getElementById('warp-btn');
+    if (btn) {
+        btn.innerText = warpsLeft > 0 ? `Time Warp ⏳ (${warpsLeft})` : `Time Warp ⏳ (Tom!)`;
+        btn.disabled = warpsLeft <= 0;
     }
 }
 

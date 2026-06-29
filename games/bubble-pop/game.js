@@ -48,7 +48,16 @@ let magicDustPopsRemaining = 0;
 let lastBossMilestone = 0;
 let shieldActive = false;
 let freezeMultiplier = 1;
-let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
+
+function checkBossMilestones() {
+    const milestone = BOSS_MILESTONES.find(m => score >= m.score && lastBossMilestone < m.score);
+    if (milestone) {
+        floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, milestone.text, 'orange'));
+        lastBossMilestone = milestone.score;
+    }
+}
+
+currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
 let currentAccessory = localStorage.getItem('bubblePopAccessory') || '';
 
 highscoreEl.innerText = highscore;
@@ -115,6 +124,7 @@ function completeQuest() {
 function updateScore() {
     scoreEl.innerText = score;
     scoreEl.style.transform = 'scale(1.2)';
+    checkBossMilestones();
     setTimeout(() => {
         scoreEl.style.transform = 'scale(1)';
     }, 100);
@@ -1426,12 +1436,14 @@ function triggerVortex() {
                 b.vy += (dy / (dist || 1)) * 0.5;
         });
     }, 20);
-
+    
     setTimeout(() => {
         isVortex = false;
         vortexAlert.style.display = 'none';
     }, 5000);
 }
+
+
 
 function updateCombo() {
     if (combo > 1) {
@@ -1475,13 +1487,20 @@ function handlePop(e, isAutoPop = false) {
     if (!gameActive) return;
     if (isPaused) return;
 
+    let mouseX, mouseY;
+    if (isAutoPop) {
+        mouseX = e.x;
+        mouseY = e.y;
+    } else {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+        mouseY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+    }
+
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
     
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-    const mouseY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
     const petDist = Math.hypot(mouseX - pet.x, mouseY - (pet.y + pet.floatOffset));
 
     // First check if we hit the boss (Direct Hit)
@@ -1906,27 +1925,11 @@ function handlePop(e, isAutoPop = false) {
                 playSound(100, 'square', 0.5);
                 bubbles.forEach(bub => bub.popped = true);
                 poppedSpecial = true;
-                combo = 0;
-                floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
-            } else if (b.type === 'bomb-burst') {
-               playPopSound(true, false);
-              floatingTexts.push(new FloatingText(b.x, b.y, 'BURST BOOM! 💥', '#ff5722'));
-              const burstRadius = 200;
-               let burstPops = 0;
-               poppedSpecial = true;
-              bubbles.forEach(bub => {
-                  if (bub !== b && Math.hypot(bub.x - b.x, bub.y - b.y) < burstRadius) {
-                      createPopEffect(bub.x, bub.y, bub.color);
-                        score += 5;
-                        burstPops++;
-                        bub.hits = 0;
-                    }
-                });
-               score += burstPops * 2;
-               createBigExplosion(b.x, b.y);
-            } else if (b.type === 'stinky') {
-               if (shieldActive) {
-                   playPopSound(true, false);
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
+                    poppedSpecial = true;
+                } else if (b.type === 'stinky') {
+                    if (shieldActive) {
+                        playPopSound(true, false);
                    poppedSpecial = true;
                    floatingTexts.push(new FloatingText(b.x, b.y, 'SHIELDED! 🛡️', '#b2dfdb'));
                                 createPopEffect(b.x, b.y, '#b2dfdb');
@@ -2454,7 +2457,7 @@ function gameOver() {
     if (!document.getElementById('zen-mode').checked && score > highscore) {
         highscore = score;
         localStorage.setItem('bubblePopHighscore', highscore);
-        highscoreElement.innerText = highscore;
+        highscoreEl.innerText = highscore;
         statusText.innerText = "NY REKORD! 🎉";
     } else {
         statusText.innerText = "Tid er ute! 🌸";
