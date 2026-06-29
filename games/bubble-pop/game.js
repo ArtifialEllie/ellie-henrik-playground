@@ -45,15 +45,16 @@ let bossHealth = 100;
 let bossMaxHealth = 100;
 let gameSpeed = 1;
 let magicDustPopsRemaining = 0;
-let lastBossMilestone = 0;
+let lastBossCheckpoint = 0;
+let lastBossFightMilestone = 0;
 let shieldActive = false;
 let freezeMultiplier = 1;
 
 function checkBossMilestones() {
-    const milestone = BOSS_MILESTONES.find(m => score >= m.score && lastBossMilestone < m.score);
+    const milestone = BOSS_MILESTONES.find(m => score >= m.score && lastBossCheckpoint < m.score);
     if (milestone) {
         floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, milestone.text, 'orange'));
-        lastBossMilestone = milestone.score;
+        lastBossCheckpoint = milestone.score;
     }
 }
 
@@ -932,11 +933,11 @@ class MagicalPet {
 
         if (nearest) {
             // Simulate a pop at the bubble's location
-            const mockEvent = {
-                clientX: nearest.x + canvas.getBoundingClientRect().left,
-                clientY: nearest.y + canvas.getBoundingClientRect().top
-            };
-                    handlePop(mockEvent, true);
+        const mockEvent = {
+            x: nearest.x,
+            y: nearest.y
+        };
+        handlePop(mockEvent, true);
                     floatingTexts.push(new FloatingText(nearest.x, nearest.y, 'PET POP! 🐱✨', 'gold'));
                 }
     }
@@ -2090,9 +2091,9 @@ function handlePop(e, isAutoPop = false) {
     if (Math.random() < 0.001) triggerGlitterGala();
     if (Math.random() < 0.002) triggerStarfall();
     const currentMilestone = Math.floor(score / 500);
-    if (currentMilestone > lastBossMilestone && !bossActive) {
+    if (currentMilestone > lastBossFightMilestone && !bossActive) {
         triggerBossFight();
-        lastBossMilestone = currentMilestone;
+        lastBossFightMilestone = currentMilestone;
     }
     
     if (didPop) {

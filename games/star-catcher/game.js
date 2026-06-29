@@ -76,7 +76,8 @@ const objectTypes = {
     MAGNET: { emoji: '🧲', points: 0, speed: 2.5, color: 'red' },
     RAINBOW: { emoji: '🌈', points: 5, speed: 4, color: 'rainbow' },
     SHIELD: { emoji: '🛡️', points: 0, speed: 3, color: 'blue' },
-    GOLDEN_STAR: { emoji: '✨', points: 10, speed: 5, color: 'yellow' }
+    GOLDEN_STAR: { emoji: '✨', points: 10, speed: 5, color: 'yellow' },
+    BOMB: { emoji: '💣', points: -5, speed: 4, color: 'black' }
 };
 
 function resize() {
@@ -109,7 +110,8 @@ function spawnObject() {
     else if (rand > 0.94) type = objectTypes.MAGNET;
     else if (rand > 0.92) type = objectTypes.SHIELD;
     else if (rand > 0.30) type = objectTypes.STAR;
-    else type = objectTypes.CLOUD;
+    else if (rand > 0.10) type = objectTypes.CLOUD;
+    else type = objectTypes.BOMB;
     
     objects.push({
         x: Math.random() * (canvasWidth - 50),
@@ -289,6 +291,14 @@ function update() {
                 }
                 createParticles(player.x + 35, player.y + 35, 'grey');
                 playerScale = 0.8;
+            } else if (obj.type === objectTypes.BOMB) {
+                score += obj.type.points;
+                scoreEl.innerText = score;
+                showFloatingText(`-${Math.abs(obj.type.points)} 💣`, obj.x + 20, obj.y + 20);
+                playSound(100, 'sawtooth', 0.4);
+                shakeAmount = 40;
+                createParticles(player.x + 35, player.y + 35, 'black');
+                playerScale = 0.7;
             } else if (obj.type === objectTypes.MAGNET) {
                 activateMagnet();
                 playSound(523, 'square', 0.2);
