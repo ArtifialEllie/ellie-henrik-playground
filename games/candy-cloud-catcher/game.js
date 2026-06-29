@@ -149,6 +149,12 @@ class Player {
         ctx.arc(this.x + 60, drawY + 40, 30, 0, Math.PI * 2);
         ctx.fill();
         
+        // Add some highlights to the cloud
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.beginPath();
+        ctx.arc(this.x + 50, drawY + 20, 10, 0, Math.PI * 2);
+        ctx.fill();
+
         // Add a little smiley face to the cloud
         ctx.fillStyle = '#000';
         ctx.beginPath();

@@ -101,10 +101,16 @@ const COLORS = ['#FF69B4', '#00FF7F', '#00BFFF', '#FFD700', '#FF4500', '#DA70D6'
 class Fish {
     constructor(isEnemy = false) {
         this.isEnemy = isEnemy;
-        this.isRare = !isEnemy && Math.random() < 0.1;
-        this.behavior = isEnemy ? (Math.random() > 0.7 ? 'patrol' : 'track') : 'wander';
-        if (isEnemy && Math.random() > 0.8) this.behavior = 'fast';
-        this.radius = isEnemy ? 15 : 12;
+        if (isEnemy) {
+            this.behavior = (Math.random() > 0.7 ? 'patrol' : 'track');
+            if (Math.random() > 0.8) this.behavior = 'fast';
+            this.radius = 15;
+        } else {
+            this.type = Math.random() < 0.1 ? 'RARE' : (Math.random() < 0.2 ? 'FAST' : 'NORMAL');
+            this.isRare = this.type === 'RARE';
+            this.behavior = 'wander';
+            this.radius = this.type === 'RARE' ? 14 : (this.type === 'FAST' ? 10 : 12);
+        }
         this.reset();
     }
 
@@ -116,8 +122,13 @@ class Fish {
         else { this.x = Math.random() * canvas.width; this.y = canvas.height + this.radius; }
 
         this.speed = this.isEnemy ? (2 + Math.random() * 2) : (1 + Math.random() * 1.5);
+        if (!this.isEnemy && this.type === 'FAST') this.speed *= 1.8;
+        if (!this.isEnemy && this.type === 'RARE') this.speed *= 0.7;
+
         this.angle = Math.atan2(player.y - this.y, player.x - this.x);
-        this.color = this.isEnemy ? '#4B0082' : (this.isRare ? '#FFD700' : COLORS[Math.floor(Math.random() * COLORS.length)]);
+        this.color = this.isEnemy ? '#4B0082' : 
+                     (this.type === 'RARE' ? '#FFD700' : 
+                      (this.type === 'FAST' ? '#00FFFF' : COLORS[Math.floor(Math.random() * COLORS.length)]));
     }
 
     update() {
@@ -174,15 +185,25 @@ class Fish {
             ctx.shadowColor = 'gold';
         }
         if (this.behavior === 'fast') ctx.fillStyle = '#ff0000';
+        if (!this.isEnemy && this.type === 'FAST') ctx.fillStyle = '#00FFFF';
+
         ctx.beginPath();
         ctx.ellipse(0, 0, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // Tail
+        ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.moveTo(-this.radius * 1.2, 0);
         ctx.lineTo(-this.radius * 2, -this.radius);
         ctx.lineTo(-this.radius * 2, this.radius);
+        ctx.closePath();
+        ctx.fill();
+
+        // Fin
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(-this.radius, -this.radius, -this.radius * 0.5, -this.radius * 0.5);
         ctx.closePath();
         ctx.fill();
 
@@ -649,6 +670,7 @@ function start() {
     score = 0;
     currentLevel = 1;
     difficultyMultiplier = 1;
+    lastBossTriggerCount = 0;
     levelElement.innerText = `Level: 1`;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     rescuedCount = 0;

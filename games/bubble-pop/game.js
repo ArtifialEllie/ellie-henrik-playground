@@ -654,8 +654,10 @@ class FloatingText {
         this.color = color;
         this.life = 1.0;
         this.vy = -2;
+        this.vx = (Math.random() - 0.5) * 1;
     }
     update() {
+        this.x += this.vx;
         this.y += this.vy;
         this.life -= 0.02;
     }
@@ -2080,34 +2082,34 @@ function handlePop(e, isAutoPop = false) {
             didPop = true;
         }
     }
+    if (didPop) {
+        if (Math.random() < (currentAccessory === 'Cosmic Cape' ? 0.06 : 0.03)) triggerFrenzy();
+        if (Math.random() < 0.01) triggerParty();
+        if (Math.random() < 0.005) triggerGoldenRain();
+        if (Math.random() < 0.008) triggerVortex();
+        if (Math.random() < 0.004) triggerCupcakeRain();
+        if (Math.random() < 0.003) triggerDiscoParty();
+        if (Math.random() < 0.004) triggerSlowMo();
+        if (Math.random() < 0.005) triggerWindGust();
+        if (Math.random() < 0.002) triggerRainbowCascade();
+        if (Math.random() < 0.003) triggerRainbowBridge();
+        if (Math.random() < 0.002) triggerGiggleStorm();
+        if (Math.random() < 0.001) triggerCelestialSparkle();
+        if (Math.random() < 0.002) triggerGravityFlip();
+        if (Math.random() < 0.002) triggerGlitterStorm();
+        if (Math.random() < 0.003) triggerRibbon();
+        if (Math.random() < 0.002) triggerCosmicBloom();
+        if (Math.random() < 0.001) triggerGlitterGala();
+        if (Math.random() < 0.002) triggerStarfall();
+        updateCombo();
+    }
 
-    if (Math.random() < (currentAccessory === 'Cosmic Cape' ? 0.06 : 0.03)) triggerFrenzy();
-    if (Math.random() < 0.01) triggerParty();
-    if (Math.random() < 0.005) triggerGoldenRain();
-    if (Math.random() < 0.008) triggerVortex();
-    if (Math.random() < 0.004) triggerCupcakeRain();
-    if (Math.random() < 0.003) triggerDiscoParty();
-    if (Math.random() < 0.004) triggerSlowMo();
-    if (Math.random() < 0.005) triggerWindGust();
-    if (Math.random() < 0.002) triggerRainbowCascade();
-    if (Math.random() < 0.003) triggerRainbowBridge();
-    if (Math.random() < 0.002) triggerGiggleStorm();
-    if (Math.random() < 0.001) triggerCelestialSparkle();
-    if (Math.random() < 0.002) triggerGravityFlip();
-    if (Math.random() < 0.002) triggerGlitterStorm();
-    if (Math.random() < 0.003) triggerRibbon();
-    if (Math.random() < 0.002) triggerCosmicBloom();
-    if (Math.random() < 0.001) triggerGlitterGala();
-    if (Math.random() < 0.002) triggerStarfall();
     const currentMilestone = Math.floor(score / 500);
     if (currentMilestone > lastBossFightMilestone && !bossActive) {
         triggerBossFight();
         lastBossFightMilestone = currentMilestone;
     }
     
-    if (didPop) {
-        updateCombo();
-    }
     updateScore();
     level = Math.floor(score / 200) + 1;
 

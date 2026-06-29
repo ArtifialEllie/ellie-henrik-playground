@@ -92,11 +92,13 @@ window.addEventListener('resize', resize);
 resize();
 
 window.addEventListener('mousemove', (e) => {
-    player.x = e.clientX - player.width / 2;
+    let x = e.clientX - player.width / 2;
+    player.x = Math.max(0, Math.min(x, canvasWidth - player.width));
 });
 
 window.addEventListener('touchmove', (e) => {
-    player.x = e.touches[0].clientX - player.width / 2;
+    let x = e.touches[0].clientX - player.width / 2;
+    player.x = Math.max(0, Math.min(x, canvasWidth - player.width));
     e.preventDefault();
 }, { passive: false });
 
