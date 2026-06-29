@@ -82,7 +82,6 @@ canvas {
     gap: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
-}
 .btn {
     background-color: var(--primary-pink);
     color: white;
@@ -182,5 +181,24 @@ h1 { color: var(--primary-pink); }
 }
 
 #fever-text.show {
+    opacity: 1;
+}
+
+#syrup-alert {
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: bold;
+    color: #fbc02d;
+    text-shadow: 2px 2px white;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+#syrup-alert.show {
     opacity: 1;
 }

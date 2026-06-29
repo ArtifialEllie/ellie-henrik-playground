@@ -511,6 +511,20 @@ const canvas = document.getElementById('gameCanvas');
         }
         slideSpeed *= slideSpeedMult;
 
+        // Syrup Rain logic
+        if (Math.random() < 0.001) {
+            const syrupAlert = document.getElementById('syrup-alert');
+            if (syrupAlert) {
+                syrupAlert.classList.add('show');
+                setTimeout(() => syrupAlert.classList.remove('show'), 3000);
+            }
+            // Make all current pancakes in stack syrupy for 5 seconds
+            stack.forEach(p => p.isSyrupy = true);
+            setTimeout(() => {
+                stack.forEach(p => p.isSyrupy = false);
+            }, 5000);
+        }
+
         // Wind logic
         if (windChangeTimer <= 0) {
                 currentWind = (Math.random() - 0.5) * 1.5;

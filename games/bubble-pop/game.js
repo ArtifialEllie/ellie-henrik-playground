@@ -59,7 +59,7 @@ function checkBossMilestones() {
     }
 }
 
-currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
+let currentSkin = localStorage.getItem('bubblePopSkin') || '#ff80ab';
 let currentAccessory = localStorage.getItem('bubblePopAccessory') || '';
 
 highscoreEl.innerText = highscore;
@@ -68,7 +68,7 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 
 // Quests System
-let currentQuest = 0;
+let currentQuest = parseInt(localStorage.getItem('bubblePopQuest')) || 0;
 const quests = QUESTS;
 
 function updateQuest() {
@@ -123,6 +123,7 @@ function completeQuest() {
     playSound(880, 'sine', 0.3);
     
     currentQuest++;
+    localStorage.setItem('bubblePopQuest', currentQuest);
     updateQuest();
     updateScore();
 }
@@ -500,10 +501,10 @@ class Bubble {
             ctx.lineWidth = 2;
             // Diamond refraction effect
             ctx.beginPath();
-            ctx.moveTo(this.x - this.radius * 0.5, this.y);
-            ctx.lineTo(this.x, this.y - this.radius * 0.5);
-            ctx.lineTo(this.x + this.radius * 0.5, this.y);
-            ctx.lineTo(this.x, this.y + this.radius * 0.5);
+            ctx.moveTo(drawX - this.radius * 0.5, drawY);
+            ctx.lineTo(drawX, drawY - this.radius * 0.5);
+            ctx.lineTo(drawX + this.radius * 0.5, drawY);
+            ctx.lineTo(drawX, drawY + this.radius * 0.5);
             ctx.closePath();
             ctx.stroke();
         }
@@ -2504,7 +2505,7 @@ function resetGame() {
     shieldActive = false;
     gameActive = true;
     level = 1;
-    currentQuest = 0;
+    // currentQuest is now persistent, no longer reset on game start
     updateQuest();
     overlay.style.display = 'none';
     comboText.style.opacity = '0';
