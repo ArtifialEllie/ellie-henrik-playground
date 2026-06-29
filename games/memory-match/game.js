@@ -104,6 +104,13 @@ function playSound(freq, type, duration, vol = 0.1) {
 function setGameMode(mode) {
     gameMode = mode;
     initGame();
+    
+    // Highlight active mode button in menu
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    const activeBtn = document.getElementById(`mode-${mode}`);
+    if (activeBtn) activeBtn.classList.add('selected');
 }
 
 function initGame() {
@@ -187,13 +194,7 @@ function initGame() {
 
 function startGame(mode) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    gameMode = mode;
     document.getElementById('main-menu').classList.add('hidden');
-    
-    // Update radio buttons
-    const radio = document.querySelector(`input[value="${mode}"]`);
-    if (radio) radio.checked = true;
-    
     initGame();
 }
 window.startGame = startGame;
@@ -225,6 +226,11 @@ function renderLevelSelector() {
         grid.appendChild(btn);
     });
 }
+
+function showMenu() {
+    document.getElementById('main-menu').classList.remove('hidden');
+}
+
 function stopThemeParticles() {
     if (particleInterval) {
         clearInterval(particleInterval);

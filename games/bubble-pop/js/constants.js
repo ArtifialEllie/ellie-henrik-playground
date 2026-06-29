@@ -49,6 +49,12 @@ const QUESTS = [
     { text: 'Collect 500,000 Gold! ✨', goal: 500000, reward: 500000, rewardGold: 0, type: 'gold' },
 ];
 
+const DAILY_REWARDS = [
+    { day: 1, rewardGold: 100, rewardText: 'En fantastisk start! ✨' },
+    { day: 2, rewardGold: 200, rewardText: 'Velkommen tilbake! 🌈' },
+    { day: 3, rewardGold: 500, rewardText: 'Du er på rull! 🚀' },
+];
+
 const BOSS_MILESTONES = [
     { score: 1000, text: 'A stinky presence is looming... 💨' },
     { score: 5000, text: 'The Behemoth is waking up! 😡' },

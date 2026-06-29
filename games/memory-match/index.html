@@ -11,16 +11,24 @@
     <div class="palace-container">
         <div id="main-menu" class="overlay-menu">
             <h1>Magic Memory Palace ✨</h1>
-        <div class="menu-options">
-            <button class="btn" onclick="startGame('classic')">Klassisk ⏳</button>
-            <button class="btn" onclick="startGame('zen')">Zen 🌸</button>
-            <button class="btn" onclick="startGame('timed')">Tidsutfordring ⏱️</button>
-            <button class="btn" onclick="startGame('challenge')">Utfordring 🏆</button>
-        </div>
-        <div class="level-selector-menu">
-            <p>Velg et nivå: ✨</p>
-            <div id="level-grid" class="level-grid"></div>
-        </div>
+            
+            <div class="menu-section">
+                <p>Velg modus: ✨</p>
+                <div class="mode-options">
+                    <button class="btn mode-btn" id="mode-classic" onclick="setGameMode('classic')">Klassisk ⏳</button>
+                    <button class="btn mode-btn" id="mode-zen" onclick="setGameMode('zen')">Zen 🌸</button>
+                    <button class="btn mode-btn" id="mode-timed" onclick="setGameMode('timed')">Tidsutfordring ⏱️</button>
+                    <button class="btn mode-btn" id="mode-challenge" onclick="setGameMode('challenge')">Utfordring 🏆</button>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <p>Velg et nivå: ✨</p>
+                <div id="level-grid" class="level-grid"></div>
+            </div>
+
+            <button class="btn start-game-btn" onclick="startGame()">Start Eventyret! 🚀</button>
+
         <div class="menu-footer">
                 <p>Kan du finne alle parene?</p>
                 <div id="global-best">Oppdag nye verdener! ✨</div>
@@ -28,25 +36,6 @@
         </div>
 
         <h1 id="game-title">Magic Memory Palace ✨</h1>
-        
-        <div class="mode-selector">
-            <label>
-                <input type="radio" name="game-mode" value="classic" checked onchange="setGameMode('classic')">
-                <span>Klassisk ⏳</span>
-            </label>
-            <label>
-                <input type="radio" name="game-mode" value="zen" onchange="setGameMode('zen')">
-                <span>Zen 🌸</span>
-            </label>
-            <label>
-                <input type="radio" name="game-mode" value="timed" onchange="setGameMode('timed')">
-                <span>Tidsutfordring ⏱️</span>
-            </label>
-            <label>
-                <input type="radio" name="game-mode" value="challenge" onchange="setGameMode('challenge')">
-                <span>Utfordring 🏆</span>
-            </label>
-        </div>
 
         <div class="stats">
             <span>Level: <span id="level">1</span></span>
@@ -64,6 +53,7 @@
             <button class="btn" id="freeze-btn" onclick="magicFreeze()">Magic Freeze ❄️</button>
             <button class="btn" id="pause-btn" onclick="togglePause()">Pause ⏸️</button>
             <button class="btn" id="warp-btn" onclick="magicTimeWarp()">Time Warp ⏳</button>
+            <button class="btn" id="menu-btn" onclick="showMenu()">Meny 🏠</button>
             <button class="btn" id="reset-btn" onclick="initGame()">Start på nytt! 🌸</button>
         </div>
         <div class="game-container" id="grid"></div>
