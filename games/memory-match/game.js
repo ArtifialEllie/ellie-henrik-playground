@@ -630,15 +630,31 @@ function magicHint() {
     playSound(880, 'triangle', 0.3);
     
     const unmatched = Array.from(document.querySelectorAll('.card:not(.matched)'));
-    if (unmatched.length === 0) return;
+    if (unmatched.length < 2) return;
     
-    const randomCard = unmatched[Math.floor(Math.random() * unmatched.length)];
-    randomCard.classList.add('flipped');
-    setTimeout(() => {
-        if (!flippedCards.includes(randomCard)) {
-            randomCard.classList.remove('flipped');
-        }
-    }, 800);
+    // Find a random pair
+    const firstCard = unmatched[Math.floor(Math.random() * unmatched.length)];
+    const emoji = firstCard.dataset.emoji;
+    const partner = unmatched.find(card => card !== firstCard && card.dataset.emoji === emoji);
+    
+    if (partner) {
+        [firstCard, partner].forEach(card => {
+            card.classList.add('flipped');
+            setTimeout(() => {
+                if (!flippedCards.includes(card)) {
+                    card.classList.remove('flipped');
+                }
+            }, 1200);
+        });
+    } else {
+        // Fallback to the original behavior if no partner found (shouldn't happen)
+        firstCard.classList.add('flipped');
+        setTimeout(() => {
+            if (!flippedCards.includes(firstCard)) {
+                firstCard.classList.remove('flipped');
+            }
+        }, 800);
+    }
 }
 
 function magicShuffle() {
