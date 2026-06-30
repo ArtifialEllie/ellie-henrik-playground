@@ -412,11 +412,14 @@ class Bubble {
                }
            });
        }
-       this.y -= this.speed * gameSpeed;
-       this.y += this.vy * gameSpeed;
-       this.x += this.vx * gameSpeed;
-       
-        if (this.isSneezing) {
+        this.y -= this.speed * gameSpeed;
+        this.y += this.vy * gameSpeed;
+        this.x += this.vx * gameSpeed;
+
+        this.vx *= 0.98;
+        this.vy *= 0.98;
+        
+         if (this.isSneezing) {
             this.sneezeTimer--;
             if (this.sneezeTimer <= 0) {
                 this.isSneezing = false;
@@ -1365,11 +1368,12 @@ function triggerRibbon() {
         // Ribbon pops nearby bubbles
         bubbles.forEach(b => {
             const dist = Math.hypot(ribbon.x - b.x, ribbon.y - b.y);
-            if (dist < 60) {
-                b.popped = true; // Mark for removal
-                createPopEffect(b.x, b.y, 'pink');
-                score += 5;
-            }
+                if (dist < 60) {
+                    b.popped = true; // Mark for removal
+                    createPopEffect(b.x, b.y, 'pink');
+                    score += 5;
+                    updateScore();
+                }
         });
     }, 20);
 }
@@ -1584,9 +1588,9 @@ function handlePop(e, isAutoPop = false) {
                     // Check for special types that handle their own scoring first
                     // (These will set poppedSpecial = true)
                     if (magicDustPopsRemaining > 0) {
-                    score += 5 * multiplier;
-                    magicDustPopsRemaining--;
-                    floatingTexts.push(new FloatingText(b.x, b.y, `+${5 * multiplier} ✨`, 'white'));
+                        score += 5 * multiplier;
+                        magicDustPopsRemaining--;
+                        floatingTexts.push(new FloatingText(b.x, b.y, `+${5 * multiplier} ✨`, 'white'));
                     }
                     if (b.type === 'sparkle-blast') {
                         triggerShockwave(b.x, b.y, b.color);
@@ -1594,9 +1598,15 @@ function handlePop(e, isAutoPop = false) {
                        poppedSpecial = true;
                    }
                    
-                   if (b.type !== 'stinky' && b.type !== 'bomb') {
-                       pet.gainEnergy(1);
-                   }
+                    if (b.type !== 'stinky' && b.type !== 'bomb') {
+                        pet.gainEnergy(1);
+
+                        if (magicDustPopsRemaining > 0) {
+                            score += 5 * multiplier;
+                            magicDustPopsRemaining--;
+                            floatingTexts.push(new FloatingText(b.x, b.y, `+${5 * multiplier} ✨`, 'white'));
+                        }
+                    }
                    const popColor = b.color;
                    playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
                    

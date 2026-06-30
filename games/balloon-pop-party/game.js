@@ -11,12 +11,16 @@ const startScreen = document.getElementById('start-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
 const startButton = document.getElementById('start-button');
 const restartButton = document.getElementById('restart-button');
+const missElement = document.getElementById('misses');
+const pauseButton = document.getElementById('pause-button');
 
 let score = 0;
 let combo = 0;
 let timeLeft = 60;
 let currentLevel = 1;
 let difficultyMultiplier = 1;
+let misses = 0;
+let isPaused = false;
 let highscore = localStorage.getItem('balloonPopHighscore') || 0;
 let gameActive = false;
 let balloons = [];
@@ -330,6 +334,13 @@ function gameLoop() {
         balloon.draw();
         if (balloon.y + balloon.radius * 2 < 0) {
             balloons.splice(i, 1);
+            if (balloon.type !== 'BOMB') {
+                misses++;
+                missElement.textContent = misses;
+                if (misses >= 5) {
+                    stopGame();
+                }
+            }
         }
     }
     
@@ -355,6 +366,8 @@ function gameLoop() {
                 feverBoard.classList.add('hidden');
             }
         }
+        if (isPaused) return;
+
         animationId = requestAnimationFrame(gameLoop);
     }
 }
@@ -468,7 +481,9 @@ function startGame() {
     
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
-    
+    misses = 0;
+    missElement.textContent = misses;
+
     resize();
     
     let count = 3;
@@ -526,4 +541,13 @@ restartButton.addEventListener('click', startGame);
 resize();
 clouds = Array.from({ length: 5 }, () => new Cloud());
 document.getElementById('high-score').textContent = highscore;
+
+pauseButton.onclick = () => {
+    isPaused = !isPaused;
+    pauseButton.innerText = isPaused ? '▶' : '⏸';
+    if (!isPaused) {
+        gameLoop();
+    }
+};
+
 gameLoop(); // Start loop for clouds even before game starts
