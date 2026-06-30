@@ -67,12 +67,19 @@
             cursor: pointer;
             background-color: #b2e2f2;
             color: white;
-            transition: transform 0.1s, background-color 0.2s;
+            transition: transform 0.1s, background-color 0.2s, box-shadow 0.1s;
             box-shadow: 0 8px 0 #0288d1;
             min-height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: inherit;
+        }
+
+        .letter-btn:hover {
+            background-color: #81d4fa;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #0288d1;
         }
 
         .letter-btn:active {
@@ -265,6 +272,7 @@
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'no-NO';
             utterance.rate = 0.8;
+            utterance.pitch = 1.2; // Litt lysere og mer "Ellie-aktig" stemme
             window.speechSynthesis.speak(utterance);
         }
 
