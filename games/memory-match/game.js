@@ -61,6 +61,13 @@ const levelConfigs = [
         emojis: ['🦁', '🦒', '🐘', '🦓', '🐒', '🐯', '🐼', '🦛'],
         bg: '#fdf5e6',
         accent: '#ffcc00'
+    },
+    {
+        name: "Kjøkken-Kaos 🍳",
+        grid: 6,
+        emojis: ['🍳', '🥞', '🧇', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🥗', '🥘', '🍲', '🍱', '🥟', '🍜', '🍝', '🍛', '🍣', '🍱', '🍰', '🧁', '🍦', '🍧'],
+        bg: '#fff5e6',
+        accent: '#ffaa00'
     }
 ];
 
@@ -331,12 +338,20 @@ function checkMatch() {
     const [card1, card2] = flippedCards;
     const isMatch = card1.dataset.emoji === card2.dataset.emoji;
 
+function updateComboBar() {
+    const bar = document.getElementById('combo-bar');
+    if (bar) {
+        bar.style.width = `${Math.min(100, (combo / 10) * 100)}%`;
+    }
+}
+
     if (isMatch) {
         handleMatch();
         disableCards();
         matchHistory.push([...flippedCards]);
     } else {
         combo = 0;
+        updateComboBar();
         unflipCards();
         
         // Small penalty for wrong match: shake the cards
@@ -349,6 +364,7 @@ function checkMatch() {
 
 function handleMatch() {
     combo++;
+    updateComboBar();
     if (combo > bestStreak) bestStreak = combo;
     createComboText();
    if (combo >= 3) activateFeverMode();

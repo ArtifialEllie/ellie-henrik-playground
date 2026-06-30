@@ -105,6 +105,22 @@ h1 {
     border: 3px solid var(--primary);
 }
 
+.combo-bar-container {
+    width: 200px;
+    height: 12px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 10px auto;
+    border: 2px solid var(--primary);
+}
+.combo-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary), var(--gold));
+    transition: width 0.3s ease-out;
+}
+
 .bg-particle {
     position: absolute;
     pointer-events: none;

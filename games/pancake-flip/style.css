@@ -46,6 +46,25 @@ body {
     opacity: 1;
     transform: scale(1.2);
 }
+
+#combo-bar-container {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    width: 150px;
+    height: 10px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    z-index: 10;
+}
+
+#combo-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--primary-pink);
+    transition: width 0.3s ease-out;
+}
 canvas {
     display: block;
     background: #fff9c4;

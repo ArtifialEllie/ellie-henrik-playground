@@ -286,6 +286,170 @@ function createParticles(x, y, color, count) {
     }
 }
 
+class Bubble {
+    constructor() {
+        this.radius = Math.random() * 5 + 2;
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + this.radius;
+        this.speed = Math.random() * 1 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.5;
+    }
+    update() {
+        this.y -= this.speed;
+        this.x += this.vx;
+        if (this.y < -this.radius) this.reset();
+    }
+    reset() {
+        this.y = canvas.height + this.radius;
+        this.x = Math.random() * canvas.width;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fill();
+        ctx.closePath();
+    }
+}
+
+class Plankton {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.radius = Math.random() * 1 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.2;
+        this.vy = (Math.random() - 0.5) * 0.2;
+        this.color = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.2})`;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+    }
+}
+
+class Pearl {
+    constructor() {
+        this.radius = 8;
+        this.x = Math.random() * (canvas.width - 40) + 20;
+        this.y = Math.random() * (canvas.height - 40) + 20;
+        this.isGolden = Math.random() < 0.1;
+        this.life = 600;
+        this.pulse = 0;
+    }
+    update() {
+        this.life--;
+        this.pulse += 0.1;
+    }
+    draw() {
+        const scale = 1 + Math.sin(this.pulse) * 0.2;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(scale, scale);
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.isGolden ? '#FFD700' : 'white';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.isGolden ? 'gold' : 'white';
+        ctx.fill();
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+    }
+}
+
+class Bubble {
+    constructor() {
+        this.radius = Math.random() * 5 + 2;
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + this.radius;
+        this.speed = Math.random() * 1 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.5;
+    }
+    update() {
+        this.y -= this.speed;
+        this.x += this.vx;
+        if (this.y < -this.radius) this.reset();
+    }
+    reset() {
+        this.y = canvas.height + this.radius;
+        this.x = Math.random() * canvas.width;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fill();
+        ctx.closePath();
+    }
+}
+
+class Plankton {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.radius = Math.random() * 1 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.2;
+        this.vy = (Math.random() - 0.5) * 0.2;
+        this.color = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.2})`;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+    }
+}
+
+class Pearl {
+    constructor() {
+        this.radius = 8;
+        this.x = Math.random() * (canvas.width - 40) + 20;
+        this.y = Math.random() * (canvas.height - 40) + 20;
+        this.isGolden = Math.random() < 0.1;
+        this.life = 600;
+        this.pulse = 0;
+    }
+    update() {
+        this.life--;
+        this.pulse += 0.1;
+    }
+    draw() {
+        const scale = 1 + Math.sin(this.pulse) * 0.2;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(scale, scale);
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.isGolden ? '#FFD700' : 'white';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.isGolden ? 'gold' : 'white';
+        ctx.fill();
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+    }
+}
+
 class Seaweed {
     constructor() {
         this.x = Math.random() * canvas.width;

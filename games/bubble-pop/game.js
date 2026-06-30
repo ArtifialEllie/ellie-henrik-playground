@@ -1158,6 +1158,7 @@ function triggerDiscoParty() {
             clearInterval(discoInterval);
             return;
         }
+        if (isPaused) return;
         bubbles.forEach(b => {
             b.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
             b.vx += (Math.random() - 0.5) * 2;
@@ -1223,6 +1224,7 @@ function triggerWindGust() {
             clearInterval(windInterval);
             return;
         }
+        if (isPaused) return;
         bubbles.forEach(b => {
             b.vx += windDirection * 0.5;
         });
@@ -1274,7 +1276,7 @@ function triggerMirrorRealm() {
             mirrorAlert.style.display = 'none';
             return;
         }
-        
+        if (isPaused) return;
         // Mirror Realm effect: Every bubble gets a twin on the opposite side of the screen
         // To avoid infinite spawning, we only do this occasionally or for a few bubbles
         if (Math.random() < 0.05) {
@@ -1421,6 +1423,7 @@ function triggerMagnetism() {
             clearInterval(magnetInterval);
             return;
         }
+        if (isPaused) return;
         bubbles.forEach(b => {
             const dx = lastMouseX - b.x;
             const dy = lastMouseY - b.y;
@@ -1458,12 +1461,13 @@ function triggerVortex() {
             clearInterval(vortexInterval);
             return;
         }
+        if (isPaused) return;
         bubbles.forEach(b => {
             const dx = centerX - b.x;
             const dy = centerY - b.y;
-                const dist = Math.hypot(dx, dy);
-                b.vx += (dx / (dist || 1)) * 0.5;
-                b.vy += (dy / (dist || 1)) * 0.5;
+            const dist = Math.hypot(dx, dy);
+            b.vx += (dx / (dist || 1)) * 0.5;
+            b.vy += (dy / (dist || 1)) * 0.5;
         });
     }, 20);
     
@@ -1577,13 +1581,12 @@ function handlePop(e, isAutoPop = false) {
                 playSound(300, 'sine', 0.1);
                 floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
                 didPop = true;
-                continue;
-                } else {
-                    createPopEffect(b.x, b.y, b.color);
-                    didPop = true;
-                    b.popped = true;
-                    // Normal bubbles and most other bubbles give score
-                    // and use the multiplier!
+               continue;
+               } else {
+                   createPopEffect(b.x, b.y, b.color);
+                   b.popped = true;
+                   // Normal bubbles and most other bubbles give score
+                   // and use the multiplier!
                     let poppedSpecial = false;
                     // Check for special types that handle their own scoring first
                     // (These will set poppedSpecial = true)
@@ -1594,20 +1597,10 @@ function handlePop(e, isAutoPop = false) {
                     }
                     if (b.type === 'sparkle-blast') {
                         triggerShockwave(b.x, b.y, b.color);
-                    floatingTexts.push(new FloatingText(b.x, b.y, 'SPARKLE BLAST! ✨', b.color));
-                       poppedSpecial = true;
-                   }
-                   
-                    if (b.type !== 'stinky' && b.type !== 'bomb') {
-                        pet.gainEnergy(1);
-
-                        if (magicDustPopsRemaining > 0) {
-                            score += 5 * multiplier;
-                            magicDustPopsRemaining--;
-                            floatingTexts.push(new FloatingText(b.x, b.y, `+${5 * multiplier} ✨`, 'white'));
-                        }
+                        floatingTexts.push(new FloatingText(b.x, b.y, 'SPARKLE BLAST! ✨', b.color));
+                        poppedSpecial = true;
                     }
-                   const popColor = b.color;
+                    const popColor = b.color;
                    playPopSound(b.type === 'gold', b.type === 'stinky', popColor);
                    
                 if (b.type === 'mystery-box') {
@@ -1926,8 +1919,6 @@ function handlePop(e, isAutoPop = false) {
                     
                     createPopEffect(target.x, target.y, target.color);
                     score += 10;
-                    createPopEffect(target.x, target.y, target.color);
-                    score += 10;
                     floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
                     target.popped = true;
                     totalPops++;
@@ -1960,13 +1951,21 @@ function handlePop(e, isAutoPop = false) {
              localStorage.setItem('bubblePopEmotionPops', emotionPops);
              floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
                createPopEffect(b.x, b.y, b.color);
-            } else if (b.type === 'bomb') {
-                playSound(100, 'square', 0.5);
-                bubbles.forEach(bub => bub.popped = true);
-                poppedSpecial = true;
-                    floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
-                    poppedSpecial = true;
-                } else if (b.type === 'stinky') {
+           } else if (b.type === 'bomb') {
+               playSound(100, 'square', 0.5);
+               combo = 0;
+               comboBar.style.width = '0%';
+               comboText.innerText = '';
+               bubbles.forEach(bub => {
+                   if (bub !== b && !bub.popped) {
+                       bub.popped = true;
+                       totalPops++;
+                       updateQuest();
+                   }
+               });
+               poppedSpecial = true;
+               floatingTexts.push(new FloatingText(b.x, b.y, 'BOOM! 💣', 'orange'));
+               } else if (b.type === 'stinky') {
                     if (shieldActive) {
                         playPopSound(true, false);
                    poppedSpecial = true;
@@ -2102,12 +2101,15 @@ function handlePop(e, isAutoPop = false) {
                 const basePoints = b.type === 'giant' ? 50 : 10;
                 const totalPoints = basePoints * multiplier;
                 score += totalPoints;
-                floatingTexts.push(new FloatingText(b.x, b.y, `+${totalPoints}`, b.color));
-            }
-            
-            b.popped = true;
-            totalPops++;
-            localStorage.setItem('bubblePopTotalPops', totalPops);
+               floatingTexts.push(new FloatingText(b.x, b.y, `+${totalPoints}`, b.color));
+           }
+           
+           if (b.type !== 'bomb' && b.type !== 'stinky') {
+               didPop = true;
+           }
+           b.popped = true;
+           totalPops++;
+           localStorage.setItem('bubblePopTotalPops', totalPops);
             updateQuest();
             didPop = true;
         }

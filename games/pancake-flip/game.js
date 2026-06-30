@@ -340,15 +340,16 @@ const canvas = document.getElementById('gameCanvas');
                             playSound(880, 'sine', 0.1);
                         } else {
                             showPerfect();
-                            combo++;
-                            const comboBonus = 1 + (combo * 0.1);
-                            score += Math.round(2 * scoreMult * comboBonus);
-                            showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
-                            playSound(660, 'sine', 0.1);
-                        }
-                        shakeAmount = 5; 
-                        if (combo > 1) {
-                            comboEl.classList.add('show');
+                    combo++;
+                    const comboBonus = 1 + (combo * 0.1);
+                    score += Math.round(2 * scoreMult * comboBonus);
+                    showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
+                    playSound(660, 'sine', 0.1);
+                }
+                updateComboBar();
+                shakeAmount = 5; 
+                if (combo > 1) {
+                    comboEl.classList.add('show');
                             comboValEl.innerText = combo;
                         }
                         if (combo >= 10) {
@@ -369,11 +370,12 @@ const canvas = document.getElementById('gameCanvas');
                             feverText.classList.remove('show');
                         }
                     } else {
-                        combo = 0;
-                        comboEl.classList.remove('show');
-                        score += 1;
-                        playSound(440, 'sine', 0.1);
-                    }
+                    combo = 0;
+                    comboEl.classList.remove('show');
+                    score += 1;
+                    playSound(440, 'sine', 0.1);
+                    updateComboBar();
+                }
 
                     // Ellie's Sneeze! 🤧
                     if (Math.random() < 0.05) {
@@ -422,8 +424,7 @@ const canvas = document.getElementById('gameCanvas');
                             playSound(400, 'sine', 0.1);
                         } else if (activePancake.specialType === 'slippery') {
                             currentTotalLean += (Math.random() - 0.5) * 2;
-                            L_S_T_B = 'SLIPPERY! ⛸️';
-                            showFloatingText(L_S_T_B, activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("SLIPPERY! ⛸️", activePancake.x + activePancake.width/2, activePancake.y - 30);
                             playSound(400, 'sine', 0.1);
                             shakeAmount = 5;
                         } else if (activePancake.specialType === 'heavy') {
@@ -449,7 +450,13 @@ const canvas = document.getElementById('gameCanvas');
                     setTimeout(() => activePancake.targetScaleY = 1, 100);
         
         }
-        function showPerfect() {
+
+function updateComboBar() {
+    const bar = document.getElementById('combo-bar');
+    if (bar) {
+        bar.style.width = `${Math.min(100, (combo / 20) * 100)}%`;
+    }
+}
         function showPerfect() {
             perfectText.style.opacity = '1';
             perfectText.style.transform = 'translate(-50%, -50%) scale(1.2)';
@@ -604,10 +611,5 @@ const canvas = document.getElementById('gameCanvas');
         });
         initStack();
         update();
-
-        function startGame() {
-            document.getElementById('how-to-play').style.display = 'none';
-        gameActive = true;
-        resumeAudio();
     }
 
