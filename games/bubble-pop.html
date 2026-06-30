@@ -159,9 +159,9 @@
     <div id="frenzy-alert">BOBBEL-FEST! 🌈</div>
     
     <div id="overlay">
-        <h1 id="status-text">Tid er ute! 🌸</h1>
-        <p id="final-score" style="font-size: 1.5rem; margin-bottom: 30px;">Du poppet 0 bobler!</p>
-        <button class="btn" onclick="resetGame()">Spill igjen! ✨</button>
+        <h1 id="status-text">Klar for Boble-moro? 🫧</h1>
+        <p id="final-score" style="font-size: 1.5rem; margin-bottom: 30px;">Popp så mange magiske bobler du kan!</p>
+        <button class="btn" id="start-btn" onclick="startGame()">Start Spillet! ✨</button>
     </div>
     
     <canvas id="gameCanvas"></canvas>
@@ -183,13 +183,14 @@
         let score = 0;
         let timeLeft = 30;
         let highscore = localStorage.getItem('bubblePopHighscore') || 0;
-        let gameActive = true;
+        let gameActive = false;
         let canvasWidth, canvasHeight;
         let timerInterval;
         let spawnTimeout;
         let combo = 0;
         let comboTimer;
         let isFrenzy = false;
+        let isFirstGame = true;
 
         highscoreEl.innerText = highscore;
 
@@ -509,6 +510,12 @@
             overlay.style.display = 'block';
         }
 
+        function startGame() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            overlay.style.display = 'none';
+            resetGame();
+        }
+
         function resetGame() {
             score = 0;
             timeLeft = 30;
@@ -538,8 +545,7 @@
         }, { passive: false });
 
         // Initialize
-        spawnBubble();
-        startTimer();
+        overlay.style.display = 'block';
         update();
     </script>
 </body>
