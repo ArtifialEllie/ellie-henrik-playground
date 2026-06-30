@@ -192,11 +192,13 @@ const letterGrid = document.getElementById('letter-grid');
     const bonusBanner = document.getElementById('bonus-banner');
     const challengeBtn = document.getElementById('challenge-btn');
     const timerDisplay = document.getElementById('timer-display');
+    const highScoreDisplay = document.getElementById('high-score-display');
 
     let isChallengeMode = false;
     let challengeTimer = null;
     let isZenMode = false;
     const zenModeCheckbox = document.getElementById('zen-mode');
+    let challengeHighScore = parseInt(localStorage.getItem('bokstavspillChallengeHighScore')) || 0;
 
     function speak(text) {
         window.speechSynthesis.cancel();
@@ -683,11 +685,16 @@ function renderCollection() {
     function endChallenge() {
         isProcessing = true;
         speak(`Tiden er ute! Du klarte ${streak} riktige på rad! Fantastisk innsats!`);
+        if (streak > challengeHighScore) {
+            challengeHighScore = streak;
+            localStorage.setItem('bokstavspillChallengeHighScore', challengeHighScore);
+        }
         setTimeout(() => {
             alert(`Utfordring Slutt! Poengsum: ${streak}`);
             location.reload();
         }, 2000);
     }
+    highScoreDisplay.innerText = `Beste utfordring: ${challengeHighScore} 🔥`;
 
     function renderLevelButtons() {
     levelButtonsContainer.innerHTML = '';
