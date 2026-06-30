@@ -561,7 +561,7 @@ function showWinMessage() {
         document.getElementById('star-rating').innerText = `${medal} ${medalName} - ${randomPraise}`;
         
         let finalStatsText = `Du fant alle parene på ${moves} trekk`;
-        if (gameMode === 'classic') {
+        if (gameMode !== 'challenge') {
             finalStatsText += ` og ${secondsElapsed} sekunder!`;
         }
         finalStatsText += ` Din høyeste combo var ${combo}! 🌟`;
