@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Nibble Nom! ✨</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="score-board">Nibbles: <span id="score">0</span></div>
+            <div id="message-overlay" class="hidden">
+                <h1 id="status-title">Game Over! 🌌</h1>
+                <p id="status-text">Nom got too full or bumped a grain!</p>
+                <button id="restart-btn">Play Again! 🌈</button>
+            </div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starlight Symphony ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="combo">Combo: 0</div>
+        </div>
+        
+        <div id="game-board">
+            <div class="lane" data-key="S"><span>S</span></div>
+            <div class="lane" data-key="D"><span>D</span></div>
+            <div class="lane" data-key="F"><span>F</span></div>
+            <div class="lane" data-key="J"><span>J</span></div>
+            <div class="lane" data-key="K"><span>K</span></div>
+            <div class="lane" data-key="L"><span>L</span></div>
+            <div id="target-line"></div>
+        </div>
+
+        <div id="start-screen">
+            <h1>Starlight Symphony</h1>
+            <p>Catch the falling stars! ✨</p>
+            <p>Use keys: <strong>S D F J K L</strong></p>
+            <button id="start-button">Start the Magic! 🌈</button>
+        </div>
+
+        <div id="game-over-screen" class="hidden">
+            <h1>Symphony Finished! 🌟</h1>
+            <p id="final-score">Your score: 0</p>
+            <button id="restart-button">Play Again! ✨</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

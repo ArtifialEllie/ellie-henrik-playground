@@ -1,0 +1,202 @@
+:root {
+    --primary: #ffb7ce;
+    --secondary: #b2e2f2;
+    --accent: #fdfd96;
+    --bg: #fffafa;
+    --text: #5d5d5d;
+    --success: #c1f0c1;
+    --error: #ffcccb;
+    --pizza-crust: #f4d35e;
+    --pizza-cheese: #fffae6;
+}
+body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+}
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: 
+        linear-gradient(45deg, #fffafa 25%, transparent 25%), 
+        linear-gradient(-45deg, #fffafa 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #fffafa 75%), 
+        linear-gradient(-45deg, transparent 75%, #fffafa 75%);
+    background-size: 100px 100px;
+    background-color: #ffe4e1;
+    cursor: crosshair;
+}
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+}
+.stat-box {
+    background: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 4px solid var(--primary);
+    font-size: 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+#request-box {
+    background: white;
+    padding: 15px 30px;
+    border-radius: 30px;
+    border: 6px dashed var(--primary);
+    font-size: 2rem;
+    font-weight: bold;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    animation: bounce 2s infinite;
+    z-index: 11;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+.ingredient {
+    position: absolute;
+    font-size: 4rem;
+    cursor: pointer;
+    transition: transform 0.1s;
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+    user-select: none;
+    z-index: 5;
+}
+.ingredient:hover {
+    transform: scale(1.2);
+}
+.pop-text {
+    position: absolute;
+    font-weight: bold;
+    font-size: 1.5rem;
+    pointer-events: none;
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 20;
+}
+@keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
+}
+#start-screen, #end-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+.btn {
+    background-color: var(--primary);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 50px;
+    font-size: 2rem;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    box-shadow: 0 8px 0 #ff8da1;
+    transition: all 0.1s;
+}
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 4px 0 #ff8da1;
+}
+h1 {
+    font-size: 4rem;
+    color: var(--primary);
+    text-shadow: 3px 3px 0 white, 6px 6px 0 var(--secondary);
+    margin-bottom: 20px;
+}
+.hidden { display: none !important; }
+
+/* Pizza Styling */
+#pizza-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.pizza-base {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--pizza-crust);
+    border-radius: 50%;
+    border: 10px solid #e6c24d;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.pizza-cheese {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+    background-color: var(--pizza-cheese);
+    border-radius: 50%;
+    border: 2px solid #f0e68c;
+}
+.pizza-topping {
+    position: absolute;
+    font-size: 2.5rem;
+    animation: toppingDrop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    z-index: 6;
+}
+@keyframes toppingDrop {
+    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+#combo-counter {
+    position: absolute;
+    top: 100px;
+    right: 50px;
+    font-size: 3rem;
+    color: var(--primary);
+    font-weight: bold;
+    text-shadow: 2px 2px white;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 15;
+}
+.combo-pop {
+    animation: comboPop 0.3s ease-out;
+}
+@keyframes comboPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+.shake {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+@keyframes shake {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+}

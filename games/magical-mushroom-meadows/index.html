@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Magical Mushroom Meadows ✨🍄</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ui-layer">
+        <div id="stats">
+            <div class="stat-item">🍄 <span id="score">0</span></div>
+            <div class="stat-item">✨ <span id="spores">0</span></div>
+            <div class="stat-item">🕒 <span id="timer">60</span></div>
+        </div>
+        <div id="combo-container">
+            <div id="combo-text">Combo x1</div>
+            <div id="combo-bar"></div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="overlay" class="overlay">
+        <div class="overlay-content">
+            <h1>Magical Mushroom Meadows</h1>
+            <p>Samle så mange glødende sopper som mulig i den magiske engen! ✨</p>
+            <button id="start-btn">Start Eventyret! 🌈</button>
+        </div>
+    </div>
+
+    <div id="game-over" class="overlay" style="display: none;">
+        <div class="overlay-content">
+            <h1>Eventyret er slutt! 🌸</h1>
+            <p id="final-score">Du samlet 0 magiske sopper!</p>
+            <p id="highscore-text">Ny rekord: 0</p>
+            <button id="restart-btn">Prøv på nytt! ✨</button>
+            <button id="shop-btn">Mushroom Shop 🍄</button>
+        </div>
+    </div>
+
+    <div id="shop-overlay" class="overlay" style="display: none;">
+        <div class="overlay-content shop-content">
+            <h2>Mushroom Shop ✨</h2>
+            <p>Bruk dine magiske sporer til å endre utseendet ditt!</p>
+            <div id="shop-grid"></div>
+            <button id="close-shop">Tilbake til engen 🌿</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

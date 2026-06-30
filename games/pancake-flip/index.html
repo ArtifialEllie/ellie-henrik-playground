@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Pancake Flip! 🥞✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui">
+        <div>Score: <span id="score">0</span> 🥞</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+    </div>
+    <div id="combo-ui">COMBO x<span id="combo-val">0</span> ✨</div>
+    <div id="fever-text">FEVER TIME! 🔥🥞</div>
+    <div id="perfect-text">PERFEKT! ✨</div>
+    <div id="wind-indicator">🌬️</div>
+    <div id="syrup-alert">SYRUP RAIN! 🍯✨</div>
+    
+    <div id="how-to-play" class="overlay">
+        <h1>Velkommen til Pannekake-Fest! 🥞✨</h1>
+        <p>Klikk for å flippe pannekakene!</p>
+        <p>Stable så mange du kan uten at tårnet velter. 🌸</p>
+        <p>Pass på vinden 🌬️ og se etter spesielle pannekaker! ✨</p>
+        <button class="btn" onclick="startGame()">La oss starte! ✨</button>
+    </div>
+
+    <div id="overlay">
+        <h1 id="status-text">Oi! Det falt! 🌸</h1>
+        <p id="final-score">Du stablet 0 pannekaker!</p>
+        <button class="btn" onclick="resetGame()">Prøv igjen! ✨</button>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <script src="game.js"></script>
+</body>
+</html>

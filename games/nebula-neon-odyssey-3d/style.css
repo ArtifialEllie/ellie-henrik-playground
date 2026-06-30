@@ -1,0 +1,95 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #050010;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    pointer-events: none;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+}
+
+#score-board {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#message {
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    transition: opacity 0.5s ease;
+}
+
+#overlay.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.overlay-content {
+    text-align: center;
+    background: rgba(20, 0, 40, 0.9);
+    padding: 40px;
+    border-radius: 20px;
+    border: 3px solid #ff00ff;
+    box-shadow: 0 0 30px #ff00ff, inset 0 0 20px #00ffff;
+}
+
+.overlay-content h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #00ffff;
+    text-shadow: 0 0 15px #00ffff;
+}
+
+.overlay-content p {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+#restart-btn {
+    padding: 15px 30px;
+    font-size: 20px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    border: none;
+    color: white;
+    border-radius: 50px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 15px #ff00ff;
+}
+
+#restart-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #00ffff;
+}

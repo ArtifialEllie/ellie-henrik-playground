@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starry Sky Sketcher ✨🌌</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ui-container">
+        <div id="toolbar">
+            <div class="tool-group">
+                <button id="brush-star" class="tool-btn active" title="Tegn stjerner">⭐ Stjerne</button>
+                <button id="brush-line" class="tool-btn" title="Koble stjerner">📏 Linje</button>
+                <button id="brush-glow" class="tool-btn" title="Magisk glød">✨ Glød</button>
+            </div>
+            <div class="tool-group">
+                <input type="color" id="color-picker" value="#ffffff">
+                <button id="clear-btn" class="tool-btn" title="Tøm himmelen">🧹 Tøm</button>
+                <button id="save-btn" class="tool-btn" title="Lagre konstellasjon">💾 Lagre</button>
+            </div>
+        </div>
+        <div id="instruction">Tegn dine egne stjernebilder! Klikk for å sette stjerner, og dra for å koble dem. ✨</div>
+    </div>
+
+    <canvas id="skyCanvas"></canvas>
+
+    <div id="magic-overlay"></div>
+
+    <script src="game.js"></script>
+</body>
+</html>

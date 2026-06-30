@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silly Sprinkle Sorcery! ✨🧁</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Sprinkles Cast: <span id="score">0</span></div>
+            <div id="timer-board">Magic Time: <span id="timer">60</span>s</div>
+        </div>
+        
+        <div id="start-screen" class="overlay">
+            <h1>✨ Silly Sprinkle Sorcery! ✨</h1>
+            <p>The world has turned grey! Use your sprinkle magic to bring back the colors!</p>
+            <button id="start-button">Cast Spells! 🪄</button>
+        </div>
+
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>🌈 Magic Complete! 🌈</h1>
+            <p>You've cast <span id="final-score">0</span> colorful spells!</p>
+            <button id="restart-button">More Magic! ✨</button>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

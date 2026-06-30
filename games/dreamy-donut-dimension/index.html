@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreamy Donut Dimension 🍩✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Score: <span id="score">0</span> | Combo: <span id="combo">0</span>x</div>
+            <div id="high-score-board">Best: <span id="high-score">0</span></div>
+            <div id="timer-board">Time: <span id="timer">30</span>s</div>
+        </div>
+        <div id="game-area"></div>
+        <div id="overlay" class="hidden">
+            <div id="modal">
+                <h1>🍩 Dimension Closed! 🍩</h1>
+                <p>You gobbled up <span id="final-score">0</span> dreamy donuts!</p>
+                <button id="restart-btn">Eat More Donuts! ✨</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

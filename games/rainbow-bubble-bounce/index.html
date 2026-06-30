@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Bubble Bounce 🫧🌈</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Height: <span id="height">0</span>m ✨</div>
+            <div id="gem-count">💎 Gems: <span id="gems">0</span></div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="overlay" class="hidden">
+            <div id="game-over-card">
+                <h1>Pop! 🫧</h1>
+                <p>You floated up to <span id="final-height">0</span> meters!</p>
+                <p>And collected <span id="final-gems">0</span> magical gems! 💎</p>
+                <button id="restart-btn" class="magic-btn">Bounce Again! 🌈</button>
+            </div>
+        </div>
+
+        <div id="instructions" class="hidden">
+            <p>Use ⬅️ ➡️ or A/D to move your bubble!</p>
+            <p>Bounce on the rainbow platforms to go higher! ✨</p>
+            <button id="start-btn" class="magic-btn">Let's Float! 🫧</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

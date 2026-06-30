@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Galactic Garden 3D! 🌸✨🌌</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+</head>
+<body>
+    <div id="game-ui">
+        <div>Stjernestøv: <span id="stardust">0</span> ✨</div>
+        <div>Blomster: <span id="flower-count">0</span> 🌸</div>
+        <div>Nivå: <span id="level">1</span> 🌟</div>
+    </div>
+
+    <div id="flower-selector">
+        <div class="selector-item selected" data-type="neon-tulip">
+            <div class="preview neon-tulip"></div>
+            <span>Neon Tulipan</span>
+        </div>
+        <div class="selector-item" data-type="crystal-rose">
+            <div class="preview crystal-rose"></div>
+            <span>Krystallrose</span>
+        </div>
+        <div class="selector-item" data-type="plasma-lily">
+            <div class="preview plasma-lily"></div>
+            <span>Plasmalilje</span>
+        </div>
+        <div class="selector-item" data-type="void-orchid">
+            <div class="preview void-orchid"></div>
+            <span>Tomroms-orkide</span>
+        </div>
+    </div>
+
+    <div id="tutorial">
+        Klikk på den kosmiske øya for å plante magiske blomster! ✨🌸
+    </div>
+
+    <div id="overlay">
+        <h1>Galaktisk Hage! 🌌🌸</h1>
+        <p>Hjelp Ellie med å gjøre universet mer fargerikt!</p>
+        <button class="btn" id="start-btn">Start Hagen! 🚀</button>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

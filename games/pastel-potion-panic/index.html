@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Potion Panic! 🧪✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="highscore">Best: 0 ✨</div>
+            <div id="timer">Time: 60s</div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="overlay" class="hidden">
+            <div id="overlay-content">
+                <h1 id="overlay-title">Potion Panic!</h1>
+                <p id="overlay-text">Catch the colorful bubbles in the matching bottles!</p>
+                <button id="start-button">Start Brewing! ✨</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

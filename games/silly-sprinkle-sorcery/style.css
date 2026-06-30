@@ -1,0 +1,115 @@
+:root {
+    --bg-color: #fdfbfb;
+    --accent-color: #ff85a2;
+    --text-color: #5d5d5d;
+    --panel-bg: rgba(255, 255, 255, 0.8);
+    --font-main: 'Nunito', sans-serif;
+    --font-title: 'Fredoka One', cursive;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    font-family: var(--font-main);
+    color: var(--text-color);
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameCanvas {
+    display: block;
+    cursor: crosshair;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#score-board, #timer-board {
+    background: var(--panel-bg);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-family: var(--font-title);
+    font-size: 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 3px solid var(--accent-color);
+    color: var(--accent-color);
+    transition: transform 0.2s ease;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 20;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.overlay h1 {
+    font-family: var(--font-title);
+    font-size: 48px;
+    color: var(--accent-color);
+    text-shadow: 2px 2px 0px #fff, 4px 4px 0px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.overlay p {
+    font-size: 20px;
+    margin-bottom: 30px;
+    max-width: 600px;
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+button {
+    padding: 15px 40px;
+    font-size: 24px;
+    font-family: var(--font-title);
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 6px 0px #d66d85;
+}
+
+button:hover {
+    transform: scale(1.1);
+    background-color: #ff6b8d;
+}
+
+button:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0px #d66d85;
+}

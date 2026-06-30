@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Magic Memory Palace ✨🏰</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="palace-container">
+        <div id="main-menu" class="overlay-menu">
+            <h1>Magic Memory Palace ✨</h1>
+            
+            <div class="menu-section">
+                <p>Velg modus: ✨</p>
+                <div class="mode-options">
+                    <button class="btn mode-btn" id="mode-classic" onclick="setGameMode('classic')">Klassisk ⏳</button>
+                    <button class="btn mode-btn" id="mode-zen" onclick="setGameMode('zen')">Zen 🌸</button>
+                    <button class="btn mode-btn" id="mode-timed" onclick="setGameMode('timed')">Tidsutfordring ⏱️</button>
+                    <button class="btn mode-btn" id="mode-challenge" onclick="setGameMode('challenge')">Utfordring 🏆</button>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <p>Velg et nivå: ✨</p>
+                <div id="level-grid" class="level-grid"></div>
+            </div>
+
+            <button class="btn start-game-btn" onclick="startGame()">Start Eventyret! 🚀</button>
+
+        <div class="menu-footer">
+                <p>Kan du finne alle parene?</p>
+                <div id="global-best">Oppdag nye verdener! ✨</div>
+            </div>
+        </div>
+
+        <h1 id="game-title">Magic Memory Palace ✨</h1>
+
+        <div class="stats">
+            <span>Level: <span id="level">1</span></span>
+            <span>Trekk: <span id="moves">0</span></span>
+            <span>Par: <span id="matches">0</span>/<span id="total-pairs">0</span></span>
+            <span>Combo: <span id="combo">0</span> ✨</span>
+            <span id="move-limit-container" style="display:none;">Grense: <span id="move-limit">0</span></span>
+            <span id="timer-container">Tid: <span id="timer">0</span>s</span>
+        </div>
+
+        <div class="button-group">
+            <button class="btn" id="peek-btn" onclick="magicPeek()">Magic Peek ✨ (1)</button>
+            <button class="btn" id="hint-btn" onclick="magicHint()">Magic Hint 💡</button>
+            <button class="btn" id="shuffle-btn" onclick="magicShuffle()">Magic Shuffle 🌀</button>
+            <button class="btn" id="freeze-btn" onclick="magicFreeze()">Magic Freeze ❄️</button>
+            <button class="btn" id="pause-btn" onclick="togglePause()">Pause ⏸️</button>
+            <button class="btn" id="warp-btn" onclick="magicTimeWarp()">Time Warp ⏳</button>
+            <button class="btn" id="menu-btn" onclick="showMenu()">Meny 🏠</button>
+            <button class="btn" id="reset-btn" onclick="initGame()">Start på nytt! 🌸</button>
+        </div>
+        <div class="game-container" id="grid"></div>
+    </div>
+
+    <div class="win-message" id="win-message">
+        <h2 id="win-title">Du klarte det! 🌟</h2>
+        <div class="star-rating" id="star-rating">⭐⭐⭐</div>
+        <div id="best-score" style="margin-bottom: 10px; font-weight: bold; color: var(--accent);"></div>
+        <p id="final-stats">Din magiske hukommelse er fantastisk!</p>
+        <button class="btn" id="next-btn" onclick="nextLevel()">Neste Nivå! 🦄</button>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

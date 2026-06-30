@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Roller Dash: Sparkle Edition ✨🌈</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Stars: <span id="score">0</span> | Combo: <span id="combo">1</span>x</div>
+            <div id="message">Roll through the rainbow! ✨</div>
+        </div>
+        <div id="overlay">
+            <h1>Rainbow Roller Dash</h1>
+            <p>Use A/D or Left/Right to steer!</p>
+            <button id="start-button">Start Rolling! 🌈</button>
+        </div>
+        <div id="game-over" style="display: none;">
+            <h1>Oopsie! 🌈💥</h1>
+            <p>You hit a glitter spike!</p>
+            <div id="final-score">Stars Collected: 0</div>
+            <button id="restart-button">Try Again! ✨</button>
+        </div>
+    </div>
+    <!-- Import Three.js from CDN -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+    <script type="module" src="game.js"></script>
+</body>
+</html>

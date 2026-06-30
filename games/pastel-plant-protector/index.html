@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Plant Protector! 🌸</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div style="margin-bottom: 20px; text-align: center;">
+        <h1 style="color: var(--primary-pink); font-size: 2.5rem; margin: 0;">Ellie's Pastel Plant Protector! 🌸</h1>
+        <p style="color: var(--text-color);">Water the flowers, avoid the grumpy weeds! ✨</p>
+    </div>
+
+    <div id="game-container">
+        <div class="ui-panel">
+            <div class="stat-box">Score: <span id="score">0</span></div>
+            <div class="stat-box">High Score: <span id="high-score">0</span></div>
+            <div class="stat-box">Lives: <span id="lives">3</span></div>
+        </div>
+        <div id="combo-box">Combo x1</div>
+
+        <div id="overlay">
+            <div class="title" id="overlay-title">Welcome! 🌷</div>
+            <div class="description" id="overlay-desc">Help Ellie grow a beautiful pastel garden! Click the cute plants to water them, but don't water the grumpy weeds! 💧</div>
+            <button class="btn" id="start-btn">Let's Plant! 🚀</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

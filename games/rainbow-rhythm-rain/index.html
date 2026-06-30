@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Rhythm Rain 🌈🌧️</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="combo">Combo: 0</div>
+            <div id="fever-container">
+                <div id="fever-bar"></div>
+            </div>
+        </div>
+        <div id="rating-display"></div>
+        
+        <div id="game-canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            <div id="target-zone">
+                <div class="lane" data-key="d">D</div>
+                <div class="lane" data-key="f">F</div>
+                <div class="lane" data-key="j">J</div>
+                <div class="lane" data-key="k">K</div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <h1>Rainbow Rhythm Rain</h1>
+            <p>Press D, F, J, K as the colorful raindrops hit the target!</p>
+            <button id="start-button">Start Magic! ✨</button>
+        </div>
+
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>Rainy Finale! 🌈</h1>
+            <p>Your Final Score: <span id="final-score">0</span></p>
+            <button id="restart-button">Play Again! 🔄</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

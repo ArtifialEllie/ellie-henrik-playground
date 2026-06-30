@@ -1,0 +1,178 @@
+:root {
+    --bg-color: #fce4ec;
+    --player-color: #ff80ab;
+    --star-color: #ffd700;
+    --cloud-color: #b0bec5;
+    --text-color: #880e4f;
+    --accent-gold: #ffd700;
+    --pastel-blue: #b2e2f2;
+    --pastel-purple: #d1b3ff;
+    --fever-orange: #ff9800;
+}
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive', sans-serif;
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+}
+#game-ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-shadow: 2px 2px white;
+}
+#combo-ui {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--player-color);
+    z-index: 10;
+    text-shadow: 2px 2px white;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+}
+#combo-ui.show {
+    opacity: 1;
+    transform: scale(1.2);
+}
+canvas {
+    display: block;
+    background: linear-gradient(to bottom, #e1f5fe, #fce4ec);
+    cursor: none;
+}
+#overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 40px;
+    border-radius: 40px;
+    border: 8px solid var(--player-color);
+    text-align: center;
+    z-index: 20;
+    display: none;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    backdrop-filter: blur(8px);
+}
+#start-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(252, 228, 236, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    text-align: center;
+    color: var(--text-color);
+    backdrop-filter: blur(5px);
+}
+
+.start-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.skin-section {
+    margin: 20px 0;
+}
+.skin-selector {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.skin-btn {
+    font-size: 2rem;
+    padding: 10px;
+    background: white;
+    border: 3px solid var(--player-color);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.skin-btn:hover {
+    transform: scale(1.2);
+    background: var(--player-color);
+}
+
+#start-overlay h1 {
+    color: var(--player-color);
+    font-size: 3.5rem;
+    text-shadow: 3px 3px white;
+    margin-bottom: 10px;
+}
+.btn {
+    background-color: var(--player-color);
+    color: white;
+    padding: 15px 40px;
+    border-radius: 50px;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 6px 0 #f06292;
+    font-weight: bold;
+    margin-top: 20px;
+}
+.btn:hover { transform: scale(1.1); background-color: #f06292; }
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #f06292; }
+
+.floating-text {
+    position: absolute;
+    pointer-events: none;
+    font-weight: bold;
+    font-size: 24px;
+    color: var(--player-color);
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 15;
+    text-shadow: 2px 2px white;
+}
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-60px); opacity: 0; }
+}
+.powerup-alert {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+    color: var(--accent-gold);
+    text-shadow: 2px 2px var(--player-color);
+    display: none;
+    z-index: 10;
+    animation: bounce 0.5s infinite alternate;
+}
+.fever-text {
+    color: var(--fever-orange) !important;
+    text-shadow: 2px 2px red !important;
+    font-size: 40px !important;
+}
+@keyframes bounce {
+    from { transform: translateX(-50%) translateY(0); }
+    to { transform: translateX(-50%) translateY(-10px); }
+}

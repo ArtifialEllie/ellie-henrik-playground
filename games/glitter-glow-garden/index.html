@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glitter Glow Garden ✨🌸</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../index.html" class="back-btn">⬅ Tilbake</a>
+    <div id="game-container">
+        <header>
+            <h1>Glitter Glow Garden ✨</h1>
+            <div id="stats">
+                <span>✨ Glitter-støv: <span id="glitter-count">0</span> (<span id="gps">0</span>/s)</span>
+                <span>🌸 Blomster: <span id="flower-count">0</span></span>
+                <span>🌟 Nivå: <span id="level-count">1</span></span>
+            </div>
+        </header>
+        
+        <div id="garden-area">
+            <!-- Flowers will grow here! -->
+        </div>
+
+        <div id="upgrades">
+            <h3>✨ Magiske Oppgraderinger ✨</h3>
+            <div id="upgrade-list">
+                <button id="upgrade-butterfly" class="upgrade-btn">🦋 Glitter-sommerfugl (Kostnad: 50 ✨) [+1/s]</button>
+                <button id="upgrade-can" class="upgrade-btn">🦋 Magisk Vannkanne (Kostnad: 200 ✨) [+5/s]</button>
+                <button id="upgrade-soil" class="upgrade-btn">🌈 Regnbue-jord (Kostnad: 1000 ✨) [+25/s]</button>
+            </div>
+        </div>
+
+        <div id="controls">
+            <button id="plant-btn">Plant Magisk Frø (Kostnad: 10 ✨)</button>
+            <button id="collect-btn">Samle Glitter ✨</button>
+        </div>
+        
+        <div id="message">Velkommen til din magiske hage! ✨</div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

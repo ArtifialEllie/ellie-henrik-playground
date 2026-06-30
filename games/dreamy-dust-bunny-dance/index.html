@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreamy Dust Bunny Dance ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-container">Score: <span id="score">0</span></div>
+            <div id="combo-container">Combo: <span id="combo">0</span></div>
+        </div>
+        <div id="fever-text">FEVER TIME! ✨</div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="start-screen">
+            <h1>Dreamy Dust Bunny Dance</h1>
+            <p>Keep the dust bunnies dancing! ✨</p>
+            <p>Press <b>A, S, K, L</b> when they hit the sparkles!</p>
+            <button id="start-button">Start Dancing! 🌈</button>
+        </div>
+        <div id="game-over-screen" class="hidden">
+            <h1>Dance Party Over! 🎀</h1>
+            <p>Your Final Score: <span id="final-score">0</span></p>
+            <button id="restart-button">Dance Again! ✨</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

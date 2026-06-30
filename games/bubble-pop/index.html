@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Bubble Pop! 🫧✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui">
+    <div>Popp: <span id="score">0</span> 🫧</div>
+    <div>Multiplikator: <span id="multiplier">x1</span> 🚀</div>
+    <div>Tid: <span id="timer">30</span>s ⏰</div>
+        <div>Beste: <span id="highscore">0</span> 🏆</div>
+        <div>✨ <span id="total-gold">0</span></div>
+    </div>
+    <button class="btn" id="pause-btn" onclick="togglePause()" style="position: absolute; top: 10px; right: 10px; z-index: 100; padding: 10px 20px; font-size: 1rem;">Pause ⏸️</button>
+    <div id="pet-ui">
+        <div id="pet-energy-label">Pet Energy 🐱</div>
+        <div id="pet-energy-bar"><div id="pet-energy-fill"></div></div>
+    </div>
+    <div id="boss-ui" style="display: none;">
+        <div style="color: white; font-weight: bold; text-shadow: 2px 2px #000; margin-bottom: 5px;">BOSS: STINKY BEHEMOTH! 💨</div>
+        <div id="boss-health-bar" style="width: 300px; height: 20px; background: #444; border: 3px solid white; border-radius: 10px; overflow: hidden; margin: 0 auto;">
+            <div id="boss-health-fill" style="width: 100%; height: 100%; background: linear-gradient(to right, #ff4444, #ff8888); transition: width 0.3s;"></div>
+        </div>
+    </div>
+    <div id="quest-container">
+        <div id="quest-text">Quest: Pop 5 bubbles! ✨</div>
+        <div id="quest-progress-bar"><div id="quest-progress-fill"></div></div>
+    </div>
+   
+    <div id="start-overlay">
+        <h1>Ellie's Bubble Pop! 🫧✨</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 20px;">Popp bobler for poeng! Pass deg for stink-bobler! 💨</p>
+        <button class="btn" id="start-btn">Start Spill! 🚀</button>
+        <div id="countdown">3</div>
+        <div style="margin-top: 20px; font-size: 1.2rem;"><input type="checkbox" id="zen-mode"> Zen Mode 🌸 (Ingen tidspress!)</div>
+    </div>
+
+    <div id="combo-container">
+        <div id="combo-bar"></div>
+        <div id="combo-text"></div>
+    </div>
+    <div id="frenzy-alert" style="display: none;">BOBBEL-FEST! 🌈</div>
+    <div id="vortex-alert" style="display: none;">VIRVELVIND! 🌪️</div>
+    <div id="party-alert" style="display: none;">PARTY TIME! 🥳</div>
+    <div id="golden-rain-alert" style="display: none;">GOLDEN RAIN! ✨</div>
+    <div id="cupcake-alert" style="display: none;">CUPCAKE RAIN! 🧁</div>
+    <div id="disco-alert" style="display: none;">DISCO PARTY! 💃</div>
+    <div id="slow-mo-alert" style="display: none;">SLOW MOTION! ⏳</div>
+    <div id="wind-alert" style="display: none;">VINDKAST! 🌬️</div>
+    <div id="gravity-flip-alert" style="display: none;">GRAVITY FLIP! 🙃</div>
+    <div id="melody-alert" style="display: none;">MELODY MODE! 🎵✨</div>
+    <div id="cascade-alert" style="display: none;">REGNBUE-KASKADE! 🌈✨</div>
+    <div id="mirror-realm-alert" style="display: none;">SPEIL-RIKET! 🪞✨</div>
+    <div id="bridge-alert" style="display: none;">RAINBOW BRIDGE! 🌈✨</div>
+    <div id="ribbon-alert" style="display: none;">RAINBOW RIBBON! 🎀✨</div>
+    <div id="giggle-alert" style="display: none;">GIGGLE STORM! 🤭✨</div>
+    <div id="mega-pop-alert" style="display: none;">SUPER-DUPER MEGA-POP! 💥✨</div>
+    <div id="rain-cloud-alert" style="display: none;">MAGIC RAIN! ☁️✨</div>
+    <div id="celestial-sparkle-alert" style="display: none;">CELESTIAL SPARKLE! ⭐✨</div>
+    <div id="cosmic-bloom-alert" style="display: none;">COSMIC BLOOM! 🌸✨</div>
+    <div id="starfall-alert" style="display: none;">STARFALL! ⭐✨</div>
+    <div id="glitter-storm-alert" style="display: none;">GLITTER STORM! ✨🌈</div>
+    <div id="glitter-gala-alert" style="display: none;">GLITTER GALA! ✨💎</div>
+    <div id="overlay">
+        <h1 id="status-text">Tid er ute! 🌸</h1>
+        <p id="final-score" style="font-size: 1.5rem; margin-bottom: 30px;">Du poppet 0 bobler!</p>
+        <button class="btn" onclick="resetGame()">Spill igjen! ✨</button>
+        <button class="btn" onclick="openShop()" style="margin-top: 10px; background-color: var(--primary-purple); box-shadow: 0 6px 0 #9b7bc4;">Ellie's Boutique 🎀</button>
+    </div>
+    
+    <div id="shop-overlay">
+        <div class="shop-header">Ellie's Boutique 🎀</div>
+        <div style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">Bubble Skins ✨</div>
+        <div class="shop-grid" id="shop-grid"></div>
+        <div style="font-size: 1.2rem; margin: 20px 0 10px 0; font-weight: bold;">Pet Accessories 🐱</div>
+        <div class="shop-grid" id="accessory-grid"></div>
+        <button class="btn" onclick="closeShop()" style="margin-top: 20px;">Back to Bubbles! ✨</button>
+    </div>
+    <div id="daily-reward-overlay" style="display: none;">
+        <div class="shop-header">Daily Gift! 🎁</div>
+        <p id="daily-reward-text" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
+        <div id="daily-reward-amount" style="font-size: 2rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 20px;"></div>
+        <button class="btn" id="claim-reward-btn">Claim Gift! ✨</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <script src="js/constants.js"></script>
+    <script src="missing_functions.js"></script>
+    <script src="melody_mode.js"></script>
+    <script src="giggle_storm.js"></script>
+    <script src="gravity_flip.js"></script>
+    <script src="glitter_storm.js"></script>
+    <script src="cosmic_bloom.js"></script>
+    <script src="boss_logic.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

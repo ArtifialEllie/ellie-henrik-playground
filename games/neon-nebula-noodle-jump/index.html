@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Nebula Noodle Jump! ✨🍜</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="highscore">Best: 0</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <div id="start-screen">
+                <h1>Neon Nebula<br>Noodle Jump! ✨🍜</h1>
+                <p>Jump as high as you can!</p>
+                <p class="controls">Use <b>Left/Right Arrows</b> or <b>A/D</b> to move</p>
+                <button id="start-btn">Start Jumping! 🚀</button>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h1>Ouch! 🌈</h1>
+                <p>The noodle slipped!</p>
+                <div id="final-score">Score: 0</div>
+                <button id="restart-btn">Try Again! ✨</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

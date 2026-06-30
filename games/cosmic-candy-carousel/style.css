@@ -1,0 +1,143 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #2d1b4e 0%, #1a0b2e 100%);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    color: white;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#score-board {
+    font-size: 24px;
+    text-shadow: 0 0 10px #ff69b4;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 2px solid #ff69b4;
+    pointer-events: auto;
+}
+
+#combo-display {
+    font-size: 32px;
+    font-weight: bold;
+    color: #ffeb3b;
+    text-shadow: 0 0 10px #ff9800, 0 0 20px #ff5722;
+    animation: pulse 0.5s infinite alternate;
+    text-align: center;
+    pointer-events: none;
+}
+
+.hidden { display: none; }
+
+#message-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 105, 180, 0.9);
+    padding: 30px 50px;
+    border-radius: 30px;
+    text-align: center;
+    box-shadow: 0 0 30px #ff69b4, 0 0 60px #ff00ff;
+    pointer-events: auto;
+    transition: opacity 0.3s, visibility 0.3s;
+    border: 5px solid white;
+}
+
+#message-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#overlay-title {
+    font-size: 42px;
+    margin-bottom: 10px;
+    color: white;
+    text-shadow: 3px 3px 0px #ff1493;
+}
+
+#overlay-text {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+#start-button {
+    font-family: inherit;
+    font-size: 24px;
+    padding: 12px 30px;
+    background: white;
+    color: #ff69b4;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+#start-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px white;
+}
+
+#power-up-bar {
+    width: 200px;
+    height: 25px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid white;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+#power-up-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    transition: width 0.3s;
+}
+
+#power-up-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 1px 1px 2px black;
+}
+
+canvas {
+    display: block;
+}
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); }
+}

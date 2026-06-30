@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastel Prism Painter ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>Pastel Prism Painter ✨</h1>
+            <p>Paint your dreams with rainbow sparkles!</p>
+        </header>
+        
+        <div id="canvas-wrapper">
+            <canvas id="paintCanvas"></canvas>
+            <canvas id="sparkleCanvas"></canvas>
+        </div>
+
+        <div id="controls">
+            <div class="tools-group">
+                <button class="tool-btn active" data-tool="brush" title="Magic Brush">🖌️</button>
+                <button class="tool-btn" data-tool="eraser" title="Magic Eraser">🧹</button>
+                <button class="tool-btn" data-tool="star" title="Star Stamp">⭐</button>
+                <button class="tool-btn" data-tool="heart" title="Heart Stamp">❤️</button>
+                <button class="tool-btn" data-tool="cloud" title="Cloud Stamp">☁️</button>
+            </div>
+            <div class="control-group">
+                <label for="brushSize">Size: <span id="sizeVal">10</span></label>
+                <input type="range" id="brushSize" min="1" max="100" value="10">
+            </div>
+            <div class="action-group">
+                <button id="clearBtn">Clear 🌈</button>
+                <button id="saveBtn">Save 🖼️</button>
+            </div>
+        </div>
+        
+        <div id="status-bar">
+            Color: <span id="currentColor">✨ Rainbow ✨</span>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

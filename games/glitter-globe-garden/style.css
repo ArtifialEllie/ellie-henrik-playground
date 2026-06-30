@@ -1,0 +1,319 @@
+:root {
+    --pink-light: #ffdde1;
+    --pink-dark: #ee9ca7;
+    --purple-light: #e0c3fc;
+    --purple-dark: #8e44ad;
+    --gold: #ffd700;
+    --white: #ffffff;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    font-family: 'Quicksand', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, #fff5f8 0%, #ffe4e1 100%);
+}
+
+#ui-layer {
+    position: absolute;
+    top: 20px;
+    display: flex;
+    gap: 20px;
+    z-index: 10;
+}
+
+.stat-box {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: var(--purple-dark);
+    box-shadow: 0 4px 10px var(--shadow);
+    border: 3px solid var(--pink-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s;
+}
+
+.stat-box:hover {
+    transform: scale(1.05);
+}
+
+#globe-container {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#glitter-globe {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border: 8px solid #fff;
+    box-shadow: 
+        0 0 40px rgba(255, 182, 193, 0.5),
+        inset 0 0 50px rgba(255, 255, 255, 0.8),
+        inset 0 0 20px rgba(238, 156, 167, 0.3);
+    backdrop-filter: blur(5px);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#glitter-globe:active {
+    transform: scale(0.95) rotate(5deg);
+}
+
+.globe-reflection {
+    position: absolute;
+    top: 10%;
+    left: 15%;
+    width: 100px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    transform: rotate(-30deg);
+    pointer-events: none;
+    z-index: 5;
+}
+
+#garden-plot {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to top, #a8e063, #56ab2f);
+    border-radius: 0 0 200px 200px;
+    z-index: 1;
+}
+
+#butterfly-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+#controls {
+    position: absolute;
+    bottom: 40px;
+    display: flex;
+    gap: 20px;
+    z-index: 10;
+}
+
+.magic-btn {
+    padding: 15px 30px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    background: linear-gradient(45deg, var(--pink-dark), var(--purple-light));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(238, 156, 167, 0.4);
+    transition: all 0.3s ease;
+}
+
+.magic-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(238, 156, 167, 0.6);
+}
+
+.magic-btn:active {
+    transform: translateY(0);
+}
+
+/* Glitter and Flowers */
+.flower {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    z-index: 2;
+    animation: bloom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 1s ease-out;
+}
+
+.flower.grown {
+    transform: scale(1.5);
+}
+
+.petal {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-radius: 50% 50% 0 50%;
+    transform-origin: bottom right;
+}
+
+.flower-center {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: yellow;
+    border-radius: 50%;
+    z-index: 3;
+    box-shadow: 0 0 5px orange;
+}
+
+.rainbow-flower .flower-center {
+    background: white;
+    box-shadow: 0 0 15px white;
+    animation: rainbow-pulse 1s infinite alternate;
+}
+
+@keyframes rainbow-pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.3); }
+}
+
+.golden-flower .petal {
+    background: var(--gold) !important;
+    box-shadow: 0 0 10px var(--gold);
+}
+
+.golden-flower .flower-center {
+    background: white;
+    box-shadow: 0 0 10px white;
+}
+
+@keyframes bloom {
+    0% { transform: scale(0) rotate(0deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.sparkle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    z-index: 3;
+    pointer-events: none;
+    animation: sparkle-float 2s linear infinite;
+    box-shadow: 0 0 10px var(--gold);
+}
+
+.magic-dust {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 100;
+    animation: dust-fade 1s ease-out forwards;
+}
+
+@keyframes dust-fade {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0) translateY(-20px); opacity: 0; }
+}
+
+@keyframes sparkle-float {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-100px) scale(0); opacity: 0; }
+}
+
+.butterfly {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.butterfly-wing {
+    position: absolute;
+    width: 8px;
+    height: 10px;
+    background: #ff69b4;
+    border-radius: 50% 50% 20% 20%;
+    animation: flap 0.2s ease-in-out infinite alternate;
+}
+
+.butterfly-wing.right {
+    right: 0;
+    transform-origin: left center;
+}
+
+.butterfly-wing.left {
+    left: 0;
+    transform-origin: right center;
+}
+
+@keyframes flap {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(70deg); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+#game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.overlay-content {
+    background: white;
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: 5px solid var(--pink-dark);
+}
+
+.overlay-content h1 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--purple-dark);
+    margin-bottom: 20px;
+}
+
+.overlay-content p {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 10px;
+}

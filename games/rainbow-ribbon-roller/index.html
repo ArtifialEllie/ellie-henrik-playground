@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Ribbon Roller ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Stars: 0</div>
+            <div id="distance">Distance: 0m</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <h1>Rainbow Ribbon Roller</h1>
+            <p>Roll through the magical rainbow ribbon!</p>
+            <p>Use <b>Left/Right Arrows</b> or <b>A/D</b> to steer</p>
+            <button id="start-btn">Start Rolling! 🌈</button>
+        </div>
+        <div id="game-over">
+            <h1>Oopsie! 🍭</h1>
+            <p>You tumbled off the rainbow!</p>
+            <p id="final-score">Stars Collected: 0</p>
+            <button id="restart-btn">Try Again! ✨</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

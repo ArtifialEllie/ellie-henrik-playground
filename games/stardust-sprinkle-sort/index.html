@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardust Sprinkle Sort ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <h1>Stardust Sprinkle Sort</h1>
+            <p>Sort the magic sprinkles by color! ✨</p>
+            <div id="score-board">Score: <span id="score">0</span></div>
+            <div id="timer">Time: <span id="time">60</span>s</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <div id="overlay-content">
+                <h2 id="overlay-title">Ready to Sort?</h2>
+                <p id="overlay-text">Drag the sprinkles into the matching magic jars!</p>
+                <button id="start-button">Start Magic! 🌈</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

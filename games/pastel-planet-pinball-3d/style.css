@@ -1,0 +1,36 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: radial-gradient(circle, #ffeef8, #e0c3fc);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+    color: #ff69b4;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+    z-index: 10;
+}
+
+#score-container {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+#instructions {
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.5);
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+    margin-top: 10px;
+}
+
+canvas {
+    display: block;
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Magic Prism World ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ui">
+        <h1>✨ Magic Prism World ✨</h1>
+        <p>Beveg musen for å utforske, og klikk på prismene for magiske gnister! 🌈</p>
+        <div id="score-container">
+            <span id="ellie-emoji">✨🎀</span> Magiske gnister: <span id="score">0</span> | Best: <span id="high-score">0</span>
+        </div>
+        <div id="companion-stats" style="font-size: 1rem; color: #ff69b4; margin-top: 5px; font-weight: bold;">
+            Ellie's helper: Lv.<span id="companion-level">1</span> (<span id="companion-xp">0</span>/100 XP) ✨
+        </div>
+        <div id="companion-status" style="font-size: 1.1rem; color: #ff69b4; margin-top: 5px; font-style: italic;">Ellie's helper is feeling: Happy! ✨</div>
+        <div id="companion-bubble" style="display: none; position: absolute; background: white; color: #ff69b4; padding: 5px 10px; border-radius: 15px; font-weight: bold; pointer-events: none; z-index: 1000; box-shadow: 0 0 10px #ff69b4; font-family: 'Comic Sans MS', cursive;">Hi! ✨</div>
+        <div id="combo-container" style="display: none;">Combo x<span id="combo">1</span>! 🌟</div>
+        <div id="wind-container" style="display: none; font-size: 1.2rem; color: #00ffff; margin-top: 10px; font-weight: bold; text-shadow: 0 0 5px #00ffff;">💨 Cosmic Wind blowing! 🌪️</div>
+        <div id="constellation-container" style="display: none; font-size: 1.2rem; color: #ffccff; margin-top: 10px; font-weight: bold; text-shadow: 0 0 5px #ff00ff;">✨ Stellar Constellation Formed! 🌟</div>
+        <div id="energy-container">
+            <div id="energy-bar"><div id="energy-fill"></div></div>
+            <span id="energy-text">Magi: 0%</span>
+        </div>
+        <button id="burst-button" style="display: none;">✨ MAGIC BURST! ✨</button>
+        <button id="sound-toggle" style="margin-top: 10px; pointer-events: auto; cursor: pointer; background: rgba(255,255,255,0.2); color: white; border: 1px solid white; border-radius: 10px; padding: 5px 10px;">🔊 Sound: On</button>
+    </div>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="game.js"></script>
+</body>
+</html>

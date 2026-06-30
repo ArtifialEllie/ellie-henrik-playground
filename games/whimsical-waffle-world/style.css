@@ -1,0 +1,107 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #fff9c4 0%, #ffeb3b 100%);
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'cursive';
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #5d4037;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    max-width: 800px;
+    max-height: 600px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.1);
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#score-board, #timer {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    border: 3px solid #ffb300;
+    color: #795548;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+#start-screen, #game-over-screen {
+    background: white;
+    padding: 40px;
+    border-radius: 30px;
+    border: 8px solid #ffcc80;
+    box-shadow: 0 10px 0 #ef6c00;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #e65100;
+    text-shadow: 2px 2px 0px #ffcc80;
+}
+
+p {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 24px;
+    cursor: pointer;
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 5px 0 #e65100;
+    transition: transform 0.1s, box-shadow 0.1s;
+    font-family: inherit;
+}
+
+button:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #e65100;
+}
+
+.hidden {
+    display: none !important;
+}
+
+canvas {
+    display: block;
+}

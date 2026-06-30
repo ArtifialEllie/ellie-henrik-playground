@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whimsical Watermelon Waltz 🍉✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="combo">Combo: x1</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="start-screen" class="overlay">
+            <h1>Whimsical Watermelon Waltz 🍉</h1>
+            <p>Catch the watermelon slices to the rhythm!</p>
+            <button id="start-button">Start Dancing!</button>
+        </div>
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>Waltz Over! 🍉</h1>
+            <p id="final-score">Your score: 0</p>
+            <button id="restart-button">Dance Again!</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

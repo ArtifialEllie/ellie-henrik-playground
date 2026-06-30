@@ -1,0 +1,109 @@
+:root {
+    --primary-pink: #ff85a2;
+    --primary-purple: #a285ff;
+    --primary-blue: #85d7ff;
+    --bg-dark: #0f0c29;
+    --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    --text-color: #ffffff;
+    --accent-gold: #ffd700;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-dark);
+    font-family: 'Quicksand', sans-serif;
+    color: var(--text-color);
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--bg-gradient);
+}
+
+#gameCanvas {
+    display: block;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    cursor: none;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#score-board {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 28px;
+    color: var(--accent-gold);
+    text-shadow: 0 0 10px var(--primary-purple);
+    pointer-events: auto;
+}
+
+#message-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(20, 20, 50, 0.85);
+    padding: 40px;
+    border-radius: 30px;
+    border: 4px solid var(--primary-pink);
+    text-align: center;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+#message-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#status-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 48px;
+    margin-bottom: 10px;
+    background: linear-gradient(to right, var(--primary-pink), var(--primary-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#status-text {
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+
+#restart-btn {
+    padding: 15px 30px;
+    font-size: 22px;
+    font-family: 'Fredoka One', cursive;
+    background: var(--primary-pink);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 5px 15px rgba(255, 133, 162, 0.4);
+}
+
+#restart-btn:hover {
+    transform: scale(1.1);
+    background: #ff5e84;
+}

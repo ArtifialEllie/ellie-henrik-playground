@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Pet Party! 🐾</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="../index.html" class="back-btn">⬅ Tilbake</a>
+
+    <div class="header">
+        <h1>Ellie's Pastel Pet Party! 🐾</h1>
+        <div class="score-board">Treats: <span id="score">0</span> | Time: <span id="timer">30</span>s</div>
+    </div>
+
+    <div class="game-container" id="game-container">
+        <div class="hole"><div class="pet">🐶</div></div>
+        <div class="hole"><div class="pet">🐱</div></div>
+        <div class="hole"><div class="pet">🐰</div></div>
+        <div class="hole"><div class="pet">🐹</div></div>
+        <div class="hole"><div class="pet">🦊</div></div>
+        <div class="hole"><div class="pet">🐼</div></div>
+        <div class="hole"><div class="pet">🐨</div></div>
+        <div class="hole"><div class="pet">🐯</div></div>
+        <div class="hole"><div class="pet">🦁</div></div>
+    </div>
+
+    <button class="btn" id="start-btn">Start Party! ✨</button>
+
+    <div class="overlay" id="overlay">
+        <h2>Party Over! 🎊</h2>
+        <p style="font-size: 1.5rem;">You gave <span id="final-score">0</span> treats to the cute pets!</p>
+        <button class="btn" onclick="location.reload()">Play Again! 🌸</button>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

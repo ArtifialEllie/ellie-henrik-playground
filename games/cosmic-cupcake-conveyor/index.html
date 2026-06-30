@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Cupcake Conveyor 🧁🚀</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Score: <span id="score">0</span></div>
+            <div id="timer-board">Time: <span id="timer">60</span>s</div>
+        </div>
+
+        <div id="game-world">
+            <div id="conveyor-belt"></div>
+            
+            <div id="portals">
+                <div class="portal" data-color="pink" style="--portal-color: #ff69b4;">
+                    <div class="portal-glow"></div>
+                    <span class="portal-label">Pink</span>
+                </div>
+                <div class="portal" data-color="blue" style="--portal-color: #00bfff;">
+                    <div class="portal-glow"></div>
+                    <span class="portal-label">Blue</span>
+                </div>
+                <div class="portal" data-color="yellow" style="--portal-color: #ffff00;">
+                    <div class="portal-glow"></div>
+                    <span class="portal-label">Yellow</span>
+                </div>
+                <div class="portal" data-color="green" style="--portal-color: #7cfc00;">
+                    <div class="portal-glow"></div>
+                    <span class="portal-label">Green</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="overlay">
+            <div id="start-screen">
+                <h1>Cosmic Cupcake Conveyor</h1>
+                <p>Sort the cupcakes into the matching portals!</p>
+                <p>Drag and drop the frosting color to the right portal! ✨</p>
+                <button id="start-btn">Start Magic! 🌈</button>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h1>Time's Up! 🧁</h1>
+                <p>You sorted <span id="final-score">0</span> cosmic cupcakes!</p>
+                <button id="restart-btn">Play Again! ✨</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

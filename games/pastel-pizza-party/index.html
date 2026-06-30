@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Pastel Pizza Party! 🍕✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="ui">
+            <div class="stat-box">Score: <span id="score">0</span></div>
+            <div id="request-box">Loading... 🍕</div>
+            <div class="stat-box">Time: <span id="timer">60</span>s</div>
+        </div>
+
+        <div id="combo-counter">Combo x0</div>
+
+        <div id="pizza-area">
+            <div class="pizza-base"></div>
+            <div class="pizza-cheese"></div>
+            <div id="toppings-layer"></div>
+        </div>
+
+        <div id="start-screen">
+            <h1>Ellie's Pastel Pizza Party! 🍕✨</h1>
+            <p style="font-size: 1.5rem; max-width: 600px; margin-bottom: 30px;">
+                Welcome to the most whimsical pizzeria! 🌸<br>
+                Click the ingredients that match the request to top your pizza!<br>
+                Fill the pizza to serve it and get bonus points! ✨
+            </p>
+            <button class="btn" onclick="startGame()">Let's Cook! 👩‍🍳</button>
+        </div>
+
+        <div id="end-screen" class="hidden">
+            <h1>Party's Over! 🥳</h1>
+            <p style="font-size: 2rem; margin-bottom: 20px;">You made <span id="final-score">0</span> magical slices!</p>
+            <button class="btn" onclick="location.reload()">Play Again! 🔄</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

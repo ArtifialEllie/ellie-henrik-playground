@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Neon Night Ride 🌌🏎️</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Distance: <span id="distance">0</span>ly | Shards: <span id="shards">0</span> ✨</div>
+            <div id="energy-bar-container">
+                <div id="energy-bar"></div>
+            </div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay" class="hidden">
+            <div id="modal">
+                <h1>✨ Neon Crash! ✨</h1>
+                <p>You rode through the nebula for <span id="final-distance">0</span> light-years!</p>
+                <p>You collected <span id="final-shards">0</span> star-shards!</p>
+                <button id="restart-btn">Ride Again! 🌈</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

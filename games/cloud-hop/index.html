@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellie's Dreamy Cloud Hop ☁️✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">0</div>
+            <div id="highscore">Beste: 0 🏆</div>
+            <div id="gold-display">✨ 0</div>
+            <div id="wind-indicator">💨 Wind: None</div>
+            <div id="combo-ui">Combo x1 ✨</div>
+        </div>
+        
+        <div id="perfect-flash" class="perfect-flash"></div>
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="overlay">
+            <h1 id="overlay-title">Dreamy Cloud Hop ☁️</h1>
+            <p id="overlay-text">Hopp så høyt du kan! ✨</p>
+            <button class="btn" id="start-btn">Start Hopping! 🐾</button>
+            <button class="btn" id="shop-btn" style="margin-top: 10px; background-color: var(--primary-purple); box-shadow: 0 6px 0 #9b7bc4;">Skin Shop! 🎀</button>
+            <div class="controls-hint">Bruk Pilene eller A/D for å bevege deg!</div>
+        </div>
+
+        <div id="shop-overlay" class="hidden">
+            <div class="shop-header">Ellie's Boutique 🎀</div>
+            <div class="shop-grid" id="shop-grid"></div>
+            <button class="btn" id="close-shop-btn">Back to Game! ✨</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

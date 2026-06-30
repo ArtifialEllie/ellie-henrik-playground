@@ -1,0 +1,608 @@
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const timerElement = document.getElementById('timer');
+const highscoreElement = document.getElementById('highscore');
+const comboElement = document.getElementById('combo');
+const startOverlay = document.getElementById('start-overlay');
+const startBtn = document.getElementById('start-btn');
+const overlay = document.getElementById('overlay');
+const finalScoreElement = document.getElementById('final-score');
+
+let score = 0;
+let highscore = localStorage.getItem('candyCloudHighscore') || 0;
+let timeLeft = 60;
+let gameActive = false;
+let gameInterval;
+let timerInterval;
+
+let combo = 1;
+let comboTimer = null;
+
+let feverMode = false;
+let feverTimer = null;
+
+let magnetActive = false;
+let magnetTimer = null;
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(freq, type, vol, duration = 0.1) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+function playPopSound(type = 'candy') {
+    if (type === 'candy') playSound(400 + Math.random() * 200, 'sine', 0.1);
+    else if (type === 'golden') {
+        playSound(600, 'sine', 0.2);
+        setTimeout(() => playSound(800, 'sine', 0.2), 100);
+    } else if (type === 'rainbow') {
+        playSound(500, 'triangle', 0.2);
+        playSound(700, 'triangle', 0.2);
+        playSound(900, 'triangle', 0.2);
+    } else if (type === 'lemon') {
+        playSound(150, 'sawtooth', 0.2);
+    } else {
+        playSound(300, 'sine', 0.1);
+    }
+}
+
+highscoreElement.textContent = highscore;
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+class BackgroundCloud {
+    constructor() {
+        this.reset();
+        this.y = Math.random() * canvas.height;
+    }
+
+    reset() {
+        this.x = -200 - Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.speed = 0.5 + Math.random() * 1;
+        this.scale = 0.5 + Math.random() * 1;
+        this.opacity = 0.3 + Math.random() * 0.4;
+    }
+
+    update() {
+        this.x += this.speed;
+        if (this.x > canvas.width + 200) {
+            this.reset();
+            this.x = -200;
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = 'white';
+        ctx.translate(this.x, this.y);
+        ctx.scale(this.scale, this.scale);
+        
+        ctx.beginPath();
+        ctx.arc(30, 30, 30, 0, Math.PI * 2);
+        ctx.arc(60, 20, 35, 0, Math.PI * 2);
+        ctx.arc(90, 30, 30, 0, Math.PI * 2);
+        ctx.arc(60, 40, 30, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+    }
+}
+
+class Player {
+    constructor() {
+        this.width = 120;
+        this.height = 60;
+        this.x = canvas.width / 2 - this.width / 2;
+        this.y = canvas.height - 100;
+        this.baseWidth = 120;
+        this.color = '#ffffff';
+        this.bob = 0;
+    }
+
+    draw() {
+        // Draw magnet aura
+        if (magnetActive) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            const auraSize = 120 + Math.sin(Date.now() / 150) * 20;
+            ctx.arc(this.x + this.width / 2, this.y + 30, auraSize, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        this.bob = Math.sin(Date.now() / 200) * 8;
+        const drawY = this.y + this.bob;
+
+        if (feverMode) {
+            this.color = `hsl(${Date.now() / 10 % 360}, 80%, 80%)`;
+            this.width = this.baseWidth * 1.5;
+        } else {
+            this.color = '#ffffff';
+            this.width = this.baseWidth;
+        }
+
+        // Draw a fluffy cloud
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x + 30, drawY + 30, 30, 0, Math.PI * 2);
+        ctx.arc(this.x + 60, drawY + 20, 35, 0, Math.PI * 2);
+        ctx.arc(this.x + 90, drawY + 30, 30, 0, Math.PI * 2);
+        ctx.arc(this.x + 60, drawY + 40, 30, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Add some highlights to the cloud
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.beginPath();
+        ctx.arc(this.x + 50, drawY + 20, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Add a little smiley face to the cloud
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(this.x + 50, drawY + 25, 3, 0, Math.PI * 2);
+        ctx.arc(this.x + 70, drawY + 25, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(this.x + 60, drawY + 35, 5, 0, Math.PI, false);
+        ctx.stroke();
+    }
+
+    update(mouseX) {
+        this.x = mouseX - this.width / 2;
+        // Keep in bounds
+        if (this.x < 0) this.x = 0;
+        if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+    }
+}
+
+class Particle {
+    constructor(x, y, color, isRing = false) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.isRing = isRing;
+        this.size = isRing ? 10 : Math.random() * 5 + 2;
+        this.speedX = isRing ? 0 : (Math.random() - 0.5) * 10;
+        this.speedY = isRing ? 0 : (Math.random() - 0.5) * 10;
+        this.life = 1.0;
+        this.decay = isRing ? 0.05 : Math.random() * 0.02 + 0.02;
+    }
+
+    update() {
+        if (this.isRing) {
+            this.size += 2;
+        } else {
+            this.x += this.speedX;
+            this.y += this.speedY;
+        }
+        this.life -= this.decay;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        if (this.isRing) {
+            ctx.strokeStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.stroke();
+        } else {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+class TrailCloud {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = 20 + Math.random() * 20;
+        this.color = `hsl(${Math.random() * 360}, 80%, 90%)`;
+        this.life = 1.0;
+    }
+
+    update() {
+        this.life -= 0.05;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+class FloatingText {
+    constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 1.0;
+        this.velocity = -2;
+    }
+
+    update() {
+        this.y += this.velocity;
+        this.life -= 0.02;
+    }
+
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold 24px cursive';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+class FallingItem {
+    constructor() {
+        this.radius = 15 + Math.random() * 10;
+        this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+        this.y = -this.radius;
+        
+        // Speed increases slightly as score goes up
+        const difficultyMultiplier = 1 + (score / 50);
+        this.speed = (3 + Math.random() * 4) * difficultyMultiplier;
+        
+        const rand = Math.random();
+        if (rand > 0.99) {
+            this.type = 'star';
+            this.color = '#fde047';
+            this.emoji = '⭐';
+        } else if (rand > 0.98) {
+            this.type = 'ticket';
+            this.color = '#fbbf24';
+            this.emoji = '🎟️';
+        } else if (rand > 0.97) {
+            this.type = 'surprise';
+            this.color = '#ff69b4';
+            this.emoji = '🎁';
+        } else if (rand > 0.96) {
+            this.type = 'clock';
+            this.color = '#4ade80';
+            this.emoji = '⏰';
+        } else if (rand > 0.95) {
+            this.type = 'rainbow';
+            this.color = '#ff00ff';
+            this.emoji = '🌈';
+        } else if (rand > 0.9) {
+            this.type = 'golden';
+            this.color = '#ffd700';
+            this.emoji = '🌟';
+        } else if (rand > 0.85) {
+            this.type = 'magnet';
+            this.color = '#3b82f6';
+            this.emoji = '🧲';
+        } else if (rand > 0.80) {
+            this.type = 'crystal';
+            this.color = '#a855f7';
+            this.emoji = '💎';
+        } else if (rand > 0.2) {
+            this.type = 'candy';
+            this.color = `hsl(${Math.random() * 360}, 80%, 70%)`;
+            this.emoji = '🍬';
+        } else {
+            this.type = 'lemon';
+            this.color = '#fef08a';
+            this.emoji = '🍋';
+        }
+    }
+
+    draw() {
+        ctx.font = `${this.radius * 2}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.emoji, this.x, this.y);
+    }
+
+    update() {
+        this.y += this.speed;
+    }
+}
+
+const player = new Player();
+const items = [];
+const particles = [];
+const trail = [];
+const floatingTexts = [];
+const bgClouds = Array.from({ length: 8 }, () => new BackgroundCloud());
+
+function createParticles(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+    particles.push(new Particle(x, y, color, true));
+}
+
+function updateTrail() {
+    trail.push(new TrailCloud(player.x + player.width / 2, player.y + player.height / 2));
+    if (trail.length > 20) trail.shift();
+    for (let i = trail.length - 1; i >= 0; i--) {
+        trail[i].update();
+        if (trail[i].life <= 0) trail.splice(i, 1);
+    }
+}
+
+function createFloatingText(x, y, text, color) {
+    floatingTexts.push(new FloatingText(x, y, text, color));
+}
+
+function spawnItem() {
+    if (!gameActive) return;
+    items.push(new FallingItem());
+}
+
+function update() {
+    if (!gameActive) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw background clouds
+    bgClouds.forEach(cloud => {
+        cloud.update();
+        cloud.draw();
+    });
+
+    updateTrail();
+    trail.forEach(t => t.draw());
+
+    player.update(mouseX);
+    player.draw();
+
+    // Update and draw particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw();
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    // Update and draw floating texts
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.update();
+        ft.draw();
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
+    }
+
+    for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        
+        if (magnetActive) {
+            const dx = (player.x + player.width / 2) - item.x;
+            const dy = (player.y + player.height / 2) - item.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 300 && item.type !== 'lemon') {
+                item.x += dx * 0.1;
+                item.y += dy * 0.1;
+            }
+        }
+
+        item.update();
+        item.draw();
+
+        // Collision detection
+        if (
+            item.y + item.radius > player.y &&
+            item.y - item.radius < player.y + player.height &&
+            item.x > player.x &&
+            item.x < player.x + player.width
+        ) {
+            if (item.type === 'candy') {
+                const points = 1 * combo;
+                score += points;
+                updateCombo();
+                createParticles(item.x, item.y, item.color);
+                createFloatingText(item.x, item.y, `+${points}`, item.color);
+                playPopSound('candy');
+            } else if (item.type === 'golden') {
+                const points = 5 * combo;
+                score += points;
+                updateCombo();
+                createParticles(item.x, item.y, '#ffd700', 20);
+                createFloatingText(item.x, item.y, `+${points}`, '#ffd700');
+                playPopSound('golden');
+            } else if (item.type === 'rainbow') {
+                const points = 10 * combo;
+                score += points;
+                updateCombo();
+                createParticles(item.x, item.y, '#ff00ff', 30);
+                createFloatingText(item.x, item.y, `🌈 ${points} RUSH!`, '#ff00ff');
+                activateFeverMode();
+                playPopSound('rainbow');
+            } else if (item.type === 'star') {
+                const points = 25 * combo;
+                score += points;
+                updateCombo();
+                createParticles(item.x, item.y, '#fde047', 40);
+                createFloatingText(item.x, item.y, `⭐ SUPER STAR! +${points}`, '#fde047');
+                playPopSound('star');
+            } else if (item.type === 'surprise') {
+                const effects = ['points', 'time', 'magnet'];
+                const effect = effects[Math.floor(Math.random() * effects.length)];
+                if (effect === 'points') {
+                    const points = 50 * combo;
+                    score += points;
+                    createFloatingText(item.x, item.y, `🎁 SURPRISE! +${points}`, '#ff69b4');
+                } else if (effect === 'time') {
+                    timeLeft += 10;
+                    createFloatingText(item.x, item.y, `🎁 SURPRISE! +10s`, '#ff69b4');
+                } else {
+                    activateMagnet();
+                    createFloatingText(item.x, item.y, `🎁 SURPRISE! MAGNET!`, '#ff69b4');
+                }
+                createParticles(item.x, item.y, '#ff69b4', 30);
+                playPopSound('surprise');
+            } else if (item.type === 'clock') {
+                timeLeft += 5;
+                createParticles(item.x, item.y, '#4ade80', 20);
+                createFloatingText(item.x, item.y, `⏰ +5s`, '#4ade80');
+                playPopSound('clock');
+            } else if (item.type === 'crystal') {
+                const points = 15 * combo;
+                score += points;
+                updateCombo();
+                createParticles(item.x, item.y, '#a855f7', 25);
+                createFloatingText(item.x, item.y, `💎 CRYSTAL! +${points}`, '#a855f7');
+                playPopSound('crystal');
+            } else if (item.type === 'ticket') {
+                combo++;
+                score += 50;
+                createParticles(item.x, item.y, '#fbbf24', 40);
+                createFloatingText(item.x, item.y, '🎟️ GOLDEN TICKET!', '#fbbf24');
+                playPopSound('ticket');
+            } else if (item.type === 'magnet') {
+                activateMagnet();
+                createParticles(item.x, item.y, '#3b82f6', 30);
+                createFloatingText(item.x, item.y, '🧲 MAGNET POWER!', '#3b82f6');
+                playPopSound('magnet');
+            } else {
+                score = Math.max(0, score - 5);
+                resetCombo();
+                createParticles(item.x, item.y, '#fef08a', 15);
+                createFloatingText(item.x, item.y, '-10 🍋', '#ef4444');
+                
+                // Screen shake effect when hitting a lemon
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 500);
+                playPopSound('lemon');
+            }
+            scoreElement.textContent = score;
+            items.splice(i, 1);
+        } else if (item.y > canvas.height + item.radius) {
+            // Missed candy - reduce combo
+            if (item.type !== 'lemon') {
+                combo = Math.max(0, combo - 1);
+            }
+            items.splice(i, 1);
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+ 
+function activateMagnet() {
+    magnetActive = true;
+    if (magnetTimer) clearTimeout(magnetTimer);
+    magnetTimer = setTimeout(() => {
+        magnetActive = false;
+    }, 8000);
+}
+ 
+function updateCombo() {
+    combo++;
+    comboElement.textContent = `x${combo}`;
+    comboElement.style.transform = 'scale(1.2)';
+    setTimeout(() => comboElement.style.transform = 'scale(1)', 100);
+
+    if (comboTimer) clearTimeout(comboTimer);
+    comboTimer = setTimeout(resetCombo, 2000);
+}
+
+function resetCombo() {
+    combo = 1;
+    comboElement.textContent = `x${combo}`;
+}
+
+function activateFeverMode() {
+    feverMode = true;
+    if (feverTimer) clearTimeout(feverTimer);
+    
+    document.body.classList.add('fever-mode');
+    
+    feverTimer = setTimeout(() => {
+        feverMode = false;
+        document.body.classList.remove('fever-mode');
+    }, 5000);
+}
+
+let mouseX = 0;
+window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+});
+
+window.addEventListener('touchmove', (e) => {
+    mouseX = e.touches[0].clientX;
+});
+
+startBtn.addEventListener('click', () => {
+    startOverlay.style.display = 'none';
+    gameActive = true;
+    score = 0;
+    scoreElement.textContent = score;
+    
+    gameInterval = setInterval(spawnItem, 800);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            endGame();
+        }
+    }, 1000);
+    
+    update();
+});
+
+function endGame() {
+    gameActive = false;
+    clearInterval(gameInterval);
+    clearInterval(timerInterval);
+    
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem('candyCloudHighscore', highscore);
+        highscoreElement.textContent = highscore;
+    }
+    
+    overlay.style.display = 'flex';
+    finalScoreElement.textContent = `Du fanget ${score} godterier!`;
+}
+
+function resetGame() {
+    timeLeft = 60;
+    timerElement.textContent = timeLeft;
+    overlay.style.display = 'none';
+    gameActive = true;
+    
+    clearInterval(gameInterval);
+    clearInterval(timerInterval);
+    
+    gameInterval = setInterval(spawnItem, 800);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            endGame();
+        }
+    }, 1000);
+    
+    update();
+}

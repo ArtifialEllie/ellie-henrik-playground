@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Neon Odyssey 3D ✨🚀</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">Crystals: <span id="score">0</span></div>
+            <div id="message">Use WASD or Arrow Keys to Fly! 🌟</div>
+        </div>
+        <div id="overlay" class="hidden">
+            <div class="overlay-content">
+                <h1>GAME OVER! 🌌</h1>
+                <p>You collected <span id="final-score">0</span> neon crystals!</p>
+                <button id="restart-btn">Fly Again! 🚀</button>
+            </div>
+        </div>
+    </div>
+    <!-- Using Three.js from CDN -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="game.js"></script>
+</body>
+</html>

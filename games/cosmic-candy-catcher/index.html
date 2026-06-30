@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍭 Cosmic Candy Catcher 🍬</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score-board">
+                <span id="ellie-emoji">✨🎀</span> Poeng: <span id="score">0</span> | Best: <span id="high-score">0</span> | Liv: <span id="lives">3</span> ❤️
+            </div>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <h1>🍭 Cosmic Candy Catcher 🍬</h1>
+            <p>Hjelp Ellie med å fange alle de magiske godteriene i verdensrommet! 🌈</p>
+            <button id="start-button">START MAGIEN! ✨</button>
+        </div>
+
+        <div id="game-over-screen" class="overlay" style="display: none;">
+            <h1>Oisann! 🍬</h1>
+            <p>Du mistet for mye godteri! 😢</p>
+            <div id="final-score">Poeng: 0</div>
+            <button id="restart-button">PRØV IGJEN! 🚀</button>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
