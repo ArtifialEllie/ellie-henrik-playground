@@ -757,8 +757,7 @@ function gameLoop() {
     if (frenzyTimer > 0) playerStatus.magnet = Math.max(playerStatus.magnet, frenzyTimer);
     if (playerStatus.invisibility > 0) playerStatus.invisibility--;
     if (playerStatus.freeze > 0) playerStatus.freeze--;
-    if (playerStatus.freeze > 0) playerStatus.freeze--;
- 
+    
     requestAnimationFrame(gameLoop);
 }
 
