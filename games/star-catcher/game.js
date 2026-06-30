@@ -54,7 +54,7 @@ const player = {
     width: 70,
     height: 70,
     emoji: '🐱',
-    skin: '🐱'
+    skin: localStorage.getItem('starCatcherSkin') || '🐱'
 };
 
 const playerSkins = [
@@ -68,6 +68,8 @@ const playerSkins = [
     { emoji: '🧚', name: 'Fe' }
 ];
 
+player.emoji = player.skin;
+
 
 let objects = [];
 const objectTypes = {
@@ -77,7 +79,8 @@ const objectTypes = {
     RAINBOW: { emoji: '🌈', points: 5, speed: 4, color: 'rainbow' },
     SHIELD: { emoji: '🛡️', points: 0, speed: 3, color: 'blue' },
     GOLDEN_STAR: { emoji: '✨', points: 10, speed: 5, color: 'yellow' },
-    BOMB: { emoji: '💣', points: -5, speed: 4, color: 'black' }
+    BOMB: { emoji: '💣', points: -5, speed: 4, color: 'black' },
+    SUPER_STAR: { emoji: '🌠', points: 25, speed: 6, color: 'purple' }
 };
 
 function resize() {
@@ -107,7 +110,8 @@ function spawnObject() {
     
     const rand = Math.random();
     let type;
-    if (rand > 0.98) type = objectTypes.RAINBOW;
+    if (rand > 0.99) type = objectTypes.SUPER_STAR;
+    else if (rand > 0.98) type = objectTypes.RAINBOW;
     else if (rand > 0.96) type = objectTypes.GOLDEN_STAR;
     else if (rand > 0.94) type = objectTypes.MAGNET;
     else if (rand > 0.92) type = objectTypes.SHIELD;
@@ -165,6 +169,8 @@ function renderSkinSelector() {
         btn.innerText = skin.emoji;
         btn.onclick = () => {
             player.emoji = skin.emoji;
+            player.skin = skin.emoji;
+            localStorage.setItem('starCatcherSkin', skin.emoji);
             playSound(600, 'sine', 0.1);
         };
         selector.appendChild(btn);
@@ -176,6 +182,10 @@ function update() {
     if (!gameActive) return;
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    
+    // Dynamic Background based on score
+    const hue = (score * 2) % 360;
+    canvas.style.background = `linear-gradient(to bottom, hsl(${hue}, 80%, 90%), #fce4ec)`;
     
     if (shakeAmount > 0) {
         ctx.save();
@@ -214,6 +224,11 @@ function update() {
         if (feverTimer <= 0) {
             feverMode = false;
             feverAlert.style.display = 'none';
+            canvas.style.animation = '';
+        } else {
+            // Pulsating effect during Fever Mode
+            const pulse = 0.9 + Math.sin(Date.now() * 0.01) * 0.1;
+            canvas.style.filter = `brightness(${pulse * 1.2}) saturate(1.5)`;
         }
     }
 
@@ -321,6 +336,12 @@ function update() {
                 playSound(1046, 'sine', 0.3);
                 createParticles(obj.x + 25, obj.y + 25, 'yellow');
                 activateRainbow();
+            } else if (obj.type === objectTypes.SUPER_STAR) {
+                score += 25;
+                showFloatingText("+25 SUPER! 🌠", obj.x + 20, obj.y + 20);
+                playSound(1200, 'sine', 0.4);
+                createParticles(obj.x + 25, obj.y + 25, 'purple');
+                triggerStarShower();
             }
             
             scoreEl.innerText = score;
@@ -348,6 +369,26 @@ function update() {
     if (shakeAmount > 0) ctx.restore();
     playerScale += (1 - playerScale) * 0.2;
     requestAnimationFrame(update);
+}
+
+function triggerStarShower() {
+    playSound(880, 'sine', 0.1);
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            if (!gameActive) return;
+            objects.push({
+                x: Math.random() * (canvasWidth - 50),
+                y: -60,
+                width: 50,
+                height: 50,
+                type: objectTypes.STAR,
+                speed: 3 + Math.random() * 5,
+                rotation: Math.random() * Math.PI * 2,
+                vr: (Math.random() - 0.5) * 0.1,
+                scale: 1.0
+            });
+        }, i * 100);
+    }
 }
 
 let particles = [];
