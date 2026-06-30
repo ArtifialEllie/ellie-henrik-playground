@@ -161,7 +161,7 @@ h1 { color: var(--primary-pink); }
     100% { transform: translateY(-100vh) scale(1); opacity: 0; }
 }
 
-#fever-mode {
+.fever-mode {
     animation: rainbowBg 2s linear infinite;
 }
 

@@ -302,7 +302,9 @@ function speakPrompt() {
     if (currentLevel === 1) {
         audioText = `Hvilken bokstav er dette? ${currentItem}`;
     } else if (currentLevel === 2) {
-        audioText = data.audioHint ? `Hvilken lyd er dette? ${data.audioHint}` : `Hvilken lyd er dette? ${currentItem}`;
+        // Gjør det mer utfordrende: ikke si hva lyden er i prompten, 
+        // men be brukeren lytte etter lyden i ordet som følger.
+        audioText = `Hvilken lyd starter dette ordet med? ... ${data.name}`;
     } else {
         audioText = `Hvilket ord er dette? ${currentItem}`;
     }
@@ -641,6 +643,7 @@ function renderCollection() {
 }
 
     startBtn.onclick = () => {
+        speak(''); // Wake up speech synthesis
         startScreen.style.display = 'none';
         levelScreen.style.display = 'flex';
         renderLevelButtons();
@@ -745,9 +748,40 @@ closeGalleryBtn.onclick = () => {
 
     homeBtn.onclick = () => {
         collectionOverlay.style.display = 'none';
-        startScreen.style.display = 'flex';
-        document.getElementById('game-container').style.display = 'none';
-    };
+    startScreen.style.display = 'flex';
+    document.getElementById('game-container').style.display = 'none';
+};
+
+const explorerBtn = document.getElementById('explorer-btn');
+const explorerOverlay = document.getElementById('explorer-overlay');
+const closeExplorerBtn = document.getElementById('close-explorer-btn');
+const explorerGrid = document.getElementById('explorer-grid');
+
+explorerBtn.onclick = () => {
+    startScreen.style.display = 'none';
+    explorerOverlay.style.display = 'flex';
+    renderExplorer();
+};
+
+closeExplorerBtn.onclick = () => {
+    explorerOverlay.style.display = 'none';
+};
+
+function renderExplorer() {
+    explorerGrid.innerHTML = '<div style="width:100%; text-align:center; font-weight:bold; margin-bottom:10px; color:#ff69b4;">Lyd-utforsker 🔍</div>';
+    Object.entries(levelData[2].items).forEach(([key, items]) => {
+        const btn = document.createElement('button');
+        btn.className = 'letter-btn';
+        btn.innerText = key;
+        btn.style.width = 'auto';
+        btn.style.padding = '10px 20px';
+        btn.onclick = () => {
+            const randomItem = items[Math.floor(Math.random() * items.length)];
+            playItemSound(key, randomItem, 2);
+        };
+        explorerGrid.appendChild(btn);
+    });
+}
 
     zenModeCheckbox.onchange = () => {
         isZenMode = zenModeCheckbox.checked;

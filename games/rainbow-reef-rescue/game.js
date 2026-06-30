@@ -18,7 +18,7 @@ let score = 0;
 let highscore = parseInt(localStorage.getItem('rainbowReefHighscore')) || 0;
 let difficultyMultiplier = 1;
 let currentLevel = 1;
-let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0 };
+let playerStatus = { shield: 0, turbo: 0, invisibility: 0, magnet: 0, freeze: 0 };
 let frenzyTimer = 0; // Frenzy mode grants invincibility and speed
 let combo = 0;
 let comboTimer = 0;
@@ -133,6 +133,9 @@ class Fish {
 
     update() {
     if (this.isEnemy) {
+        if (playerStatus.freeze > 0) {
+            return;
+        }
         if (this.behavior === 'fast') {
             const dx = player.x - this.x;
             const dy = player.y - this.y;
@@ -159,8 +162,46 @@ class Fish {
             if (Math.random() < 0.01) {
                 this.angle += (Math.random() - 0.5) * 0.5;
             }
+    }
+}
+
+class Companion {
+    constructor() {
+        this.x = player.x;
+        this.y = player.y;
+        this.radius = 12;
+        this.emoji = '🐠';
+        this.offset = { x: -30, y: -30 };
+        this.lerpSpeed = 0.08;
+        this.floatOffset = 0;
+        this.floatDir = 1;
+        this.bubbleTimer = 0;
+    }
+
+    update() {
+        const targetX = player.x + this.offset.x;
+        const targetY = player.y + this.offset.y;
+        this.x += (targetX - this.x) * this.lerpSpeed;
+        this.y += (targetY - this.y) * this.lerpSpeed;
+        this.floatOffset += 0.1 * this.floatDir;
+        if (this.floatOffset > 5 || this.floatOffset < -5) this.floatDir *= -1;
+        
+        this.bubbleTimer--;
+        if (this.bubbleTimer <= 0) {
+            bubbles.push(new Bubble());
+            this.bubbleTimer = 120 + Math.random() * 120;
         }
     }
+
+    draw() {
+        ctx.save();
+        ctx.font = '24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.emoji, this.x, this.y + this.floatOffset);
+        ctx.restore();
+    }
+}
 
 function showFloatingText(text, x, y) {
     const el = document.createElement('div');
@@ -174,14 +215,15 @@ function showFloatingText(text, x, y) {
 
 class PowerUp {
     constructor() {
-        const types = ['SHIELD', 'TURBO', 'INVISIBILITY', 'MAGNET'];
+        const types = ['SHIELD', 'TURBO', 'INVISIBILITY', 'MAGNET', 'FREEZE'];
         this.type = types[Math.floor(Math.random() * types.length)];
         
         const emojiMap = { 
             'SHIELD': '🛡️', 
             'TURBO': '⚡', 
             'INVISIBILITY': '👻', 
-            'MAGNET': '🧲' 
+            'MAGNET': '🧲',
+            'FREEZE': '❄️'
         };
         this.emoji = emojiMap[this.type];
         this.radius = 15;
@@ -447,6 +489,9 @@ function checkCollisions() {
             } else if (pu.type === 'INVISIBILITY') {
                 playerStatus.invisibility = 300;
                 playSound(700, 'sine', 0.2);
+            } else if (pu.type === 'FREEZE') {
+                playerStatus.freeze = 300;
+                playSound(400, 'sine', 0.2);
             } else if (pu.type === 'MAGNET') {
                 playerStatus.magnet = 300;
                 playSound(650, 'sine', 0.2);
@@ -542,6 +587,7 @@ function gameLoop() {
         { id: 'TURBO', emoji: '⚡', active: playerStatus.turbo > 0 },
         { id: 'INVISIBILITY', emoji: '👻', active: playerStatus.invisibility > 0 },
         { id: 'MAGNET', emoji: '🧲', active: playerStatus.magnet > 0 },
+        { id: 'FREEZE', emoji: '❄️', active: playerStatus.freeze > 0 },
     ];
     activePowerups.forEach(pu => {
         const div = document.createElement('div');
@@ -710,6 +756,8 @@ function gameLoop() {
     if (playerStatus.magnet > 0) playerStatus.magnet--;
     if (frenzyTimer > 0) playerStatus.magnet = Math.max(playerStatus.magnet, frenzyTimer);
     if (playerStatus.invisibility > 0) playerStatus.invisibility--;
+    if (playerStatus.freeze > 0) playerStatus.freeze--;
+    if (playerStatus.freeze > 0) playerStatus.freeze--;
  
     requestAnimationFrame(gameLoop);
 }

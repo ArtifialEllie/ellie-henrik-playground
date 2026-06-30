@@ -15,6 +15,7 @@
         <div id="high-score-display" style="margin-top: 10px; font-size: 1.2rem; color: #ff69b4; font-weight: bold;">Beste utfordring: 0 🔥</div>
         <button id="challenge-btn" style="font-size: 1.5rem; padding: 10px 30px; border-radius: 30px; border: none; background: #ffeb3b; color: #ff69b4; cursor: pointer; margin-top: 20px; box-shadow: 0 5px 0 #ddd; font-weight: bold;">UTFORDRING! ⚡</button>
         <button id="gallery-btn" style="font-size: 1.5rem; padding: 10px 30px; border-radius: 30px; border: none; background: #fff; color: #ff69b4; cursor: pointer; margin-top: 20px; box-shadow: 0 5px 0 #ddd;">Min Samling 🦄</button>
+        <button id="explorer-btn" style="font-size: 1.5rem; padding: 10px 30px; border-radius: 30px; border: none; background: #b2e2f2; color: #ff69b4; cursor: pointer; margin-top: 20px; box-shadow: 0 5px 0 #ddd;">Lyd-utforsker 🔍</button>
         <div style="margin-top: 20px; font-size: 1.2rem;"><input type="checkbox" id="zen-mode"> Zen Mode 🌸 (Lær i ditt eget tempo!)</div>
     </div>
 
@@ -61,6 +62,11 @@
             <button id="close-gallery-btn" class="close-btn">✖</button>
             <div id="collection" class="collection-container"></div>
         </div>
+    </div>
+
+    <div id="explorer-overlay" class="collection-overlay" style="display:none;">
+        <button id="close-explorer-btn" class="close-btn">✖</button>
+        <div id="explorer-grid" class="collection-container"></div>
     </div>
 
     <script src="game.js"></script>

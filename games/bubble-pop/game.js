@@ -30,6 +30,8 @@ let spawnTimeout;
 let combo = 0;
 let multiplier = 1;
 
+window.isGravityFlipped = false; // Initialise gravity flip state
+
 let isGoldenRain = false;
 let level = 1;
 let comboTimer;
@@ -872,7 +874,8 @@ class MagicalPet {
     let nextInterval = 8000;
     let nextRange = 150;
 
-    if (score >= 10000) { nextLevel = 6; nextEmoji = '👑🐱'; nextInterval = 2000; nextRange = 400; }
+    if (score >= 15000) { nextLevel = 7; nextEmoji = '🌌🐱'; nextInterval = 1500; nextRange = 500; }
+    else if (score >= 10000) { nextLevel = 6; nextEmoji = '👑🐱'; nextInterval = 2000; nextRange = 400; }
     else if (score >= 5000) { nextLevel = 5; nextEmoji = '✨🌈'; nextInterval = 3000; nextRange = 300; }
     else if (score >= 3000) { nextLevel = 4; nextEmoji = '🐉'; nextInterval = 4000; nextRange = 250; }
     else if (score >= 1500) { nextLevel = 3; nextEmoji = '🦄'; nextInterval = 5000; nextRange = 200; }
@@ -1525,7 +1528,7 @@ function handlePop(e, isAutoPop = false) {
     const petDist = Math.hypot(mouseX - pet.x, mouseY - (pet.y + pet.floatOffset));
 
     // First check if we hit the boss (Direct Hit)
-    if (bossActive && boss) {
+    if (!isAutoPop && bossActive && boss) {
         const bossDist = Math.hypot(mouseX - boss.x, mouseY - boss.y);
         if (bossDist < boss.radius + 20) {
             damageBoss(20);
@@ -1558,6 +1561,8 @@ function handlePop(e, isAutoPop = false) {
                 damageBoss(10);
                 floatingTexts.push(new FloatingText(b.x, b.y, 'BOSS DAMAGE! -10', 'white'));
                 b.popped = true;
+                totalPops++;
+                updateQuest();
                 didPop = true;
                 continue;
             }
@@ -1579,12 +1584,12 @@ function handlePop(e, isAutoPop = false) {
                     // Check for special types that handle their own scoring first
                     // (These will set poppedSpecial = true)
                     if (magicDustPopsRemaining > 0) {
-                    score += 5;
+                    score += 5 * multiplier;
                     magicDustPopsRemaining--;
-                    floatingTexts.push(new FloatingText(b.x, b.y, `+5 ✨`, 'white'));
-                }
-                if (b.type === 'sparkle-blast') {
-                    triggerShockwave(b.x, b.y, b.color);
+                    floatingTexts.push(new FloatingText(b.x, b.y, `+${5 * multiplier} ✨`, 'white'));
+                    }
+                    if (b.type === 'sparkle-blast') {
+                        triggerShockwave(b.x, b.y, b.color);
                     floatingTexts.push(new FloatingText(b.x, b.y, 'SPARKLE BLAST! ✨', b.color));
                        poppedSpecial = true;
                    }
@@ -1807,6 +1812,8 @@ function handlePop(e, isAutoPop = false) {
                         score += 5;
                         floatingTexts.push(new FloatingText(bub.x, bub.y, `+5`, bub.color));
                                 bub.popped = true; // Mark for removal
+                        totalPops++;
+                        updateQuest();
                     }
                 });
                
@@ -1909,12 +1916,14 @@ function handlePop(e, isAutoPop = false) {
                     
                     createPopEffect(target.x, target.y, target.color);
                     score += 10;
+                    createPopEffect(target.x, target.y, target.color);
+                    score += 10;
                     floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
-                    
-                    // Remove the target from the main bubbles array
-                   target.popped = true;
-                   potentialTargets.splice(targetIndex, 1);
-                   popped++;
+                    target.popped = true;
+                    totalPops++;
+                    updateQuest();
+                    potentialTargets.splice(targetIndex, 1);
+                    popped++;
                 }
            } else if (b.type === 'pet-treat') {
               playPopSound(true, false);
@@ -1977,6 +1986,8 @@ function handlePop(e, isAutoPop = false) {
                         if (otherBubble.type !== 'bomb' && otherBubble.type !== 'stinky') {
                             createPopEffect(otherBubble.x, otherBubble.y, otherBubble.color);
                             score += 10;
+                            totalPops++;
+                            updateQuest();
                         } else {
                             createPopEffect(otherBubble.x, otherBubble.y, '#444');
                         }
@@ -2114,9 +2125,10 @@ function handlePop(e, isAutoPop = false) {
     }
 
     const currentMilestone = Math.floor(score / 500);
-    if (currentMilestone > lastBossFightMilestone && !bossActive) {
+    const nextBossMilestone = BOSS_MILESTONES.find(m => score >= m.score && lastBossCheckpoint < m.score);
+    if (nextBossMilestone && !bossActive) {
         triggerBossFight();
-        lastBossFightMilestone = currentMilestone;
+        lastBossCheckpoint = nextBossMilestone.score;
     }
     
     updateScore();

@@ -12,6 +12,7 @@ let player = { x: 0, y: 0, radius: 8, color: '#fff', targetX: 0, targetY: 0 };
 let combo = 0;
 let comboTimer = 0;
 let multiplier = 1;
+let playerResponsiveness = 0.15;
 let powerUps = [];
 let activePowerUp = null;
 let powerUpTimer = 0;
@@ -213,14 +214,12 @@ function updatePowerUps() {
                 multiplier += 1;
                 showFloatingText('MULTIPLIER UP! 🌟', pu.x, pu.y);
             } else {
-                // Speed bonus: increase responsiveness
-                // In this game, responsiveness is the 0.15 factor in updatePlayer
-                // We can't easily change that globally without a variable, 
-                // but we can simulate it by giving a score boost for a while.
+                // Speed bonus: increase responsiveness for 10 seconds
+                playerResponsiveness = 0.3;
+                powerUpTimer = 600; // 10 seconds at 60fps
                 showFloatingText('STARDUST SPEED! ⚡', pu.x, pu.y);
-                score += 50;
+                playPopSound(880, 'sine', 0.2);
             }
-            playPopSound(880, 'sine', 0.2);
             powerUps.splice(i, 1);
         }
     }
@@ -232,8 +231,16 @@ function updatePlayer() {
     if (keys['ArrowUp']) player.targetY -= 10;
     if (keys['ArrowDown']) player.targetY += 10;
 
-    player.x += (player.targetX - player.x) * 0.15;
-    player.y += (player.targetY - player.y) * 0.15;
+    player.x += (player.targetX - player.x) * playerResponsiveness;
+    player.y += (player.targetY - player.y) * playerResponsiveness;
+
+    // Reset speed bonus
+    if (powerUpTimer > 0) {
+        powerUpTimer--;
+        if (powerUpTimer <= 0) {
+            playerResponsiveness = 0.15;
+        }
+    }
 
     // Bounds
     player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
