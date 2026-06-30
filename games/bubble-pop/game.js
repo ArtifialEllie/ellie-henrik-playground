@@ -28,6 +28,7 @@ let canvasWidth, canvasHeight;
 let timerInterval;
 let spawnTimeout;
 let combo = 0;
+let comboShieldActive = false;
 let multiplier = 1;
 
 window.isGravityFlipped = false; // Initialise gravity flip state
@@ -340,6 +341,7 @@ class Bubble {
        else if (rand > 0.9980) { this.type = 'cosmic-candy'; this.color = '#ff69b4'; this.radius = 30; this.hits = 1; }
        else if (rand > 0.9970) { this.type = 'ellie-wish'; this.color = '#ff00ff'; this.radius = 40; this.hits = 1; }
        else if (rand > 0.9950) { this.type = 'mystery-box'; this.color = '#ffeb3b'; this.radius = 35; }
+       else if (rand > 0.9940) { this.type = 'combo-shield'; this.color = '#00ffff'; this.radius = 30; }
        else if (rand > 0.9930) { this.type = 'golden-ticket'; this.color = '#ffd700'; this.radius = 30; this.hits = 1; }
        else if (rand > 0.9920) { this.type = 'gold'; this.color = '#FFD700'; }
        else if (rand > 0.9800) { this.type = 'magic-mirror'; this.color = '#e0f7fa'; this.radius = 35; }
@@ -1479,9 +1481,28 @@ function triggerVortex() {
 
 
 
+function resetCombo() {
+    if (comboShieldActive) {
+        comboShieldActive = false;
+        floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, 'SHIELD SAVED YOUR COMBO! 🛡️✨', '#00ffff'));
+        playSound(600, 'sine', 0.2);
+    } else {
+        combo = 0;
+    }
+    updateCombo();
+}
+
 function updateCombo() {
+    if (comboShieldActive) {
+        comboText.style.color = '#00ffff';
+        comboText.style.textShadow = '0 0 10px #00ffff';
+        comboText.innerText = `Combo: x${combo} 🛡️`;
+    } else {
+        comboText.style.color = '';
+        comboText.style.textShadow = '';
+        comboText.innerText = `Combo: x${combo}`;
+    }
     comboContainer.style.display = combo > 0 ? 'block' : 'none';
-    comboText.innerText = `Combo: x${combo}`;
     comboBar.style.width = `${Math.min(100, (combo / 20) * 100)}%`;
 
     if (combo > 1) {
@@ -1509,7 +1530,7 @@ function updateCombo() {
     if (combo > 0) {
         clearTimeout(comboTimer);
         comboTimer = setTimeout(() => {
-            combo = 0;
+            resetCombo();
             updateCombo();
         }, 1500);
     }
@@ -1661,6 +1682,14 @@ function handlePop(e, isAutoPop = false) {
                     createPopEffect(b.x, b.y, '#da70d6');
                     triggerFrenzy();
                     poppedSpecial = true;
+                } else if (b.type === 'combo-shield') {
+                    playPopSound(true, false);
+                    comboShieldActive = true;
+                    poppedSpecial = true;
+                    score += 100;
+                    floatingTexts.push(new FloatingText(b.x, b.y, 'COMBO SHIELD! 🛡️✨', '#00ffff'));
+                    createPopEffect(b.x, b.y, '#00ffff');
+                    playSound(800, 'sine', 0.2);
                 } else if (b.type === 'magic-mirror') {
                     playPopSound(true, false);
                     const mirrorBonus = 500;
@@ -1953,7 +1982,7 @@ function handlePop(e, isAutoPop = false) {
                createPopEffect(b.x, b.y, b.color);
            } else if (b.type === 'bomb') {
                playSound(100, 'square', 0.5);
-               combo = 0;
+               resetCombo();
                comboBar.style.width = '0%';
                comboText.innerText = '';
                bubbles.forEach(bub => {
@@ -1976,9 +2005,9 @@ function handlePop(e, isAutoPop = false) {
                                 playPopSound(false, true);
                                 poppedSpecial = true;
                                 score = Math.max(0, score - 5);
-                                combo = 0;
+                                resetCombo();
                                 comboBar.style.width = '0%';
-                    comboText.innerText = '';
+                                comboText.innerText = '';
                     floatingTexts.push(new FloatingText(b.x, b.y, `-5 💨`, '#666'));
                     document.body.classList.add('shake');
                     setTimeout(() =>                   document.body.classList.remove('shake'), 400);

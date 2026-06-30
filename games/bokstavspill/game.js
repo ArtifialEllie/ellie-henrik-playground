@@ -544,8 +544,7 @@ function updateBadges() {
         badgesContainer.appendChild(span);
     });
 }
-
-    function createBackgroundBubbles() {
+function createBackgroundBubbles() {
     for (let i = 0; i < 15; i++) {
         const bubble = document.createElement('div');
         bubble.className = 'bg-bubble';
@@ -554,154 +553,26 @@ function updateBadges() {
         bubble.style.height = size;
         bubble.style.left = Math.random() * 100 + 'vw';
         bubble.style.animationDuration = Math.random() * 10 + 5 + 's';
-        bubble.style.animationDelay = Math.random() * 5 + 's';
         document.body.appendChild(bubble);
     }
 }
 
-function spawnConfetti() {
-    for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.top = '-10px';
-        confetti.style.width = Math.random() * 10 + 5 + 'px';
-        confetti.style.height = confetti.style.width;
-        confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
-        confetti.style.animationDelay = Math.random() * 1 + 's';
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 5000);
-    }
-}
-
-function levelUp() {
-    if (currentLevel < Object.keys(levelData).length) {
-        currentLevel++;
-        localStorage.setItem('bokstavspillLevel', currentLevel);
-        streak = 0;
-        levelUpBanner.style.display = 'block';
-        spawnConfetti();
-        speak(`Wow! Du er superflink! Nå går vi opp til nivå ${currentLevel}!`);
-        
-        setTimeout(() => {
-            levelUpBanner.style.display = 'none';
-        }, 3000);
-           } else {
-               speak(`Gratulerer! Du har fullført alle nivåene! 🏆`);
-               spawnConfetti();
-           }
-       }
-
-function triggerBonusRound() {
-    if (bonusBanner.style.display === 'block') return;
-
-    bonusBanner.style.display = 'block';
-    speak(`BONUSRUNDE! Få ekstra stjerner nå!`);
-    spawnConfetti();
-    
-    const interval = setInterval(() => {
-        const increment = Math.floor(Math.random() * 3) + 1;
-        totalStars += increment;
-        localStorage.setItem('bokstavspillStars', totalStars);
-        updateStatus();
-        floatingTexts.push(new FloatingText(window.innerWidth / 2, window.innerHeight / 2, `+${increment} ⭐`, 'gold'));
-    }, 200);
-    
-    setTimeout(() => {
-        clearInterval(interval);
-        bonusBanner.style.display = 'none';
-    }, 2000);
-}
-
-function updateProgressBar() {
-    const pool = levelData[currentLevel].items;
-    const total = Object.keys(pool).length;
-    const unlockedInLevel = Object.keys(pool).filter(k => {
-        return pool[k].some(item => unlockedItems.includes(`${k}_${item.name}`));
-    }).length;
-    const progress = (unlockedInLevel / total) * 100;
-    progressBar.style.width = `${progress}%`;
-}
-
-function renderCollection() {
-    collectionDiv.innerHTML = '<div style="width:100%; text-align:center; font-weight:bold; margin-bottom:10px; color:#ff69b4;">Min Samling 🦄</div>';
-    
-    Object.entries(levelData).forEach(([levelStr, levelObj]) => {
-        const level = parseInt(levelStr);
-        Object.entries(levelObj.items).forEach(([key, items]) => {
-            items.forEach(item => {
-                const unlockId = `${key}_${item.name}`;
-                const div = document.createElement('div');
-                div.className = `collection-item ${unlockedItems.includes(unlockId) ? 'unlocked' : ''}`;
-                div.innerText = item.emoji;
-                div.title = item.name;
-                
-                if (unlockedItems.includes(unlockId)) {
-                    div.style.cursor = 'pointer';
-                    div.onclick = () => playItemSound(key, item, level);
-                }
-                
-                collectionDiv.appendChild(div);
-            });
-        });
-    });
-}
-
-    startBtn.onclick = () => {
-        speak(''); // Wake up speech synthesis
-        startScreen.style.display = 'none';
-        levelScreen.style.display = 'flex';
-        renderLevelButtons();
-    };
-
-    challengeBtn.onclick = () => {
-        startScreen.style.display = 'none';
-        document.getElementById('game-container').style.display = 'block';
-       isChallengeMode = true;
-       currentLevel = 1; // Start at Level 1 for challenge
-       createBackgroundBubbles();
-        updateStatus();
-        renderCollection();
-        nextRound();
-        startChallengeTimer();
-    };
-
-    function startChallengeTimer() {
-        let timeLeft = 60;
-        timerDisplay.style.display = 'block';
-        timerDisplay.innerText = `Tid: ${timeLeft}s`;
-        
-        if (challengeTimer) clearInterval(challengeTimer);
-        
-        challengeTimer = setInterval(() => {
-            timeLeft--;
-            timerDisplay.innerText = `Tid: ${timeLeft}s`;
-            
-            if (timeLeft <= 10) {
-                timerDisplay.style.color = 'red';
-            } else {
-                timerDisplay.style.color = '#ff69b4';
-            }
-            
-            if (timeLeft <= 0) {
-                clearInterval(challengeTimer);
-                endChallenge();
-            }
-        }, 1000);
-    }
-
-    function endChallenge() {
+function endChallenge() {
         isProcessing = true;
         speak(`Tiden er ute! Du klarte ${streak} riktige på rad! Fantastisk innsats!`);
         if (streak > challengeHighScore) {
             challengeHighScore = streak;
             localStorage.setItem('bokstavspillChallengeHighScore', challengeHighScore);
         }
-        setTimeout(() => {
-            alert(`Utfordring Slutt! Poengsum: ${streak}`);
-            location.reload();
-        }, 2000);
+        
+        const endScreen = document.getElementById('challenge-end-screen');
+        const scoreText = document.getElementById('challenge-score');
+        const bestText = document.getElementById('challenge-best');
+        
+        scoreText.innerText = `Poengsum: ${streak}`;
+        bestText.innerText = `Beste: ${challengeHighScore}`;
+        endScreen.style.display = 'flex';
+        spawnConfetti();
     }
     highScoreDisplay.innerText = `Beste utfordring: ${challengeHighScore} 🔥`;
 
