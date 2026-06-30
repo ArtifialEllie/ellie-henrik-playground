@@ -455,7 +455,7 @@ function activateFeverMode() {
     for (let i = 0; i < 20; i++) {
         setTimeout(() => {
             const p = document.createElement('div');
-            p.className = 'bg-particle';
+            p.className = 'bg-particle fever-particle';
             p.innerText = ['✨', '⭐', '💖', '🌈'][Math.floor(Math.random() * 4)];
             p.style.left = Math.random() * 100 + 'vw';
             p.style.fontSize = Math.random() * 20 + 10 + 'px';
@@ -545,7 +545,18 @@ function showWinMessage() {
     document.getElementById('best-score').innerText = bestScoreText;
 
     setTimeout(() => {
-        document.getElementById('star-rating').innerText = `${medal} ${medalName}`;
+        const elliePraises = {
+            '💎': ["Súper-Duper Fantastisk! Du har en hukommelse som en magisk enhjørning! 🦄✨", "Helt utrolig! Du er en ekte Memory-Mester! 💎🌟", "Wow! Du så alt! Du er helt magisk! 🌈💖"],
+            '🥇': ["Kjempebra! Du er superflink! ⭐✨", "Gull-prestasjon! Ellie er så stolt av deg! 🥇🌸", "Fantastisk jobbet! Du knuste det! 🚀🌟"],
+            '🥈': ["Veldig bra! Du er nesten en mester! 🥈✨", "Kjempeflink! Litt til, så blir det gull! 🌟💖", "Bra jobbet! Du har god kontroll! 🌸✨"],
+            '🥉': ["Godt jobbet! Du klarte det! 🥉✨", "Heia deg! Du er på god vei! 🌈🌟", "Bra innsats! Fortsett sånn! 💖✨"],
+            '⭐': ["Du klarte det! Bra jobbet! ⭐✨", "Flott at du fullførte! Du er super! 🌸💖", "Bra prøvd! Du er en stjerne! 🌟✨"]
+        };
+        
+        const praiseList = elliePraises[medal] || elliePraises['⭐'];
+        const randomPraise = praiseList[Math.floor(Math.random() * praiseList.length)];
+        
+        document.getElementById('star-rating').innerText = `${medal} ${medalName} - ${randomPraise}`;
         
         let finalStatsText = `Du fant alle parene på ${moves} trekk`;
         if (gameMode === 'classic') {

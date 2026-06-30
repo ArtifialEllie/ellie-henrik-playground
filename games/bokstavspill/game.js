@@ -317,6 +317,10 @@ function nextRound() {
     nameDiv.innerText = '';
     letterGrid.innerHTML = '';
     
+    if (!levelData[currentLevel]) {
+        currentLevel = 1;
+    }
+
     const pool = levelData[currentLevel].items;
     const keys = Object.keys(pool);
     
@@ -334,8 +338,14 @@ function nextRound() {
     const itemOptions = pool[currentItem];
     currentRoundItem = itemOptions[Math.floor(Math.random() * itemOptions.length)];
     
+    let numOptions = 3;
+    if (currentLevel === 2) numOptions = 4;
+    if (currentLevel === 3) numOptions = 6;
+    
     let options = [currentItem];
-    while(options.length < Math.min(3, keys.length)) {
+    const maxOptions = Math.min(numOptions, keys.length);
+    
+    while(options.length < maxOptions) {
         let randomK = keys[Math.floor(Math.random() * keys.length)];
         if(!options.includes(randomK)) options.push(randomK);
     }
@@ -637,10 +647,9 @@ function renderCollection() {
     challengeBtn.onclick = () => {
         startScreen.style.display = 'none';
         document.getElementById('game-container').style.display = 'block';
-        isChallengeMode = true;
-        currentLevel = 1; // Start at Level 1 for challenge
-        localStorage.setItem('bokstavspillLevel', currentLevel);
-        createBackgroundBubbles();
+       isChallengeMode = true;
+       currentLevel = 1; // Start at Level 1 for challenge
+       createBackgroundBubbles();
         updateStatus();
         renderCollection();
         nextRound();

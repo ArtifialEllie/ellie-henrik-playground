@@ -158,8 +158,9 @@ class Fish {
             this.y += Math.sin(this.angle) * this.speed;
             if (Math.random() < 0.01) {
                 this.angle += (Math.random() - 0.5) * 0.5;
+            }
+        }
     }
-}
 
 function showFloatingText(text, x, y) {
     const el = document.createElement('div');
@@ -404,8 +405,9 @@ function checkCollisions() {
                 enemy.reset();
             } else {
                 gameOver();
+                triggerShake(5);
             }
-            if (frenzyTimer <= 0 && playerStatus.shield <= 0 && playerStatus.invisibility <= 0) triggerShake(5);
+            if (frenzyTimer <= 0 && playerStatus.shield <= 0 && playerStatus.invisibility <= 0 && dist < player.radius + enemy.radius) triggerShake(5);
         }
     });
 
@@ -450,7 +452,7 @@ function checkCollisions() {
                 playSound(650, 'sine', 0.2);
             }
             createParticles(pu.x, pu.y, 'yellow', 10);
-        ctx.shadowBlur = 0;
+        }
     }
 }
 

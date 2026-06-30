@@ -16,8 +16,8 @@ const questText = document.getElementById('quest-text');
 const questFill = document.getElementById('quest-progress-fill');
 
 let score = 0;
-let totalPops = 0;
-let emotionPops = 0;
+let totalPops = parseInt(localStorage.getItem('bubblePopTotalPops')) || 0;
+let emotionPops = parseInt(localStorage.getItem('bubblePopEmotionPops')) || 0;
 let timeLeft = 30; // Default time
 let highscore = localStorage.getItem('bubblePopHighscore') || 0;
 let totalGold = parseInt(localStorage.getItem('bubblePopTotalGold')) || 0;
@@ -1931,8 +1931,9 @@ function handlePop(e, isAutoPop = false) {
            } else if (b.type === 'emotion') {
                poppedSpecial = true;
               score += 50;
-              emotionPops++;
-              floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
+             emotionPops++;
+             localStorage.setItem('bubblePopEmotionPops', emotionPops);
+             floatingTexts.push(new FloatingText(b.x, b.y, `EMOTION POP! ${b.emoji} +50`, b.color));
                createPopEffect(b.x, b.y, b.color);
             } else if (b.type === 'bomb') {
                 playSound(100, 'square', 0.5);
@@ -2079,6 +2080,7 @@ function handlePop(e, isAutoPop = false) {
             
             b.popped = true;
             totalPops++;
+            localStorage.setItem('bubblePopTotalPops', totalPops);
             updateQuest();
             didPop = true;
         }
@@ -2482,8 +2484,6 @@ function gameOver() {
 
 function resetGame() {
     score = 0;
-    totalPops = 0;
-    emotionPops = 0;
     timeLeft = 30;
     combo = 0;
     multiplier = 1;
