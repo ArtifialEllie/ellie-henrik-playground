@@ -963,6 +963,12 @@ class MagicalPet {
     triggerSuperPop() {
         this.energy = 0;
         floatingTexts.push(new FloatingText(this.x, this.y, 'SUPER POP! 🌟💥', 'gold'));
+        
+        // Extra reward for super pop!
+        score += 100;
+        updateScore();
+        playSound(1200, 'sine', 0.3);
+
         playSound(800, 'sine', 0.3);
         setTimeout(() => playSound(1200, 'sine', 0.3), 100);
         
