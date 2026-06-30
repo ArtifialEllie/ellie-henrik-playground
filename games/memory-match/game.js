@@ -72,6 +72,7 @@ let moves = 0;
 let matches = 0;
     let isLockBoard = false;
     let matchHistory = [];
+    let bestStreak = 0;
     let isPaused = false;
     let peeksLeft = 1;
     let hintsLeft = 1;
@@ -348,6 +349,7 @@ function checkMatch() {
 
 function handleMatch() {
     combo++;
+    if (combo > bestStreak) bestStreak = combo;
     createComboText();
    if (combo >= 3) activateFeverMode();
    // Every 3 matches, you get a peek! ✨
@@ -563,9 +565,10 @@ function showWinMessage() {
             finalStatsText += ` og ${secondsElapsed} sekunder!`;
         }
         finalStatsText += ` Din høyeste combo var ${combo}! 🌟`;
-        
-        document.getElementById('final-stats').innerText = finalStatsText;
-        document.getElementById('win-message').classList.add('show');
+    finalStatsText += ` Din høyeste combo var ${combo}! 🌟`;
+    finalStatsText += ` Din beste combo i dette spillet var ${bestStreak}! 🏆`;
+    document.getElementById('final-stats').innerText = finalStatsText;
+    document.getElementById('win-message').classList.add('show');
         startConfetti();
         
         // Unlock next level
