@@ -157,21 +157,33 @@ const levelData = {
             "Ja! Du traff blink! 🎯",
             "Utrolig! Du er en ekte bokstav-mester! 📚",
             "Helt perfekt! Du er helt rå! 🌟",
-            "Súper! Du får en virtuell klem! 🤗",
-            "Fantastisk! Du er ustopperlig! ⚡",
-            "Ja ja ja! Du er en ekte proff! 🎓"
-        ],
-        wrong: [
-            "Nesten! Prøv en gang til, du klarer det! 💪",
-            "Ikke helt, men du er på god vei! ✨",
-            "Ups! Prøv igjen, jeg heier på deg! 🌸",
-            "Liten bommert, men vi prøver bare igjen! 🎈",
-            "Helt greit! Prøv en annen bokstav! 🌈",
-            "Ingen fare! Vi lærer sammen! 🦄",
-            "Nesten der! Prøv en gang til! 🍭"
-        ]
-    };
+           "Súper! Du får en virtuell klem! 🤗",
+           "Fantastisk! Du er ustopperlig! ⚡",
+           "Ja ja ja! Du er en ekte proff! 🎓",
+           "Helt magisk! Du stråler! ✨",
+           "Oi! Se på deg! En ekte bokstav-helt! 🦸‍♀️",
+           "Sukkertopp! Det var helt riktig! 🍭",
+           "Du er så flink at jeg nesten hopper av glede! 🐰"
+       ],
+       wrong: [
+           "Nesten! Prøv en gang til, du klarer det! 💪",
+           "Ikke helt, men du er på god vei! ✨",
+           "Ups! Prøv igjen, jeg heier på deg! 🌸",
+           "Liten bommert, men vi prøver bare igjen! 🎈",
+           "Helt greit! Prøv en annen bokstav! 🌈",
+           "Ingen fare! Vi lærer sammen! 🦄",
+           "Nesten der! Prøv en gang til! 🍭",
+            "Ikke tenk på det! Du er fortsatt super! 💖",
+            "Prøv en gang til, jeg vet du kan! 🌟",
+            "Bare en liten glipp! Du fikser det nå! 🚀"
+       ]
+   };
 
+    // Add a little more a friendly encouragement to the wrong answers
+    // to make the learning process more positive and playful.
+    // Ellie is all about support! 💖
+    // To do this, we will just expand the 'wrong' array.
+    // But let's do it in a proper way.
 const startScreen = document.getElementById('start-screen');
 const startBtn = document.getElementById('start-btn');
 const galleryBtn = document.getElementById('gallery-btn');
