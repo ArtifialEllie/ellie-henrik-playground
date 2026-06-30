@@ -15,6 +15,7 @@ const canvas = document.getElementById('gameCanvas');
         let combo = 0;
         let highscore = localStorage.getItem('pancakeFlipHighscore') || 0;
         let gameActive = false;
+    let isPaused = false;
         let canvasWidth, canvasHeight;
         let shakeAmount = 0;
         let currentWind = 0;
@@ -429,7 +430,6 @@ const canvas = document.getElementById('gameCanvas');
                             currentTotalLean *= 0.5; // Heavy pancakes stabilize!
                             showFloatingText("HEAVY! ⚓ Stable!", activePancake.x + activePancake.width/2, activePancake.y - 30);
                             playSound(200, 'sine', 0.2);
-                        }
                         } else if (activePancake.specialType === 'tiny') {
                             score += 10;
                             showFloatingText("TINY! 🤏 +10", activePancake.x + activePancake.width/2, activePancake.y - 30);
@@ -448,16 +448,8 @@ const canvas = document.getElementById('gameCanvas');
                     activePancake.targetScaleY = 0.7;
                     setTimeout(() => activePancake.targetScaleY = 1, 100);
         
-                    stack.push(activePancake);
-                    scoreEl.innerText = score;
-                    createPopEffect(activePancake.x + activePancake.width/2, activePancake.y, activePancake.color);
-                    spawnActivePancake();
-                } else {
-                    gameOver();
-                }
-            }
         }
-
+        function showPerfect() {
         function showPerfect() {
             perfectText.style.opacity = '1';
             perfectText.style.transform = 'translate(-50%, -50%) scale(1.2)';
@@ -515,37 +507,39 @@ const canvas = document.getElementById('gameCanvas');
         }
 
         function update() {
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-        slideSpeed = 3 + (score * 0.1); // Increase speed as score goes up
-
-        // Handle timers for power-ups
-        if (scoreMultTimer > 0) {
-            scoreMultTimer--;
-            if (scoreMultTimer <= 0) scoreMult = 1;
-        }
-        if (slideSpeedMultTimer > 0) {
-            slideSpeedMultTimer--;
-            if (slideSpeedMultTimer <= 0) slideSpeedMult = 1;
-        }
-        slideSpeed *= slideSpeedMult;
-
-        // Syrup Rain logic
-        if (Math.random() < 0.001) {
-            const syrupAlert = document.getElementById('syrup-alert');
-            if (syrupAlert) {
-                syrupAlert.classList.add('show');
-                setTimeout(() => syrupAlert.classList.remove('show'), 3000);
+            if (isPaused) return;
+            
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            slideSpeed = 3 + (score * 0.1); // Increase speed as score goes up
+            
+            // Handle timers for power-ups
+            if (scoreMultTimer > 0) {
+                scoreMultTimer--;
+                if (scoreMultTimer <= 0) scoreMult = 1;
             }
-            // Make all current pancakes in stack syrupy for 5 seconds
-            stack.forEach(p => p.isSyrupy = true);
-            setTimeout(() => {
-                stack.forEach(p => p.isSyrupy = false);
-            }, 5000);
-        }
-
-        // Wind logic
-        if (windChangeTimer <= 0) {
+            if (slideSpeedMultTimer > 0) {
+                slideSpeedMultTimer--;
+                if (slideSpeedMultTimer <= 0) slideSpeedMult = 1;
+            }
+            slideSpeed *= slideSpeedMult;
+            
+            // Syrup Rain logic
+            if (Math.random() < 0.001) {
+                const syrupAlert = document.getElementById('syrup-alert');
+                if (syrupAlert) {
+                    syrupAlert.classList.add('show');
+                    setTimeout(() => syrupAlert.classList.remove('show'), 3000);
+                }
+                // Make all current pancakes in stack syrupy for 5 seconds
+                stack.forEach(p => p.isSyrupy = true);
+                setTimeout(() => {
+                    stack.forEach(p => p.isSyrupy = false);
+                }, 5000);
+            }
+            
+            // Wind logic
+            if (windChangeTimer <= 0) {
                 currentWind = (Math.random() - 0.5) * 1.5;
                 windChangeTimer = 120 + Math.random() * 120;
             }
@@ -555,7 +549,7 @@ const canvas = document.getElementById('gameCanvas');
                 const windOffset = currentWind * 50;
                 windIndicator.style.transform = `translateX(calc(-50% + ${windOffset}px))`;
             }
-
+            
             // Background Sparkles ✨
             if (Math.random() < 0.1) {
                 const sparkle = document.createElement('div');
@@ -570,14 +564,14 @@ const canvas = document.getElementById('gameCanvas');
                 document.body.appendChild(sparkle);
                 setTimeout(() => sparkle.remove(), 5000);
             }
-
+            
             if (shakeAmount > 0) {
                 ctx.save();
                 ctx.translate((Math.random()-0.5)*shakeAmount, (Math.random()-0.5)*shakeAmount);
                 shakeAmount *= 0.9;
                 if (shakeAmount < 0.1) shakeAmount = 0;
             }
-
+            
             let currentTilt = 0;
             stack.forEach((p, index) => {
                 p.update();
@@ -592,13 +586,13 @@ const canvas = document.getElementById('gameCanvas');
                 activePancake.draw(topTilt, stack.length - 1);
                 checkLanding();
             }
-
+            
             for (let i = particles.length - 1; i >= 0; i--) {
                 particles[i].update();
                 particles[i].draw();
                 if (particles[i].life <= 0) particles.splice(i, 1);
             }
-
+            
             if (shakeAmount > 0) ctx.restore();
             requestAnimationFrame(update);
         }
