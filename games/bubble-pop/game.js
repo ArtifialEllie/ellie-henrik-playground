@@ -727,7 +727,7 @@ class MagicFlower {
                 if (dist < 100) {
                     createPopEffect(b.x, b.y, b.color);
                     score += 10;
-                    scoreEl.innerText = score;
+                    updateScore();
                     playPopSound();
                     b.popped = true;
                 }
@@ -972,9 +972,10 @@ class MagicalPet {
         bubbles.forEach(b => {
                const dist = Math.hypot(this.x - b.x, this.y - b.y);
                if (dist < superPopRadius) {
-                   createPopEffect(b.x, b.y, b.color);
-                   score += 10;
+                    createPopEffect(b.x, b.y, b.color);
+                    score += 10;
                     b.popped = true;
+                    updateScore();
                }
            });
     }
@@ -2257,9 +2258,10 @@ class Singularity {
         bubbles.forEach(b => {
             const dist = Math.hypot(this.x - b.x, this.y - b.y);
             if (dist < this.maxRadius) {
-                createPopEffect(b.x, b.y, b.color);
-                score += 10;
-                b.popped = true;
+                    createPopEffect(b.x, b.y, b.color);
+                    score += 10;
+                    b.popped = true;
+                    updateScore();
             }
         });
         createBigExplosion(this.x, this.y);
@@ -2527,6 +2529,47 @@ function resetGame() {
     }
     spawnBubble();
 }
+
+function checkDailyReward() {
+    const lastClaim = localStorage.getItem('bubblePopLastClaim');
+    const now = new Date().toDateString();
+    
+    if (lastClaim !== now) {
+        const rewardIdx = Math.min(parseInt(localStorage.getItem('bubblePopDailyStreak')) || 0, DAILY_REWARDS.length - 1);
+        const reward = DAILY_REWARDS[rewardIdx];
+        
+        const overlay = document.getElementById('daily-reward-overlay');
+        const textEl = document.getElementById('daily-reward-text');
+        const amountEl = document.getElementById('daily-reward-amount');
+        const btn = document.getElementById('claim-reward-btn');
+        
+        textEl.innerText = reward.rewardText;
+        amountEl.innerText = `✨ ${reward.rewardGold} Gold`;
+        
+        btn.onclick = () => {
+            updateTotalGold(reward.rewardGold);
+            localStorage.setItem('bubblePopLastClaim', now);
+            const streak = parseInt(localStorage.getItem('bubblePopDailyStreak')) || 0;
+            localStorage.setItem('bubblePopDailyStreak', streak + 1);
+            overlay.style.display = 'none';
+            playSound(880, 'sine', 0.2);
+        };
+        
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.flexDirection = 'column';
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.background = 'rgba(255, 255, 255, 0.95)';
+        overlay.style.zIndex = '100';
+    }
+}
+
+window.addEventListener('load', checkDailyReward);
 
 window.addEventListener('mousedown', handlePop);
 window.addEventListener('touchstart', (e) => {

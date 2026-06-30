@@ -90,9 +90,7 @@ function damageBoss(amount) {
         document.getElementById('boss-ui').style.display = 'none';
         floatingTexts.push(new FloatingText(canvasWidth / 2, canvasHeight / 2, "STINKY BEHEMOTH DEFEATED! 🏆", "gold"));
         score += 1000;
-        totalGold += 500;
-        localStorage.setItem('bubblePopTotalGold', totalGold);
-        totalGoldEl.innerText = totalGold;
+        updateTotalGold(500);
         createBigExplosion(canvasWidth / 2, 100);
         triggerFrenzy();
         playSound(880, 'sine', 0.5);

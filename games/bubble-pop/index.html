@@ -79,16 +79,18 @@
         <div class="shop-grid" id="accessory-grid"></div>
         <button class="btn" onclick="closeShop()" style="margin-top: 20px;">Back to Bubbles! ✨</button>
     </div>
+    <div id="daily-reward-overlay" style="display: none;">
+        <div class="shop-header">Daily Gift! 🎁</div>
+        <p id="daily-reward-text" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
+        <div id="daily-reward-amount" style="font-size: 2rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 20px;"></div>
+        <button class="btn" id="claim-reward-btn">Claim Gift! ✨</button>
+    </div>
 
     <canvas id="gameCanvas"></canvas>
     
     <script src="js/constants.js"></script>
-    <script src="glitter_storm.js"></script>
-    <script src="melody_mode.js"></script>
+    <script src="missing_functions.js"></script>
     <script src="boss_logic.js"></script>
-    <script src="cosmic_bloom.js"></script>
-    <script src="gravity_flip.js"></script>
-    <script src="giggle_storm.js"></script>
     <script src="game.js"></script>
 </body>
 </html>

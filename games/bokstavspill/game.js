@@ -20,7 +20,7 @@ const levelData = {
             'P': [{ name: 'Panda', emoji: '🐼' }, { name: 'Pære', emoji: '🍐' }, { name: 'Papegøye', emoji: '🦜' }, { name: 'Pingvin', emoji: '🐧' }, { name: 'Pike', emoji: '👧' }, { name: 'Pil', emoji: '🏹' }],
             'R': [{ name: 'Rødrev', emoji: '🦊' }, { name: 'Robot', emoji: '🤖' }, { name: 'Regnbue', emoji: '🌈' }, { name: 'Rake', emoji: '🧹' }, { name: 'Reker', emoji: '🦐' }, { name: 'Rute', emoji: '🏁' }],
             'S': [{ name: 'Sel', emoji: '🦭' }, { name: 'Sol', emoji: '☀️' }, { name: 'Slange', emoji: '🐍' }, { name: 'Snegle', emoji: '🐌' }, { name: 'Svane', emoji: '🦢' }, { name: 'Sykkel', emoji: '🚲' }, { name: 'Seng', emoji: '🛏️' }],
-            'T': [{ name: 'Tiger', emoji: '🐯' }, { name: 'Tog', emoji: '🚂' }, { name: 'Traktor', emoji: '🚜' }, { name: 'Turtel', emoji: '🕊️' }, { name: 'Tann', emoji: '🦷' }, { name: 'Telt', emoji: '⛺' }],
+            'T': [{ name: 'Tiger', emoji: '🐯' }, { name: 'Tog', emoji: '🚂' }, { name: 'Traktor', emoji: '🚜' }, { name: 'Turteldue', emoji: '🕊️' }, { name: 'Tann', emoji: '🦷' }, { name: 'Telt', emoji: '⛺' }],
             'U': [{ name: 'Ugle', emoji: '🦉' }, { name: 'Ur', emoji: '⌚' }, { name: 'Underbukse', emoji: '🩲' }, { name: 'Ulv', emoji: '🐺' }, { name: 'Ull', emoji: '🧶' }, { name: 'Utgang', emoji: '🚪' }],
             'V': [{ name: 'Vannlilje', emoji: '🪷' }, { name: 'Vaffel', emoji: '🧇' }, { name: 'Vinter', emoji: '❄️' }, { name: 'Vann', emoji: '💧' }, { name: 'Vogn', emoji: '🛒' }, { name: 'Vind', emoji: '💨' }],
             'Y': [{ name: 'Yak', emoji: '🐂' }, { name: 'Ytterdør', emoji: '🚪' }, { name: 'Yoyo', emoji: '🪀' }, { name: 'Yoghurt', emoji: '🍦' }],
@@ -195,6 +195,8 @@ const letterGrid = document.getElementById('letter-grid');
 
     let isChallengeMode = false;
     let challengeTimer = null;
+    let isZenMode = false;
+    const zenModeCheckbox = document.getElementById('zen-mode');
 
     function speak(text) {
         window.speechSynthesis.cancel();
@@ -301,6 +303,10 @@ function speakPrompt() {
         audioText = data.audioHint ? `Hvilken lyd er dette? ${data.audioHint}` : `Hvilken lyd er dette? ${currentItem}`;
     } else {
         audioText = `Hvilket ord er dette? ${currentItem}`;
+    }
+
+    if (isZenMode) {
+        audioText += ` . . . Det er ${currentItem}`;
     }
     
     speak(audioText);
@@ -721,13 +727,17 @@ closeGalleryBtn.onclick = () => {
     collectionOverlay.style.display = 'none';
 };
 
-homeBtn.onclick = () => {
-    collectionOverlay.style.display = 'none';
-    startScreen.style.display = 'flex';
-    document.getElementById('game-container').style.display = 'none';
-};
+    homeBtn.onclick = () => {
+        collectionOverlay.style.display = 'none';
+        startScreen.style.display = 'flex';
+        document.getElementById('game-container').style.display = 'none';
+    };
 
-hintBtn.onclick = () => {
+    zenModeCheckbox.onchange = () => {
+        isZenMode = zenModeCheckbox.checked;
+    };
+
+    hintBtn.onclick = () => {
     const data = currentRoundItem;
     if (currentLevel === 1) {
         speak(`Det begynner på ${currentItem}`);
