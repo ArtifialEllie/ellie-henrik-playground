@@ -254,6 +254,10 @@ const canvas = document.getElementById('gameCanvas');
                 colorSet = ['#ffccbc', '#ffab91'];
                 specialType = 'slippery';
                 isSpecial = true;
+            } else if (rand > 0.64) {
+                colorSet = ['#9e9e9e', '#757575'];
+                specialType = 'heavy';
+                isSpecial = true;
             } else {
                 colorSet = pancakeColors.normal;
             }
@@ -326,12 +330,21 @@ const canvas = document.getElementById('gameCanvas');
                     }
 
                     if (Math.abs(centerDiff) < 10) {
-                        showPerfect();
-                        combo++;
-                        const comboBonus = 1 + (combo * 0.1);
-                        score += Math.round(2 * scoreMult * comboBonus);
-                        showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
-                        playSound(660, 'sine', 0.1);
+                        if (Math.abs(centerDiff) < 5) {
+                            showPerfect();
+                            combo += 2;
+                            const comboBonus = 1 + (combo * 0.1);
+                            score += Math.round(5 * scoreMult * comboBonus);
+                            showFloatingText("SUPER PERFECT! 🌈✨", activePancake.x + activePancake.width/2, activePancake.y);
+                            playSound(880, 'sine', 0.1);
+                        } else {
+                            showPerfect();
+                            combo++;
+                            const comboBonus = 1 + (combo * 0.1);
+                            score += Math.round(2 * scoreMult * comboBonus);
+                            showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
+                            playSound(660, 'sine', 0.1);
+                        }
                         shakeAmount = 5; 
                         if (combo > 1) {
                             comboEl.classList.add('show');
@@ -405,12 +418,18 @@ const canvas = document.getElementById('gameCanvas');
                         } else if (activePancake.specialType === 'sticky') {
                             currentTotalLean *= 0.3;
                             showFloatingText("STICKY! 🍯 Super Stable!", activePancake.x + activePancake.width/2, activePancake.y - 30);
-                            playSound(300, 'sine', 0.2);
-                        } else if (activePancake.specialType === 'giant') {
-                            score += 4;
+                            playSound(400, 'sine', 0.1);
+                        } else if (activePancake.specialType === 'slippery') {
                             currentTotalLean += (Math.random() - 0.5) * 2;
-                            showFloatingText("GIANT! 🥞 +4", activePancake.x + activePancake.width/2, activePancake.y - 30);
-                            playSound(200, 'square', 0.2);
+                            L_S_T_B = 'SLIPPERY! ⛸️';
+                            showFloatingText(L_S_T_B, activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(400, 'sine', 0.1);
+                            shakeAmount = 5;
+                        } else if (activePancake.specialType === 'heavy') {
+                            currentTotalLean *= 0.5; // Heavy pancakes stabilize!
+                            showFloatingText("HEAVY! ⚓ Stable!", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            playSound(200, 'sine', 0.2);
+                        }
                         } else if (activePancake.specialType === 'tiny') {
                             score += 10;
                             showFloatingText("TINY! 🤏 +10", activePancake.x + activePancake.width/2, activePancake.y - 30);
