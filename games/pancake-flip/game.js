@@ -500,6 +500,18 @@ function updateComboBar() {
             });
         }
 
+        function startGame() {
+            document.getElementById('how-to-play').style.display = 'none';
+            gameActive = true;
+            resumeAudio();
+            initStack();
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pause-btn').innerText = isPaused ? 'Resume ▶️' : 'Pause ⏸️';
+        }
+
         function resetGame() {
             score = 0;
             combo = 0;
