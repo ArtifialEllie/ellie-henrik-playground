@@ -41,6 +41,11 @@ const ellieFeedback = {
         "Ellie is so proud of you! 🌸",
         "Splish splash, you're a star! ⭐"
     ],
+    companionHelp: [
+        "Look! Your fishy friend helped! 🐠✨",
+        "Teamwork makes the dream work! 💖",
+        "A little help from a friend! 🌟"
+    ],
     levelUp: [
         "Level Up! You're getting better! 🚀",
         "Wow, look at you go! 🌈",
@@ -177,6 +182,7 @@ class Companion {
         this.floatOffset = 0;
         this.floatDir = 1;
         this.bubbleTimer = 0;
+        this.helpTimer = 0;
     }
 
     update() {
@@ -191,6 +197,34 @@ class Companion {
         if (this.bubbleTimer <= 0) {
             bubbles.push(new Bubble());
             this.bubbleTimer = 120 + Math.random() * 120;
+        }
+
+        this.helpTimer--;
+        if (this.helpTimer <= 0) {
+            this.tryHelp();
+            this.helpTimer = 400 + Math.random() * 600;
+        }
+    }
+
+    tryHelp() {
+        if (pearls.length === 0) return;
+        let nearest = null;
+        let minDist = 200;
+        pearls.forEach(p => {
+            const d = Math.hypot(this.x - p.x, this.y - p.y);
+            if (d < minDist) { minDist = d; nearest = p; }
+        });
+        if (nearest) {
+            showFloatingText(ellieFeedback.companionHelp[Math.floor(Math.random() * ellieFeedback.companionHelp.length)], nearest.x, nearest.y - 20);
+            createParticles(nearest.x, nearest.y, 'gold', 15);
+            // Simulate collection
+            const index = pearls.indexOf(nearest);
+            if (index !== -1) {
+                score += nearest.isGolden ? 50 : 10;
+                scoreElement.innerText = `Pearls: ${score}`;
+                playSound(880, 'sine', 0.1);
+                pearls.splice(index, 1);
+            }
         }
     }
 
@@ -599,7 +633,7 @@ function gameLoop() {
         return;
     } else if (Math.random() < 0.001) { // Rare event trigger
         
-        const events = ['PEARL_STORM', 'STRONG_TIDE'];
+        const events = ['PEARL_STORM', 'STRONG_TIDE', 'RAINBOW_RUSH', 'BUBBLE_BARRAGE'];
         currentEvent = events[Math.floor(Math.random() * events.length)];
         eventTimer = 300; // ~5 seconds
         
@@ -609,6 +643,15 @@ function gameLoop() {
             showFloatingText("STRONG TIDE! 🌊", canvas.width/2, canvas.height/2);
         } else if (currentEvent === 'PEARL_STORM') {
             showFloatingText("PEARL STORM! 🌟✨", canvas.width/2, canvas.height/2, 'gold');
+        } else if (currentEvent === 'RAINBOW_RUSH') {
+            showFloatingText("RAINBOW RUSH! 🌈⚡", canvas.width/2, canvas.height/2);
+            player.speed = player.baseSpeed * 2;
+            friends.forEach(f => f.speed *= 2);
+        } else if (currentEvent === 'BUBBLE_BARRAGE') {
+            showFloatingText("BUBBLE BARRAGE! 🫧💥", canvas.width/2, canvas.height/2);
+            for(let i=0; i<20; i++) {
+                bubbles.push(new Bubble());
+            }
         }
         playSound(440, 'sine', 0.3);
     }
@@ -617,6 +660,7 @@ function gameLoop() {
         currentEvent = 'NONE';
         tideX = 0;
         tideY = 0;
+        player.speed = player.baseSpeed;
     }
 
     // Update combo timer

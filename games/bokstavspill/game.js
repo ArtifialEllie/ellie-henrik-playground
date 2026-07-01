@@ -10,7 +10,7 @@ const levelData = {
             'F': [{ name: 'Fisk', emoji: '🐟' }, { name: 'Fugl', emoji: '🐦' }, { name: 'Frosk', emoji: '🐸' }, { name: 'Fjell', emoji: '🏔️' }, { name: 'Frukt', emoji: '🍐' }, { name: 'Flue', emoji: '🪰' }, { name: 'Flagg', emoji: '🚩' }, { name: 'Farge', emoji: '🎨' }],
             'G': [{ name: 'Giraff', emoji: '🦒' }, { name: 'Gresskar', emoji: '🎃' }, { name: 'Gule', emoji: '💛' }, { name: 'Gris', emoji: '🐷' }, { name: 'Gave', emoji: '🎁' }, { name: 'Gull', emoji: '💰' }, { name: 'Gress', emoji: '🌿' }, { name: 'Gitar', emoji: '🎸' }],
             'H': [{ name: 'Hund', emoji: '🐶' }, { name: 'Hest', emoji: '🐴' }, { name: 'Hatt', emoji: '🎩' }, { name: 'Hval', emoji: '🐋' }, { name: 'Hjerte', emoji: '❤️' }, { name: 'Hus', emoji: '🏠' }, { name: 'Hanske', emoji: '🧤' }, { name: 'Honeykake', emoji: '🍯' }],
-            'I': [{ name: 'Igle', emoji: '🐛' }, { name: 'Is', emoji: '🍦' }, { name: 'Isbjørn', emoji: '🐻‍❄️' }, { name: 'Ild', emoji: '🔥' }, { name: 'Ibis', emoji: '🐦' }, { name: 'Igle', emoji: '🐛' }],
+            'I': [{ name: 'Igle', emoji: '🐛' }, { name: 'Is', emoji: '🍦' }, { name: 'Isbjørn', emoji: '🐻‍❄️' }, { name: 'Ild', emoji: '🔥' }, { name: 'Ibis', emoji: '🐦' }],
             'J': [{ name: 'Jaguar', emoji: '🐆' }, { name: 'Juletre', emoji: '🎄' }, { name: 'Jordbær', emoji: '🍓' }, { name: 'Jernbane', emoji: '🚂' }, { name: 'Jakke', emoji: '🧥' }, { name: 'Jojo', emoji: '🪀' }, { name: 'Jern', emoji: '⛓️' }],
             'K': [{ name: 'Katt', emoji: '🐱' }, { name: 'Kake', emoji: '🍰' }, { name: 'Kanin', emoji: '🐰' }, { name: 'Ko', emoji: '🐮' }, { name: 'Kameleon', emoji: '🦎' }, { name: 'Krone', emoji: '👑' }, { name: 'Kopp', emoji: '☕' }, { name: 'Klovn', emoji: '🤡' }],
             'L': [{ name: 'Løve', emoji: '🦁' }, { name: 'Lam', emoji: '🐑' }, { name: 'Lilla', emoji: '💜' }, { name: 'Laks', emoji: '🐟' }, { name: 'Lykke', emoji: '🍀' }, { name: 'Lampe', emoji: '💡' }, { name: 'Lønn', emoji: '🍁' }],
@@ -157,7 +157,7 @@ const levelData = {
             "Ja! Du traff blink! 🎯",
             "Utrolig! Du er en ekte bokstav-mester! 📚",
             "Helt perfekt! Du er helt rå! 🌟",
-           "Súper! Du får en virtuell klem! 🤗",
+           "Super! Du får en virtuell klem! 🤗",
            "Fantastisk! Du er ustopperlig! ⚡",
            "Ja ja ja! Du er en ekte proff! 🎓",
            "Helt magisk! Du stråler! ✨",
@@ -325,7 +325,7 @@ function speakPrompt() {
         // men be brukeren lytte etter lyden i ordet som følger.
         audioText = `Hvilken lyd starter dette ordet med? ... ${data.name}`;
     } else {
-        audioText = `Hvilket ord er dette? ${currentItem}`;
+        audioText = `Hvilket ord er dette?`;
     }
 
     if (isZenMode) {
@@ -398,7 +398,7 @@ function checkAnswer(letter, btn) {
            btn.classList.add('correct');
            const rect = btn.getBoundingClientRect();
            spawnCorrectParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-           floatingTexts.push(new FloatingText(rect.left + rect.width / 2, rect.top, 'Súper!', '#ff69b4'));
+           floatingTexts.push(new FloatingText(rect.left + rect.width / 2, rect.top, 'Super!', '#ff69b4'));
 
            streak++;
            

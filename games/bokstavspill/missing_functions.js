@@ -69,21 +69,34 @@ function renderCollection() {
     grid.style.gap = '15px';
     grid.style.padding = '20px';
 
-    unlockedItems.forEach(id => {
-        const [letter, name] = id.split('_');
+    // Collect all unique items across all levels to show a complete "sticker book"
+    const allItems = [];
+    const seenIds = new Set();
+
+    Object.entries(levelData).forEach(([levelId, levelObj]) => {
+        Object.entries(levelObj.items).forEach(([letter, items]) => {
+            items.forEach(item => {
+                const id = `${letter}_${item.name}`;
+                if (!seenIds.has(id)) {
+                    allItems.push({ id, letter, name: item.name, emoji: item.emoji });
+                    seenIds.add(id);
+                }
+            });
+        });
+    });
+
+    // Sort items by letter for better organization
+    allItems.sort((a, b) => a.letter.localeCompare(b.letter));
+
+    allItems.forEach(item => {
         const itemEl = document.createElement('div');
-        itemEl.className = 'collection-item';
+        const isUnlocked = unlockedItems.includes(item.id);
+        itemEl.className = `collection-item ${isUnlocked ? 'unlocked' : ''}`;
         
-        let emoji = '❓';
-        for (const level of Object.values(levelData)) {
-            const item = level.items[letter]?.find(i => i.name === name);
-            if (item) {
-                emoji = item.emoji;
-                break;
-            }
-        }
-        
-        itemEl.innerHTML = `<div style="font-size:2rem;">${emoji}</div><div style="font-size:0.8rem;">${name}</div>`;
+        itemEl.innerHTML = `
+            <div style="font-size:2rem;">${isUnlocked ? item.emoji : '❓'}</div>
+            <div style="font-size:0.8rem;">${isUnlocked ? item.name : '???'}</div>
+        `;
         grid.appendChild(itemEl);
     });
     container.appendChild(grid);

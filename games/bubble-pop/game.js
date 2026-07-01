@@ -392,8 +392,8 @@ class Bubble {
                const dy = this.y - b.y;
                const dist = Math.hypot(dx, dy);
                if (dist < 200) {
-                   b.vx += dx / dist * 0.15;
-                   b.vy += dy / dist * 0.15;
+                   b.vx += (dx / (dist || 1)) * 0.15;
+                   b.vy += (dy / (dist || 1)) * 0.15;
                }
            });
        }
@@ -404,8 +404,8 @@ class Bubble {
                const dy = this.y - b.y;
                const dist = Math.hypot(dx, dy);
                if (dist < 150) {
-                   b.vx += dx / dist * 0.3;
-                   b.vy += dy / dist * 0.3;
+                   b.vx += (dx / (dist || 1)) * 0.3;
+                   b.vy += (dy / (dist || 1)) * 0.3;
                    if (dist < 30) {
                        b.popped = true;
                        createPopEffect(b.x, b.y, b.color);
@@ -800,11 +800,12 @@ class MagicalPet {
         this.friendship = 0;
         this.friendshipLevel = 1;
         this.friendshipExp = 0;
-        this.energy = 0;
-        this.maxEnergy = 100;
-    }
-
-    update(mouseX, mouseY) {
+       this.energy = 0;
+       this.maxEnergy = 100;
+       this.energyFill = document.getElementById('pet-energy-fill');
+   }
+   
+   update(mouseX, mouseY) {
         this.targetX = mouseX;
         this.targetY = mouseY;
 
@@ -826,15 +827,14 @@ class MagicalPet {
         }
 
         if (this.isClone) {
-            // Clones don't update the main energy bar
-        } else {
-            const energyFill = document.getElementById('pet-energy-fill');
-            if (energyFill) {
-                energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
-            }
-        }
-   // Friendship Level 5: Occasionally spawn a gold bubble!
-   if ((this.friendshipLevel >= 5 || currentAccessory === 'Starry Halo') && Math.random() < (currentAccessory === 'Starry Halo' ? 0.005 : 0.002)) {
+           // Clones don't update the main energy bar
+       } else {
+            if (this.energyFill) {
+                this.energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
+           }
+      }
+  }
+   if (!this.isClone && (this.friendshipLevel >= 5 || currentAccessory === 'Starry Halo') && Math.random() < (currentAccessory === 'Starry Halo' ? 0.005 : 0.002)) {
        const goldBubble = new Bubble(false);
        goldBubble.type = 'gold';
        goldBubble.x = this.x + (Math.random() - 0.5) * 100;
@@ -1072,21 +1072,27 @@ function spawnBubble() {
 function triggerFrenzy() {
     if (!isFrenzy) {
         isFrenzy = true;
-        frenzyAlert.style.display = 'block';
+        if (frenzyAlert) {
+            frenzyAlert.style.display = 'block';
+        }
         document.body.classList.add('frenzy-bg');
     }
     
     clearTimeout(window.frenzyTimer);
     window.frenzyTimer = setTimeout(() => {
         isFrenzy = false;
-        frenzyAlert.style.display = 'none';
+        if (frenzyAlert) {
+            frenzyAlert.style.display = 'none';
+        }
         document.body.classList.remove('frenzy-bg');
     }, 5000);
 }
 
 function triggerParty() {
     const partyAlert = document.getElementById('party-alert');
-    partyAlert.style.display = 'block';
+    if (partyAlert) {
+        partyAlert.style.display = 'block';
+    }
     
     // Party effect: spawn a bunch of bubbles immediately
     for (let i = 0; i < 15; i++) {
@@ -1094,14 +1100,18 @@ function triggerParty() {
     }
     
     setTimeout(() => {
-        partyAlert.style.display = 'none';
+        if (partyAlert) {
+            partyAlert.style.display = 'none';
+        }
     }, 3000);
 }
 
 function triggerGoldenRain() {
     isGoldenRain = true;
     const rainAlert = document.getElementById('golden-rain-alert');
-    rainAlert.style.display = 'block';
+    if (rainAlert) {
+        rainAlert.style.display = 'block';
+    }
     
     // Rain of gold bubbles!
     for (let i = 0; i < 30; i++) {
@@ -1117,15 +1127,19 @@ function triggerGoldenRain() {
     
     setTimeout(() => {
         isGoldenRain = false;
-        rainAlert.style.display = 'none';
+        if (rainAlert) {
+            rainAlert.style.display = 'none';
+        }
     }, 7000);
 }
 
 function triggerCupcakeRain() {
     const cupcakeAlert = document.getElementById('cupcake-alert');
-    cupcakeAlert.style.display = 'block';
-    cupcakeAlert.style.color = '#ffb6c1';
-    cupcakeAlert.style.textShadow = '4px 4px #ffffff';
+    if (cupcakeAlert) {
+        cupcakeAlert.style.display = 'block';
+        cupcakeAlert.style.color = '#ffb6c1';
+        cupcakeAlert.style.textShadow = '4px 4px #ffffff';
+    }
 
     for (let i = 0; i < 25; i++) {
         setTimeout(() => {
@@ -1144,15 +1158,19 @@ function triggerCupcakeRain() {
     }
 
     setTimeout(() => {
-        cupcakeAlert.style.display = 'none';
+        if (cupcakeAlert) {
+            cupcakeAlert.style.display = 'none';
+        }
     }, 6000);
 }
 
 function triggerDiscoParty() {
     const discoAlert = document.getElementById('disco-alert');
-    discoAlert.style.display = 'block';
-    discoAlert.style.color = '#ff00ff';
-    discoAlert.style.textShadow = '4px 4px #00ffff';
+    if (discoAlert) {
+        discoAlert.style.display = 'block';
+        discoAlert.style.color = '#ff00ff';
+        discoAlert.style.textShadow = '4px 4px #00ffff';
+    }
     
     // Disco effect: bubbles dance and change color rapidly
     const discoInterval = setInterval(() => {
@@ -1169,7 +1187,9 @@ function triggerDiscoParty() {
     }, 100);
     
     setTimeout(() => {
-        discoAlert.style.display = 'none';
+        if (discoAlert) {
+            discoAlert.style.display = 'none';
+        }
         clearInterval(discoInterval);
     }, 5000);
 }
@@ -1200,23 +1220,29 @@ function triggerGlitterSneeze() {
 
 function triggerSlowMo() {
     const slowMoAlert = document.getElementById('slow-mo-alert');
-    slowMoAlert.style.display = 'block';
-    slowMoAlert.style.color = '#81d4fa';
-    slowMoAlert.style.textShadow = '2px 2px #ffffff';
+    if (slowMoAlert) {
+        slowMoAlert.style.display = 'block';
+        slowMoAlert.style.color = '#81d4fa';
+        slowMoAlert.style.textShadow = '2px 2px #ffffff';
+    }
     
     gameSpeed = 0.3;
     
     setTimeout(() => {
         gameSpeed = 1;
-        slowMoAlert.style.display = 'none';
+        if (slowMoAlert) {
+            slowMoAlert.style.display = 'none';
+        }
     }, 5000);
 }
 
 function triggerWindGust() {
     const windAlert = document.getElementById('wind-alert');
-    windAlert.style.display = 'block';
-    windAlert.style.color = '#e0f7fa';
-    windAlert.style.textShadow = '2px 2px #006064';
+    if (windAlert) {
+        windAlert.style.display = 'block';
+        windAlert.style.color = '#e0f7fa';
+        windAlert.style.textShadow = '2px 2px #006064';
+    }
     
     const windForce = 5;
     const windDirection = Math.random() > 0.5 ? 1 : -1;
@@ -1233,16 +1259,20 @@ function triggerWindGust() {
     }, 20);
     
     setTimeout(() => {
-        windAlert.style.display = 'none';
+        if (windAlert) {
+            windAlert.style.display = 'none';
+        }
         clearInterval(windInterval);
     }, 4000);
 }
 
 function triggerRainbowCascade() {
     const cascadeAlert = document.getElementById('cascade-alert');
-    cascadeAlert.style.display = 'block';
-    cascadeAlert.style.color = '#ff00ff';
-    cascadeAlert.style.textShadow = '4px 4px #00ffff';
+    if (cascadeAlert) {
+        cascadeAlert.style.display = 'block';
+        cascadeAlert.style.color = '#ff00ff';
+        cascadeAlert.style.textShadow = '4px 4px #00ffff';
+    }
 
     // Create a cascade of rainbow bubbles falling from the top
     for (let i = 0; i < 40; i++) {
@@ -1259,15 +1289,19 @@ function triggerRainbowCascade() {
     }
 
     setTimeout(() => {
-        cascadeAlert.style.display = 'none';
+        if (cascadeAlert) {
+            cascadeAlert.style.display = 'none';
+        }
     }, 6000);
 }
 
 function triggerMirrorRealm() {
     const mirrorAlert = document.getElementById('mirror-realm-alert');
-    mirrorAlert.style.display = 'block';
-    mirrorAlert.style.color = '#e0f7fa';
-    mirrorAlert.style.textShadow = '2px 2px #006064';
+    if (mirrorAlert) {
+        mirrorAlert.style.display = 'block';
+        mirrorAlert.style.color = '#e0f7fa';
+        mirrorAlert.style.textShadow = '2px 2px #006064';
+    }
     
     const mirrorDuration = 6000;
     const startTime = Date.now();
@@ -1275,7 +1309,9 @@ function triggerMirrorRealm() {
     const mirrorInterval = setInterval(() => {
         if (!gameActive || Date.now() - startTime > mirrorDuration) {
             clearInterval(mirrorInterval);
-            mirrorAlert.style.display = 'none';
+            if (mirrorAlert) {
+                mirrorAlert.style.display = 'none';
+            }
             return;
         }
         if (isPaused) return;
@@ -1301,7 +1337,9 @@ function triggerMirrorRealm() {
 
 function triggerRainbowBridge() {
     const bridgeAlert = document.getElementById('bridge-alert');
-    bridgeAlert.style.display = 'block';
+    if (bridgeAlert) {
+        bridgeAlert.style.display = 'block';
+    }
     
     const bridgeY = canvasHeight * 0.7;
     for (let i = 0; i < 20; i++) {
@@ -1317,14 +1355,18 @@ function triggerRainbowBridge() {
             bubbles.push(b);
         }, i * 100);
     }
-    setTimeout(() => { bridgeAlert.style.display = 'none'; }, 6000);
+    setTimeout(() => { 
+        if (bridgeAlert) bridgeAlert.style.display = 'none'; 
+    }, 6000);
 }
 
 function triggerCelestialSparkle() {
     const celestialSparkleAlert = document.getElementById('celestial-sparkle-alert');
-    celestialSparkleAlert.style.display = 'block';
-    celestialSparkleAlert.style.color = '#fff9c4';
-    celestialSparkleAlert.style.textShadow = '0 0 10px #fbc02d, 0 0 20px #fbc02d';
+    if (celestialSparkleAlert) {
+        celestialSparkleAlert.style.display = 'block';
+        celestialSparkleAlert.style.color = '#fff9c4';
+        celestialSparkleAlert.style.textShadow = '0 0 10px #fbc02d, 0 0 20px #fbc02d';
+    }
     
     const duration = 5000;
     const end = Date.now() + duration;
@@ -1333,7 +1375,9 @@ function triggerCelestialSparkle() {
     const spawnInterval = setInterval(() => {
         if (Date.now() > end) {
             clearInterval(spawnInterval);
-            celestialSparkleAlert.style.display = 'none';
+            if (celestialSparkleAlert) {
+                celestialSparkleAlert.style.display = 'none';
+            }
             return;
         }
         
@@ -1348,7 +1392,9 @@ function triggerCelestialSparkle() {
 }
 function triggerRibbon() {
     const ribbonAlert = document.getElementById('ribbon-alert');
-    if (ribbonAlert) ribbonAlert.style.display = 'block';
+    if (ribbonAlert) {
+        ribbonAlert.style.display = 'block';
+    }
     isRibbonActive = true;
     ribbon.x = -50;
     ribbon.y = canvasHeight / 2;
@@ -1365,7 +1411,9 @@ function triggerRibbon() {
         if (ribbon.y < 0 || ribbon.y > canvasHeight) ribbon.vy *= -1;
         if (ribbon.x > canvasWidth + 100) {
             isRibbonActive = false;
-            if (ribbonAlert) ribbonAlert.style.display = 'none';
+            if (ribbonAlert) {
+                ribbonAlert.style.display = 'none';
+            }
             clearInterval(ribbonInterval);
         }
         
@@ -1384,7 +1432,9 @@ function triggerRibbon() {
 
 function triggerStarfall() {
     const starfallAlert = document.getElementById('starfall-alert');
-    if (starfallAlert) starfallAlert.style.display = 'block';
+    if (starfallAlert) {
+        starfallAlert.style.display = 'block';
+    }
     
     const duration = 5000;
     const end = Date.now() + duration;
@@ -1392,7 +1442,9 @@ function triggerStarfall() {
     const spawnInterval = setInterval(() => {
         if (Date.now() > end) {
             clearInterval(spawnInterval);
-            if (starfallAlert) starfallAlert.style.display = 'none';
+            if (starfallAlert) {
+                starfallAlert.style.display = 'none';
+            }
             return;
         }
         
@@ -1440,7 +1492,9 @@ function triggerMagnetism() {
 
 function triggerGlitterGala() {
     const galaAlert = document.getElementById('glitter-gala-alert');
-    galaAlert.style.display = 'block';
+    if (galaAlert) {
+        galaAlert.style.display = 'block';
+    }
     isGlitterGala = true;
     glitterGalaTimer = 600;
     
@@ -1452,7 +1506,9 @@ function triggerGlitterGala() {
 function triggerVortex() {
     isVortex = true;
     const vortexAlert = document.getElementById('vortex-alert');
-    vortexAlert.style.display = 'block';
+    if (vortexAlert) {
+        vortexAlert.style.display = 'block';
+    }
     
     // Vortex effect: pull all bubbles toward the center
     const centerX = canvasWidth / 2;
@@ -1475,7 +1531,9 @@ function triggerVortex() {
     
     setTimeout(() => {
         isVortex = false;
-        vortexAlert.style.display = 'none';
+        if (vortexAlert) {
+            vortexAlert.style.display = 'none';
+        }
     }, 5000);
 }
 
@@ -1638,6 +1696,10 @@ function handlePop(e, isAutoPop = false) {
                     const outcome = mysteryOutcomes[Math.floor(Math.random() * mysteryOutcomes.length)];
                     score += outcome.bonus;
                     if (outcome.energy) pet.gainEnergy(outcome.energy);
+                    if (outcome.text === 'PARTY TIME! 🥳') {
+                        // Reward the pet too!
+                        pet.gainFriendship(10);
+                    }
                     floatingTexts.push(new FloatingText(b.x, b.y, `MYSTERY BOX: ${outcome.text}`, outcome.color));
                     outcome.action();
                     createBigExplosion(b.x, b.y);
@@ -1792,13 +1854,13 @@ function handlePop(e, isAutoPop = false) {
               bubbles.forEach(bub => {
                   if (bub !== b) {
                       const dx = bub.x - b.x;
-                        const dy = bub.y - b.y;
-                        const dist = Math.hypot(dx, dy);
-                        const force = 20;
-                        bub.vx += (dx / dist) * force;
-                        bub.vy += (dy / dist) * force;
-                    }
-                });
+                     const dy = bub.y - b.y;
+                     const dist = Math.hypot(dx, dy);
+                     const force = 20;
+                       bub.vx += (dx / (dist || 1)) * force;
+                       bub.vy += (dy / (dist || 1)) * force;
+                   }
+               });
                 
                 triggerFrenzy();
                 createBigExplosion(b.x, b.y);
@@ -1840,6 +1902,9 @@ function handlePop(e, isAutoPop = false) {
                 // Rainbow Burst effect: pops ALL bubbles on screen! 🌈✨
                 bubbles.forEach(bub => {
                     if (bub !== b) {
+                        if (bub.type !== 'bomb' && bub.type !== 'stinky') {
+                            combo++;
+                        }
                         createPopEffect(bub.x, bub.y, bub.color);
                         score += 5;
                         floatingTexts.push(new FloatingText(bub.x, bub.y, `+5`, bub.color));
@@ -1864,11 +1929,12 @@ function handlePop(e, isAutoPop = false) {
                    poppedSpecial = true;
                    score += sneezeBonus;
                    floatingTexts.push(new FloatingText(b.x, b.y, `SNEEZE! 🤧 +${sneezeBonus}`, '#ffeb3b'));
-                   createPopEffect(b.x, b.y, '#ffeb3b');
+                    createPopEffect(b.x, b.y, '#ffeb3b');
                     triggerSneezeEffect();
+                    triggerGiggleStorm();
                 } else if (b.type === 'magic-dust') {
-              playPopSound(true, false);
-              const dustBonus = 30;
+                    playPopSound(true, false);
+                    const dustBonus = 30;
               score += dustBonus;
               poppedSpecial = true;
               floatingTexts.push(new FloatingText(b.x, b.y, `MAGIC DUST! ✨ +${dustBonus}`, 'white'));
@@ -1942,19 +2008,22 @@ function handlePop(e, isAutoPop = false) {
                 let popped = 0;
                 const potentialTargets = bubbles.filter(bub => bub !== b && bub.type !== 'bomb');
                 
-                while (popped < popCount && potentialTargets.length > 0) {
-                    const targetIndex = Math.floor(Math.random() * potentialTargets.length);
-                    const target = potentialTargets[targetIndex];
-                    
-                    createPopEffect(target.x, target.y, target.color);
-                    score += 10;
-                    floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
-                    target.popped = true;
-                    totalPops++;
-                    updateQuest();
-                    potentialTargets.splice(targetIndex, 1);
-                    popped++;
-                }
+               while (popped < popCount && potentialTargets.length > 0) {
+                   const targetIndex = Math.floor(Math.random() * potentialTargets.length);
+                   const target = potentialTargets[targetIndex];
+                   
+                    if (target.type !== 'bomb' && target.type !== 'stinky') {
+                        combo++;
+                    }
+                   createPopEffect(target.x, target.y, target.color);
+                   score += 10;
+                   floatingTexts.push(new FloatingText(target.x, target.y, `+10`, target.color));
+                   target.popped = true;
+                   totalPops++;
+                   updateQuest();
+                   potentialTargets.splice(targetIndex, 1);
+                   popped++;
+               }
            } else if (b.type === 'pet-treat') {
               playPopSound(true, false);
               pet.triggerSugarRush();
@@ -2019,18 +2088,19 @@ function handlePop(e, isAutoPop = false) {
               
                const allBubbles = [...bubbles];
                bubbles = [];
-                allBubbles.forEach(otherBubble => {
-                    if (otherBubble !== b) {
-                        if (otherBubble.type !== 'bomb' && otherBubble.type !== 'stinky') {
-                            createPopEffect(otherBubble.x, otherBubble.y, otherBubble.color);
-                            score += 10;
-                            totalPops++;
-                            updateQuest();
-                        } else {
-                            createPopEffect(otherBubble.x, otherBubble.y, '#444');
-                        }
-                    }
-                });
+               allBubbles.forEach(otherBubble => {
+                   if (otherBubble !== b) {
+                       if (otherBubble.type !== 'bomb' && otherBubble.type !== 'stinky') {
+                            combo++;
+                           createPopEffect(otherBubble.x, otherBubble.y, otherBubble.color);
+                           score += 10;
+                           totalPops++;
+                           updateQuest();
+                       } else {
+                           createPopEffect(otherBubble.x, otherBubble.y, '#444');
+                       }
+                   }
+               });
                score += 100;
                createBigExplosion(b.x, b.y);
            } else if (b.type === 'magnetic-bubble') {
@@ -2259,15 +2329,18 @@ class Shockwave {
 
 function triggerShockwave(x, y, color = '#00ffff') {
     shockwaves.push(new Shockwave(x, y, color));
-    for (let i = bubbles.length - 1; i >= 0; i--) {
-        const b = bubbles[i];
-        if (Math.hypot(x - b.x, y - b.y) < 150) {
-            createPopEffect(b.x, b.y, b.color);
-            playPopSound(b.type === 'gold', b.type === 'stinky', b.color);
-                b.popped = true;
-                score += 10; // Small bonus for shockwave pop
-        }
-    }
+   for (let i = bubbles.length - 1; i >= 0; i--) {
+       const b = bubbles[i];
+       if (Math.hypot(x - b.x, y - b.y) < 150) {
+            if (b.type !== 'bomb' && b.type !== 'stinky') {
+                combo++;
+            }
+           createPopEffect(b.x, b.y, b.color);
+           playPopSound(b.type === 'gold', b.type === 'stinky', b.color);
+               b.popped = true;
+               score += 10; // Small bonus for shockwave pop
+       }
+   }
 }
 
 function playSuperPopSound() {

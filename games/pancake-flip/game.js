@@ -288,9 +288,9 @@ const canvas = document.getElementById('gameCanvas');
             activePancake.vr = (Math.random() - 0.5) * 0.2;
         }
 
-        function showFloatingText(text, x, y) {
+        function showFloatingText(text, x, y, style = 'normal') {
             const el = document.createElement('div');
-            el.className = 'floating-text';
+            el.className = `floating-text ${style}`;
             el.innerText = text;
             el.style.left = x + 'px';
             el.style.top = y + 'px';
@@ -320,13 +320,13 @@ const canvas = document.getElementById('gameCanvas');
                     
                     if (activePancake.isSyrupy) {
                         currentTotalLean *= 0.95; // Syrup stabilizes the stack!
-                        showFloatingText("SYRUPY! 🍯 Stability!", activePancake.x + activePancake.width/2, activePancake.y - 40);
+                        showFloatingText("SYRUPY! 🍯 Stability!", activePancake.x + activePancake.width/2, activePancake.y - 40, 'syrup');
                         playSound(500, 'sine', 0.2);
                     }
 
                     if (activePancake.topping === '🧈') {
                         currentTotalLean *= 0.8; // Butter makes it slide less!
-                        showFloatingText("BUTTERY! 🧈 Smooth!", activePancake.x + activePancake.width/2, activePancake.y - 40);
+                        showFloatingText("BUTTERY! 🧈 Smooth!", activePancake.x + activePancake.width/2, activePancake.y - 40, 'butter');
                         playSound(400, 'triangle', 0.2);
                     }
 
@@ -336,14 +336,14 @@ const canvas = document.getElementById('gameCanvas');
                             combo += 2;
                             const comboBonus = 1 + (combo * 0.1);
                             score += Math.round(5 * scoreMult * comboBonus);
-                            showFloatingText("SUPER PERFECT! 🌈✨", activePancake.x + activePancake.width/2, activePancake.y);
+                            showFloatingText("SUPER PERFECT! 🌈✨", activePancake.x + activePancake.width/2, activePancake.y, 'perfect');
                             playSound(880, 'sine', 0.1);
                         } else {
                             showPerfect();
                     combo++;
                     const comboBonus = 1 + (combo * 0.1);
                     score += Math.round(2 * scoreMult * comboBonus);
-                    showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y);
+                    showFloatingText("PERFECT! ✨", activePancake.x + activePancake.width/2, activePancake.y, 'perfect');
                     playSound(660, 'sine', 0.1);
                 }
                 updateComboBar();
@@ -381,7 +381,7 @@ const canvas = document.getElementById('gameCanvas');
                     if (Math.random() < 0.05) {
                         const sneezeForce = (Math.random() - 0.5) * 10;
                         currentTotalLean += sneezeForce;
-                        showFloatingText("ACHOO! 🤧", activePancake.x + activePancake.width/2, activePancake.y - 50);
+                        showFloatingText("ACHOO! 🤧", activePancake.x + activePancake.width/2, activePancake.y - 50, 'sneeze');
                         playSound(200, 'sawtooth', 0.2);
                         shakeAmount = 10;
                     }
@@ -390,16 +390,16 @@ const canvas = document.getElementById('gameCanvas');
                     if (activePancake.isSpecial) {
                         if (activePancake.specialType === 'gold') {
                             score += 5;
-                            showFloatingText("GOLDEN! 🏆 +5", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("GOLDEN! 🏆 +5", activePancake.x + activePancake.width/2, activePancake.y - 30, 'gold');
                             playSound(880, 'square', 0.2);
                         } else if (activePancake.specialType === 'rainbow') {
                             score += 3;
-                            showFloatingText("RAINBOW! 🌈 +3", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("RAINBOW! 🌈 +3", activePancake.x + activePancake.width/2, activePancake.y - 30, 'rainbow');
                             playSound(523.25, 'triangle', 0.2);
                         } else if (activePancake.specialType === 'glitter') {
                             score += 2;
                             currentTotalLean *= 0.5; // Glitter magic clears the lean!
-                            showFloatingText("GLITTER! ✨ Magic Balance!", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("GLITTER! ✨ Magic Balance!", activePancake.x + activePancake.width/2, activePancake.y - 30, 'glitter');
                             playSound(1000, 'sine', 0.1);
                             for(let i=0; i<20; i++) particles.push(new Particle(activePancake.x + activePancake.width/2, activePancake.y, '#ffffff'));
                         } else if (activePancake.specialType === 'powerup') {
@@ -407,44 +407,39 @@ const canvas = document.getElementById('gameCanvas');
                             if (powerUpType === 'SCORE') {
                                 scoreMult = 3;
                                 scoreMultTimer = 300;
-                                showFloatingText("SCORE BOOST! x3 🚀", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                                showFloatingText("SCORE BOOST! x3 🚀", activePancake.x + activePancake.width/2, activePancake.y - 30, 'powerup');
                             } else {
                                 slideSpeedMult = 0.5;
                                 slideSpeedMultTimer = 300;
-                                showFloatingText("SLOW-MO! ⏳ Stability!", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                                showFloatingText("SLOW-MO! ⏳ Stability!", activePancake.x + activePancake.width/2, activePancake.y - 30, 'powerup');
                             }
                             playSound(1200, 'sine', 0.2);
                         } else if (activePancake.specialType === 'bouncy') {
                             score += 2;
-                            showFloatingText("BOUNCY! 🏀", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("BOUNCY! 🏀", activePancake.x + activePancake.width/2, activePancake.y - 30, 'bouncy');
                             playSound(400, 'sine', 0.1);
                         } else if (activePancake.specialType === 'sticky') {
                             currentTotalLean *= 0.3;
-                            showFloatingText("STICKY! 🍯 Super Stable!", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("STICKY! 🍯 Super Stable!", activePancake.x + activePancake.width/2, activePancake.y - 30, 'sticky');
                             playSound(400, 'sine', 0.1);
                         } else if (activePancake.specialType === 'slippery') {
                             currentTotalLean += (Math.random() - 0.5) * 2;
-                            showFloatingText("SLIPPERY! ⛸️", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("SLIPPERY! ⛸️", activePancake.x + activePancake.width/2, activePancake.y - 30, 'slippery');
                             playSound(400, 'sine', 0.1);
                             shakeAmount = 5;
                         } else if (activePancake.specialType === 'heavy') {
                             currentTotalLean *= 0.5; // Heavy pancakes stabilize!
-                            showFloatingText("HEAVY! ⚓ Stable!", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("HEAVY! ⚓ Stable!", activePancake.x + activePancake.width/2, activePancake.y - 30, 'heavy');
                             playSound(200, 'sine', 0.2);
                         } else if (activePancake.specialType === 'tiny') {
                             score += 10;
-                            showFloatingText("TINY! 🤏 +10", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("TINY! 🤏 +10", activePancake.x + activePancake.width/2, activePancake.y - 30, 'tiny');
                             playSound(1200, 'sine', 0.1);
                         } else if (activePancake.specialType === 'wobbly') {
                             currentTotalLean += (Math.random() - 0.5) * 5;
-                            showFloatingText("WOBBLY! 😵", activePancake.x + activePancake.width/2, activePancake.y - 30);
+                            showFloatingText("WOBBLY! 😵", activePancake.x + activePancake.width/2, activePancake.y - 30, 'wobbly');
                             playSound(300, 'sawtooth', 0.2);
-                        } else if (activePancake.specialType === 'slippery') {
-                            currentTotalLean += (Math.random() - 0.5) * 2;
-                            showFloatingText("SLIPPERY! ⛸️", activePancake.x + activePancake.width/2, activePancake.y - 30);
-                            playSound(400, 'sine', 0.1);
-                            shakeAmount = 5;
-                        }
+
                     }
                     activePancake.targetScaleY = 0.7;
                     setTimeout(() => activePancake.targetScaleY = 1, 100);
