@@ -155,6 +155,17 @@ function drawPlayer() {
     ctx.save();
     ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
     ctx.scale(playerScale, playerScale);
+    
+    if (shieldActive) {
+        ctx.beginPath();
+        ctx.arc(0, 0, 45, 0, Math.PI * 2);
+        ctx.strokeStyle = '#81d4fa';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(129, 212, 250, 0.3)';
+        ctx.fill();
+    }
+
     ctx.font = '60px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
