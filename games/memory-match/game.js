@@ -338,13 +338,6 @@ function checkMatch() {
     const [card1, card2] = flippedCards;
     const isMatch = card1.dataset.emoji === card2.dataset.emoji;
 
-function updateComboBar() {
-    const bar = document.getElementById('combo-bar');
-    if (bar) {
-        bar.style.width = `${Math.min(100, (combo / 10) * 100)}%`;
-    }
-}
-
     if (isMatch) {
         handleMatch();
         disableCards();
@@ -581,7 +574,6 @@ function showWinMessage() {
             finalStatsText += ` og ${secondsElapsed} sekunder!`;
         }
         finalStatsText += ` Din høyeste combo var ${combo}! 🌟`;
-    finalStatsText += ` Din høyeste combo var ${combo}! 🌟`;
     finalStatsText += ` Din beste combo i dette spillet var ${bestStreak}! 🏆`;
     document.getElementById('final-stats').innerText = finalStatsText;
     document.getElementById('win-message').classList.add('show');
