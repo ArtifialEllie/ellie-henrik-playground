@@ -107,8 +107,11 @@ class Fish {
     constructor(isEnemy = false) {
         this.isEnemy = isEnemy;
         if (isEnemy) {
-            this.behavior = (Math.random() > 0.7 ? 'patrol' : 'track');
-            if (Math.random() > 0.8) this.behavior = 'fast';
+            const rand = Math.random();
+            if (rand > 0.85) this.behavior = 'fast';
+            else if (rand > 0.7) this.behavior = 'ambush';
+            else if (rand > 0.4) this.behavior = 'track';
+            else this.behavior = 'patrol';
             this.radius = 15;
         } else {
             this.type = Math.random() < 0.1 ? 'RARE' : (Math.random() < 0.2 ? 'FAST' : 'NORMAL');
@@ -147,6 +150,16 @@ class Fish {
             const angle = Math.atan2(dy, dx);
             this.x += Math.cos(angle) * (this.speed * 1.8 * difficultyMultiplier);
             this.y += Math.sin(angle) * (this.speed * 1.8 * difficultyMultiplier);
+        } else if (this.behavior === 'ambush') {
+            // Ambush: Stay still until player is close, then dash
+            const dist = Math.hypot(player.x - this.x, player.y - this.y);
+            if (dist < 150) {
+                const dx = player.x - this.x;
+                const dy = player.y - this.y;
+                const angle = Math.atan2(dy, dx);
+                this.x += Math.cos(angle) * (this.speed * 2.5 * difficultyMultiplier);
+                this.y += Math.sin(angle) * (this.speed * 2.5 * difficultyMultiplier);
+            }
         } else if (this.behavior === 'track') {
             // Enemies track player
             const dx = player.x - this.x;
