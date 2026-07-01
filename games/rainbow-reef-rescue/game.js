@@ -321,12 +321,6 @@ function createParticles(x, y, color, count) {
     }
 }
 
-class Pearl {
-    constructor() {
-        this.radius = 8;
-        this.x = Math.random() * (canvas.width - 40) + 20;
-        this.y = Math.random() * (canvas.height - 40) + 20;
-        this.isGolden = Math.random() < 0.1;
 class Plankton {
     constructor() {
         this.x = Math.random() * canvas.width;
@@ -380,8 +374,6 @@ class Pearl {
         ctx.stroke();
         ctx.closePath();
         ctx.restore();
-    }
-}
     }
 }
 

@@ -599,6 +599,9 @@ function updateComboBar() {
                 stack.forEach(p => topTilt += p.tiltOffset);
                 activePancake.draw(topTilt, stack.length - 1);
                 checkLanding();
+                if (activePancake.isFlipping && activePancake.y > canvasHeight) {
+                    gameOver();
+                }
             }
             
             for (let i = particles.length - 1; i >= 0; i--) {

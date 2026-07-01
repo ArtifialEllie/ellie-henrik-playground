@@ -643,6 +643,7 @@ closeGalleryBtn.onclick = () => {
     challengeRestartBtn.onclick = () => {
         document.getElementById('challenge-end-screen').style.display = 'none';
         startScreen.style.display = 'flex';
+        isProcessing = false;
         document.getElementById('game-container').style.display = 'none';
         document.getElementById('timer-display').style.display = 'none';
     };
@@ -650,6 +651,8 @@ closeGalleryBtn.onclick = () => {
     homeBtn.onclick = () => {
         collectionOverlay.style.display = 'none';
         startScreen.style.display = 'flex';
+        if (challengeTimer) clearInterval(challengeTimer);
+        isProcessing = false;
         document.getElementById('game-container').style.display = 'none';
     };
 
@@ -692,6 +695,7 @@ function renderExplorer() {
     challengeBtn.onclick = () => {
         startScreen.style.display = 'none';
         document.getElementById('game-container').style.display = 'block';
+        if (challengeTimer) clearInterval(challengeTimer);
         isChallengeMode = true;
         streak = 0;
         updateStatus();
