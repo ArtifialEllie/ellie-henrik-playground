@@ -826,23 +826,19 @@ class MagicalPet {
             this.shieldTimer--;
         }
 
-        if (this.isClone) {
-           // Clones don't update the main energy bar
-       } else {
-            if (this.energyFill) {
-                this.energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
-           }
-      }
+        if (!this.isClone && this.energyFill) {
+            this.energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
+        }
 
-       if (!this.isClone && (this.friendshipLevel >= 5 || currentAccessory === 'Starry Halo') && Math.random() < (currentAccessory === 'Starry Halo' ? 0.005 : 0.002)) {
-           const goldBubble = new Bubble(false);
-           goldBubble.type = 'gold';
-           goldBubble.x = this.x + (Math.random() - 0.5) * 100;
-           goldBubble.y = this.y + (Math.random() - 0.5) * 100;
-           goldBubble.speed = 2;
-           bubbles.push(goldBubble);
-           floatingTexts.push(new FloatingText(this.x, this.y, 'PET GIFT! ✨', 'gold'));
-       }
+        if (!this.isClone && (this.friendshipLevel >= 5 || currentAccessory === 'Starry Halo') && Math.random() < (currentAccessory === 'Starry Halo' ? 0.005 : 0.002)) {
+            const goldBubble = new Bubble(false);
+            goldBubble.type = 'gold';
+            goldBubble.x = this.x + (Math.random() - 0.5) * 100;
+            goldBubble.y = this.y + (Math.random() - 0.5) * 100;
+            goldBubble.speed = 2;
+            bubbles.push(goldBubble);
+            floatingTexts.push(new FloatingText(this.x, this.y, 'PET GIFT! ✨', 'gold'));
+        }
 
         // Mood Logic
         if (this.moodTimer > 0) {
@@ -910,109 +906,6 @@ class MagicalPet {
             playSound(800, 'sine', 0.3);
         }
 
-        // Sugar Rush Logic
-        if (this.sugarRushTimer > 0) {
-            this.sugarRushTimer--;
-            this.isSugarRush = true;
-        } else {
-            this.isSugarRush = false;
-        }
-    }
-
-        // Add sparkle trail ✨
-        if (Math.random() < 0.3) {
-            trail.push(new TrailParticle(this.x, this.y));
-        }
-
-        if (this.shieldTimer > 0) {
-            this.shieldTimer--;
-        }
-
-        if (this.isClone) {
-           // Clones don't update the main energy bar
-       } else {
-            if (this.energyFill) {
-                this.energyFill.style.width = `${(this.energy / this.maxEnergy) * 100}%`;
-           }
-      }
-
-       if (!this.isClone && (this.friendshipLevel >= 5 || currentAccessory === 'Starry Halo') && Math.random() < (currentAccessory === 'Starry Halo' ? 0.005 : 0.002)) {
-           const goldBubble = new Bubble(false);
-           goldBubble.type = 'gold';
-           goldBubble.x = this.x + (Math.random() - 0.5) * 100;
-           goldBubble.y = this.y + (Math.random() - 0.5) * 100;
-           goldBubble.speed = 2;
-           bubbles.push(goldBubble);
-           floatingTexts.push(new FloatingText(this.x, this.y, 'PET GIFT! ✨', 'gold'));
-       }
-
-        // Mood Logic
-        if (this.moodTimer > 0) {
-            this.moodTimer--;
-        } else {
-            if (this.mood === 'Love' || this.mood === 'Hyper') {
-                this.mood = 'Happy';
-            } else if (this.mood === 'Happy' && Math.random() < 0.001) {
-                this.mood = 'Hungry';
-            } else if (this.mood === 'Hungry' && Math.random() < 0.005) {
-                this.mood = 'Happy';
-            }
-        }
-
-        // Auto-pop timer
-        this.autoPopTimer--;
-        if (this.autoPopTimer <= 0) {
-            this.tryAutoPop();
-            this.autoPopTimer = this.popInterval;
-        }
-
-        // Friendship Level Up Logic
-        if (this.friendshipExp >= 100) {
-            this.friendshipExp -= 100;
-            this.friendshipLevel++;
-            floatingTexts.push(new FloatingText(this.x, this.y, `FRIENDSHIP LVL ${this.friendshipLevel}! ❤️`, '#ff4081'));
-            playSound(600, 'sine', 0.2);
-            setTimeout(() => playSound(800, 'sine', 0.2), 100);
-        }
-    }
-
-    // Pet Evolution Logic
-    let nextLevel = 1;
-    let nextEmoji = '🐱';
-    let nextInterval = 8000;
-    let nextRange = 150;
-
-    if (score >= 15000) { nextLevel = 7; nextEmoji = '🌌🐱'; nextInterval = 1500; nextRange = 500; }
-    else if (score >= 10000) { nextLevel = 6; nextEmoji = '👑🐱'; nextInterval = 2000; nextRange = 400; }
-    else if (score >= 5000) { nextLevel = 5; nextEmoji = '✨🌈'; nextInterval = 3000; nextRange = 300; }
-    else if (score >= 3000) { nextLevel = 4; nextEmoji = '🐉'; nextInterval = 4000; nextRange = 250; }
-    else if (score >= 1500) { nextLevel = 3; nextEmoji = '🦄'; nextInterval = 5000; nextRange = 200; }
-    else if (score >= 500) { nextLevel = 2; nextEmoji = '🦊'; nextInterval = 6000; nextRange = 175; }
-
-   // Apply Accessory Bonuses
-   if (currentAccessory === 'Sparkle Wings') {
-       nextRange += 50;
-   }
-   if (currentAccessory === 'Magic Hat') {
-       nextInterval *= 0.8;
-   }
-   // Friendship bonuses
-    if (this.friendshipLevel >= 3) {
-        nextRange *= 1.2;
-    }
-    if (this.friendshipLevel >= 4) {
-        nextInterval *= 0.9;
-    }
-
-    if (nextLevel > this.level) {
-        this.level = nextLevel;
-        this.emoji = nextEmoji;
-        this.popInterval = nextInterval;
-        this.popRange = nextRange;
-        floatingTexts.push(new FloatingText(this.x, this.y, `PET EVOLVED! ${this.emoji}`, 'gold'));
-        playSound(800, 'sine', 0.3);
-    }
- 
         // Sugar Rush Logic
         if (this.sugarRushTimer > 0) {
             this.sugarRushTimer--;
