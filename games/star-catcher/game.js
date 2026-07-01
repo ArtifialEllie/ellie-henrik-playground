@@ -13,12 +13,14 @@ const rainbowAlert = document.getElementById('rainbow-alert');
 const feverAlert = document.getElementById('fever-alert');
 
 let score = 0;
+let stardust = parseInt(localStorage.getItem('starCatcherStardust')) || 0;
 let lives = 3;
 let combo = 0;
 let comboTimer = 0;
 let feverMode = false;
 let feverTimer = 0;
 let highscore = localStorage.getItem('starCatcherHighscore') || 0;
+let stardustEl = document.getElementById('stardust');
 let gameActive = false;
 let canvasWidth, canvasHeight;
 let spawnTimer;
@@ -32,6 +34,7 @@ let shieldActive = false;
 let shieldTimer = 0;
 
 highscoreEl.innerText = highscore;
+stardustEl.innerText = stardust;
 
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioCtx();
@@ -275,10 +278,14 @@ function update() {
                 combo++;
                 comboTimer = 60;
                 const mult = Math.floor(combo / 5) + 1;
+                let stardustGain = Math.ceil(mult * 0.2);
                 let gain = mult;
                 if (feverMode) gain *= 2;
                 score += gain;
                 
+                stardust += stardustGain;
+                localStorage.setItem('starCatcherStardust', stardust);
+                stardustEl.innerText = stardust;
                 if (combo > 1) {
                     comboUi.innerText = `COMBO x${mult}${feverMode ? ' 🔥' : ''} ✨`;
                     comboUi.classList.add('show');
@@ -338,7 +345,10 @@ function update() {
                 activateRainbow();
             } else if (obj.type === objectTypes.SUPER_STAR) {
                 score += 25;
-                showFloatingText("+25 SUPER! 🌠", obj.x + 20, obj.y + 20);
+                stardust += 5;
+                localStorage.setItem('starCatcherStardust', stardust);
+                stardustEl.innerText = stardust;
+                showFloatingText(`+25 SUPER! 🌠`, obj.x + 20, obj.y + 20);
                 playSound(1200, 'sine', 0.4);
                 createParticles(obj.x + 25, obj.y + 25, 'purple');
                 triggerStarShower();
@@ -470,6 +480,7 @@ function gameOver() {
         highscore = score;
         localStorage.setItem('starCatcherHighscore', highscore);
         highscoreEl.innerText = highscore;
+        stardustEl.innerText = stardust;
         statusText.innerText = "NY REKORD! 🎉";
     } else {
         statusText.innerText = "Spillet er over! 🌸";
@@ -498,15 +509,30 @@ function resetGame() {
     shieldActive = false;
     magnetAlert.style.display = 'none';
     rainbowAlert.style.display = 'none';
-    feverAlert.style.display = 'none';
-    player.x = canvasWidth / 2 - player.width / 2;
-    renderSkinSelector();
-    spawnObject();
-    requestAnimationFrame(update);
 }
 
-
-document.getElementById('start-btn').addEventListener('click', () => {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    resetGame();
+window.addEventListener('load', () => {
+    renderSkinSelector();
 });
+
+startBtn.addEventListener('click', () => {
+    startBtn.style.display = 'none';
+    let count = 3;
+    countdownEl.style.display = 'block';
+    countdownEl.innerText = count;
+    
+    const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdownEl.innerText = count;
+        } else {
+            clearInterval(timer);
+            startOverlay.style.display = 'none';
+            gameActive = true;
+
+            resetGame();
+        }
+    }, 1000);
+});
+
+requestAnimationFrame(update);
