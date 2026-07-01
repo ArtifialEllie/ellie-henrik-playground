@@ -141,6 +141,18 @@ function initGame() {
     grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     
     cards = [...config.emojis, ...config.emojis];
+    
+    // Chance to add Rainbow Cards in higher levels (Lvl 3+)
+    if (currentLevelIdx >= 2 && Math.random() < 0.4) {
+        const idx1 = Math.floor(Math.random() * cards.length);
+        const emoji = cards[idx1];
+        const idx2 = cards.findIndex((e, i) => i !== idx1 && e === emoji);
+        if (idx2 !== -1) {
+            cards[idx1] = '🌈';
+            cards[idx2] = '🌈';
+        }
+    }
+    
     shuffle(cards);
     
     moves = 0;
@@ -328,17 +340,28 @@ function checkMatch() {
     isLockBoard = true;
     moves++;
     updateStats();
-
+ 
     if (gameMode === 'challenge' && moves > moveLimit) {
         clearInterval(timerInterval);
         showGameOver();
         return;
     }
-
+ 
     const [card1, card2] = flippedCards;
     const isMatch = card1.dataset.emoji === card2.dataset.emoji;
-
+ 
     if (isMatch) {
+        if (card1.dataset.emoji === '🌈') {
+            // Rainbow Match! Pop all currently unmatched cards briefly
+            playSound(1000, 'sine', 0.4);
+            createParticles(card1.getBoundingClientRect().left, card1.getBoundingClientRect().top, 'gold', 30);
+            showFloatingText("RAINBOW MAGIC! 🌈✨", canvasWidth/2, canvasHeight/2);
+            
+            // Instead of popping, let's just give a huge combo boost and a peek!
+            combo += 5;
+            peeksLeft++;
+            updatePeekButton();
+        }
         handleMatch();
         disableCards();
         matchHistory.push([...flippedCards]);
