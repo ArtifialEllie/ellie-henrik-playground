@@ -209,6 +209,7 @@ const letterGrid = document.getElementById('letter-grid');
     const closeGalleryBtn = document.getElementById('close-gallery-btn');
     const bonusBanner = document.getElementById('bonus-banner');
     const challengeBtn = document.getElementById('challenge-btn');
+    const challengeRestartBtn = document.getElementById('challenge-restart-btn');
     const timerDisplay = document.getElementById('timer-display');
     const highScoreDisplay = document.getElementById('high-score-display');
 
@@ -426,10 +427,19 @@ function checkAnswer(letter, btn) {
         const item = currentRoundItem;
         resultDiv.innerText = item.emoji;
 
+        const pool = levelData[currentLevel].items;
+        const unlockedInLevel = Object.keys(pool).filter(k => {
+            return pool[k].some(item => unlockedItems.includes(`${k}_${item.name}`));
+        }).length;
+
             const unlockId = `${currentItem}_${item.name}`;
             if (!unlockedItems.includes(unlockId)) {
                 unlockedItems.push(unlockId);
                 localStorage.setItem('bokstavspillUnlocked', JSON.stringify(unlockedItems));
+            }
+            if (currentLevel === 1 && unlockedInLevel < 10) {
+                // Small animation for first few unlocks
+                spawnStarParticles();
             }
             resultDiv.classList.add('pop-in');
             let successText = '';
@@ -446,11 +456,6 @@ function checkAnswer(letter, btn) {
         
         updateStatus();
         
-        const pool = levelData[currentLevel].items;
-        const unlockedInLevel = Object.keys(pool).filter(k => {
-            return pool[k].some(item => unlockedItems.includes(`${k}_${item.name}`));
-        }).length;
-
         if(streak >= 5 && unlockedInLevel >= 10 && currentLevel < 3) {
             levelUp();
         }
@@ -635,11 +640,19 @@ closeGalleryBtn.onclick = () => {
     collectionOverlay.style.display = 'none';
 };
 
+    challengeRestartBtn.onclick = () => {
+        document.getElementById('challenge-end-screen').style.display = 'none';
+        startScreen.style.display = 'flex';
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('timer-display').style.display = 'none';
+    };
+
     homeBtn.onclick = () => {
         collectionOverlay.style.display = 'none';
-    startScreen.style.display = 'flex';
-    document.getElementById('game-container').style.display = 'none';
-};
+        startScreen.style.display = 'flex';
+        document.getElementById('game-container').style.display = 'none';
+    };
+
 
 const explorerBtn = document.getElementById('explorer-btn');
 const explorerOverlay = document.getElementById('explorer-overlay');
@@ -676,7 +689,31 @@ function renderExplorer() {
         isZenMode = zenModeCheckbox.checked;
     };
 
+    challengeBtn.onclick = () => {
+        startScreen.style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        isChallengeMode = true;
+        streak = 0;
+        updateStatus();
+        
+        const timerDisplay = document.getElementById('timer-display');
+        timerDisplay.style.display = 'block';
+        let timeLimit = 60;
+        timerDisplay.innerText = `Tid: ${timeLimit}s`;
+        
+        challengeTimer = setInterval(() => {
+            timeLimit--;
+            timerDisplay.innerText = `Tid: ${timeLimit}s`;
+            if (timeLimit <= 0) {
+                clearInterval(challengeTimer);
+                endChallenge();
+            }
+        }, 1000);
+        nextRound();
+    };
+
     hintBtn.onclick = () => {
+    
     const data = currentRoundItem;
     if (currentLevel === 1) {
         speak(`Det begynner på ${currentItem}`);
@@ -685,4 +722,10 @@ function renderExplorer() {
     } else {
         speak(`Ordet har ${currentItem.length} bokstaver`);
     }
+};
+
+startBtn.onclick = () => {
+    startScreen.style.display = 'none';
+    levelScreen.style.display = 'flex';
+    renderLevelButtons();
 };
