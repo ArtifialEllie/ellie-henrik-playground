@@ -140,12 +140,13 @@ const levelData = {
     let streak = 0;
     let currentItem = '';
     let currentRoundItem = null;
-    let totalStars = parseInt(localStorage.getItem('bokstavspillStars')) || 0;
-    let lastItem = '';
-    let isProcessing = false;
-    let unlockedItems = JSON.parse(localStorage.getItem('bokstavspillUnlocked')) || [];
-    let levelProgress = 0;
-    let floatingTexts = [];
+   let totalStars = parseInt(localStorage.getItem('bokstavspillStars')) || 0;
+   let lastItem = '';
+   let isProcessing = false;
+   let currentRoundId = 0;
+   let unlockedItems = JSON.parse(localStorage.getItem('bokstavspillUnlocked')) || [];
+   let levelProgress = 0;
+   let floatingTexts = [];
     
     const ellieFeedback = {
         correct: [
@@ -211,14 +212,12 @@ const letterGrid = document.getElementById('letter-grid');
     const challengeBtn = document.getElementById('challenge-btn');
     const challengeRestartBtn = document.getElementById('challenge-restart-btn');
     const timerDisplay = document.getElementById('timer-display');
-    const highScoreDisplay = document.getElementById('high-score-display');
-
-    let isChallengeMode = false;
-    let challengeTimer = null;
-    let isZenMode = false;
-    const zenModeCheckbox = document.getElementById('zen-mode');
-    let challengeHighScore = parseInt(localStorage.getItem('bokstavspillChallengeHighScore')) || 0;
-
+   const highScoreDisplay = document.getElementById('high-score-display');
+   
+   let challengeTimer = null;
+   let challengeHighScore = parseInt(localStorage.getItem('bokstavspillChallengeHighScore')) || 0;
+   let isChallengeMode = false;
+   const zenModeCheckbox = document.getElementById('zen-mode');
     function speak(text) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -335,13 +334,14 @@ function speakPrompt() {
     speak(audioText);
 }
 
-function nextRound() {
-    resultDiv.innerText = '';
-    nameDiv.innerText = '';
-    letterGrid.innerHTML = '';
-    
-    if (!levelData[currentLevel]) {
-        currentLevel = 1;
+   function nextRound() {
+       resultDiv.innerText = '';
+       nameDiv.innerText = '';
+       letterGrid.innerHTML = '';
+       currentRoundId++;
+       
+       if (!levelData[currentLevel]) {
+           currentLevel = 1;
     }
 
     const pool = levelData[currentLevel].items;
@@ -455,16 +455,19 @@ function checkAnswer(letter, btn) {
             speak(`${feedback} ${successText}`);
         
         updateStatus();
-        
-        if(streak >= 5 && unlockedInLevel >= 10 && currentLevel < 3) {
-            levelUp();
-        }
-
-        isProcessing = true;
-        setTimeout(() => {
-            resultDiv.classList.remove('pop-in');
-            isProcessing = false;
-            nextRound();
+       
+       if(streak >= 5 && unlockedInLevel >= 10 && currentLevel < 3) {
+           levelUp(); 
+           // We don't call nextRound() in levelUp() anymore to avoid double-calling
+       }
+       
+       isProcessing = true;
+       const roundIdAtCall = currentRoundId;
+       setTimeout(() => {
+           if (roundIdAtCall !== currentRoundId) return;
+           resultDiv.classList.remove('pop-in');
+           isProcessing = false;
+           nextRound();
         }, 3000);
    } else {
        btn.classList.add('wrong');
@@ -574,11 +577,12 @@ function createBackgroundBubbles() {
     }
 }
 
-function endChallenge() {
-        isProcessing = true;
-        speak(`Tiden er ute! Du klarte ${streak} riktige på rad! Fantastisk innsats!`);
-        if (streak > challengeHighScore) {
-            challengeHighScore = streak;
+   function endChallenge() {
+           isProcessing = true;
+           currentRoundId++; // Invalidate any pending nextRound calls
+           speak(`Tiden er ute! Du klarte ${streak} riktige på rad! Fantastisk innsats!`);
+           if (streak > challengeHighScore) {
+               challengeHighScore = streak;
             localStorage.setItem('bokstavspillChallengeHighScore', challengeHighScore);
         }
         
@@ -606,12 +610,13 @@ function endChallenge() {
         btn.onclick = () => {
             levelScreen.style.display = 'none';
             currentLevel = level;
-            localStorage.setItem('bokstavspillLevel', currentLevel);
-            createBackgroundBubbles();
-            updateStatus();
-            renderCollection();
-            nextRound();
-            document.getElementById('game-container').style.display = 'block';
+           localStorage.setItem('bokstavspillLevel', currentLevel);
+           createBackgroundBubbles();
+           updateStatus();
+           streak = 0; // Reset streak when starting a new level normally
+           renderCollection();
+           nextRound();
+           document.getElementById('game-container').style.display = 'block';
         };
         levelButtonsContainer.appendChild(btn);
     });
@@ -728,8 +733,9 @@ function renderExplorer() {
     }
 };
 
-startBtn.onclick = () => {
-    startScreen.style.display = 'none';
-    levelScreen.style.display = 'flex';
-    renderLevelButtons();
-};
+   startBtn.onclick = () => {
+       if (sfxCtx.state === 'suspended') sfxCtx.resume();
+       startScreen.style.display = 'none';
+       levelScreen.style.display = 'flex';
+       renderLevelButtons();
+   };
