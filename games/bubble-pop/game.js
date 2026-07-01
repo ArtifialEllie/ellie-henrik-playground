@@ -1625,7 +1625,7 @@ function handlePop(e, isAutoPop = false) {
 
 
     let didPop = false;
-   for (let i = bubbles.length - 1; i >= 0; i--) {
+   for (let i = 0; i < bubbles.length; i++) {
        const b = bubbles[i];
        
        if (!b) continue;
@@ -1644,19 +1644,19 @@ function handlePop(e, isAutoPop = false) {
                 damageBoss(10);
                 floatingTexts.push(new FloatingText(b.x, b.y, 'BOSS DAMAGE! -10', 'white'));
                 b.popped = true;
-                totalPops++;
-                updateQuest();
-                didPop = true;
-                continue;
-            }
+               totalPops++;
+               updateQuest();
+               didPop = true;
+               break;
+           }
 
             if (b.hits > 1) {
                 b.hits--;
                 createPopEffect(b.x, b.y, b.color);
                 playSound(300, 'sine', 0.1);
-                floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
-                didPop = true;
-               continue;
+               floatingTexts.push(new FloatingText(b.x, b.y, 'HIT!', b.color));
+               didPop = true;
+               break;
                } else {
                    createPopEffect(b.x, b.y, b.color);
                    b.popped = true;
@@ -2205,12 +2205,10 @@ function handlePop(e, isAutoPop = false) {
            b.popped = true;
            totalPops++;
            localStorage.setItem('bubblePopTotalPops', totalPops);
-            updateQuest();
-            didPop = true;
-        }
-    }
-    if (didPop) {
-        if (Math.random() < (currentAccessory === 'Cosmic Cape' ? 0.06 : 0.03)) triggerFrenzy();
+           updateQuest();
+           didPop = true;
+       }
+   }
         if (Math.random() < 0.01) triggerParty();
         if (Math.random() < 0.005) triggerGoldenRain();
         if (Math.random() < 0.008) triggerVortex();
